@@ -1,0 +1,19 @@
+---
+import { getCollection, type CollectionEntry } from "astro:content";
+
+type ProjectEntry = CollectionEntry<"projects">;
+
+const projects: ProjectEntry[] = await getCollection("projects");
+projects.sort((a, b) => (b.data.year ?? "").localeCompare(a.data.year ?? ""));
+---
+
+<h1>Projects</h1>
+<ul>
+    {
+        projects.map((project: ProjectEntry) => (
+            <li>
+                <a href={`/projects/${project.slug}/`}>{project.data.title}</a>
+            </li>
+        ))
+    }
+</ul>

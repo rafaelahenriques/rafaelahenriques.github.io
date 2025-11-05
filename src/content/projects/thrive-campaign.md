@@ -1,5 +1,5 @@
 ---
-title: "Thrive Beer – Digital Campaign Site"
+title: "Thrive Beer Digital Campaign Site"
 year: "2025"
 tech: ["Astro", "GSAP", "JavaScript"]
 role: "Front-end Developer"
