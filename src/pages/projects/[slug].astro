@@ -1,4 +1,5 @@
 ---
+import Base from "../../layouts/BaseLayout.astro";
 import { getCollection, type CollectionEntry } from "astro:content";
 
 type ProjectEntry = CollectionEntry<"projects">;
@@ -7,12 +8,14 @@ export async function getStaticPaths() {
     const entries: ProjectEntry[] = await getCollection("projects");
     return entries.map((entry) => ({
         params: { slug: entry.slug },
-        props: { entry }, // pass the entry to the page
+        props: { entry },
     }));
 }
 
 const { entry } = Astro.props as { entry: ProjectEntry };
-const { Content } = await entry.render(); // uses layout declared in the MD
+const { Content } = await entry.render();
 ---
 
-<Content />
+<Base title={entry.data.title}>
+    <Content />;
+</Base>

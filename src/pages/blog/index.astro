@@ -1,0 +1,27 @@
+---
+import Base from "../../layouts/BaseLayout.astro";
+import { getCollection, type CollectionEntry } from "astro:content";
+
+type BlogEntry = CollectionEntry<"blog">;
+const posts: BlogEntry[] = await getCollection("blog");
+
+// optional: newest first by date
+posts.sort(
+    (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
+);
+---
+
+<Base title="Blog" description="Rafaela's blog posts.">
+    <h1>Blog</h1>
+
+    <ul>
+        {
+            posts.map((post: BlogEntry) => (
+                <li>
+                    <a href={`/blog/${post.slug}/`}>{post.data.title}</a>
+                    {post.data.date ? ` — ${post.data.date}` : ""}
+                </li>
+            ))
+        }
+    </ul>
+</Base>
