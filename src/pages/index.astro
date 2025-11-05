@@ -1,7 +1,51 @@
 ---
 import Base from "../layouts/BaseLayout.astro";
+import { getCollection, type CollectionEntry } from "astro:content";
+
+type ProjectEntry = CollectionEntry<"projects">;
+type BlogEntry = CollectionEntry<"blog">;
+
+const projects: ProjectEntry[] = await getCollection("projects");
+projects.sort((a, b) => (b.data.year ?? "").localeCompare(a.data.year ?? ""));
+const latestProjects = projects.slice(0, 3);
+
+const posts: BlogEntry[] = await getCollection("blog");
+posts.sort(
+	(a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
+);
+const latestPosts = posts.slice(0, 3);
 ---
 
-<Base title="Home">
+<Base title="Home" description="Rafaela — projects and blog.">
 	<h1>Home</h1>
+
+	<section aria-labelledby="home-projects">
+		<h2 id="home-projects">Latest projects</h2>
+		<ul>
+			{
+				latestProjects.map((p: ProjectEntry) => (
+					<li>
+						<a href={`/projects/${p.slug}/`}>{p.data.title}</a>
+						{p.data.year ? ` — ${p.data.year}` : ""}
+					</li>
+				))
+			}
+		</ul>
+		<p><a href="/projects/">See all projects</a></p>
+	</section>
+
+	<section aria-labelledby="home-blog">
+		<h2 id="home-blog">Latest posts</h2>
+		<ul>
+			{
+				latestPosts.map((post: BlogEntry) => (
+					<li>
+						<a href={`/blog/${post.slug}/`}>{post.data.title}</a>
+						{post.data.date ? ` — ${post.data.date}` : ""}
+					</li>
+				))
+			}
+		</ul>
+		<p><a href="/blog/">See all posts</a></p>
+	</section>
 </Base>

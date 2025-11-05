@@ -1,5 +1,5 @@
 ---
-title: "UI Game Menu – Mock Assets"
+title: "UI Game Menu Mock Assets"
 year: "2024"
 tech: ["Photoshop", "Graphic Tablet"]
 role: "UI design + illustration"
