@@ -1,0 +1,24 @@
+---
+import Base from "../../layouts/BaseLayout.astro";
+import { getCollection, type CollectionEntry } from "astro:content";
+
+type ProjectEntry = CollectionEntry<"projects">;
+
+const projects: ProjectEntry[] = await getCollection("projects");
+projects.sort((a, b) => (b.data.year ?? "").localeCompare(a.data.year ?? ""));
+---
+
+<Base title="Projects" description="Rafaela — projects.">
+    <h1>Projects</h1>
+    <ul>
+        {
+            projects.map((project: ProjectEntry) => (
+                <li>
+                    <a href={`/projects/${project.slug}/`}>
+                        {project.data.title}
+                    </a>
+                </li>
+            ))
+        }
+    </ul>
+</Base>
