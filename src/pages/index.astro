@@ -17,35 +17,48 @@ const latestPosts = posts.slice(0, 3);
 ---
 
 <Base title="Home" description="Rafaela — projects and blog.">
-	<h1>Home</h1>
-
-	<section aria-labelledby="home-projects">
-		<h2 id="home-projects">Latest projects</h2>
-		<ul>
-			{
-				latestProjects.map((p: ProjectEntry) => (
-					<li>
-						<a href={`/projects/${p.slug}/`}>{p.data.title}</a>
-						{p.data.year ? ` — ${p.data.year}` : ""}
-					</li>
-				))
-			}
-		</ul>
-		<p><a href="/projects/">See all projects</a></p>
+	<section class="section reveal" style="margin-top: 0;">
+		<h1 class="reveal">Web Developer</h1>
+		<p class="lead reveal">
+			I build sleek, interactive web applications with a focus on clean
+			code and great design.
+		</p>
+		<a href="/about/" class="button button--primary reveal">More About Me</a
+		>
 	</section>
 
-	<section aria-labelledby="home-blog">
-		<h2 id="home-blog">Latest posts</h2>
-		<ul>
+	<section class="section reveal" aria-labelledby="home-projects">
+		<div class="section__label" id="home-projects">Latest Projects</div>
+		<div class="grid stagger">
 			{
-				latestPosts.map((post: BlogEntry) => (
-					<li>
-						<a href={`/blog/${post.slug}/`}>{post.data.title}</a>
-						{post.data.date ? ` — ${post.data.date}` : ""}
-					</li>
+				latestProjects.map((p: ProjectEntry) => (
+					<a href={`/projects/${p.slug}/`} class="card">
+						<div class="card__media" />
+						<h3 class="card__title">{p.data.title}</h3>
+						<p class="card__meta">{p.data.year}</p>
+					</a>
 				))
 			}
-		</ul>
-		<p><a href="/blog/">See all posts</a></p>
+		</div>
+		<p style="margin-top: var(--gap);">
+			<a href="/projects/" class="button">See all projects</a>
+		</p>
+	</section>
+
+	<section class="section reveal" aria-labelledby="home-blog">
+		<div class="section__label" id="home-blog">Latest Posts</div>
+		<div class="grid">
+			{
+				latestPosts.map((post: BlogEntry) => (
+					<a href={`/blog/${post.slug}/`} class="card">
+						<h3 class="card__title">{post.data.title}</h3>
+						<p class="card__meta">{post.data.date}</p>
+					</a>
+				))
+			}
+		</div>
+		<p style="margin-top: var(--gap);">
+			<a href="/blog/" class="button">See all posts</a>
+		</p>
 	</section>
 </Base>
