@@ -10,10 +10,8 @@
     --muted: #9aa7b4;
     --text: #f5f7fb;
     --accent: #58b4ff;
-    /* Great accent color */
     --glass: rgba(255, 255, 255, 0.03);
     --border: rgba(255, 255, 255, 0.08);
-    /* --- CHANGED (brighter) --- */
     --shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
     --radius: 14px;
     --max-width: 1200px;
@@ -21,7 +19,6 @@
     --ui: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
         "Helvetica Neue", Arial;
 
-    /* Fluid type scale (unchanged, it's perfect) */
     --step--1: clamp(0.85rem, 0.8vw, 0.95rem);
     --step-0: clamp(1rem, 1vw, 1.1rem);
     --step-1: clamp(1.15rem, 1.2vw, 1.25rem);
@@ -78,25 +75,18 @@ body {
     -webkit-font-smoothing: antialiased;
     line-height: 1.5;
     padding: 28px;
-
-    /* --- NEW --- */
-    /* This creates a much more atmospheric background "glow" */
     background-color: var(--bg);
     background-image:
-        /* 1. Subtle Accent Glow (top left) */
         radial-gradient(at 10% 10%,
             color-mix(in oklab, var(--accent) 15%, transparent) 0%,
             transparent 30%),
-        /* 2. Original Dark Gradient (top center) */
         radial-gradient(1200px 600px at 20% 0%,
             #0b0d10 0%,
             #060709 60%,
             #040506 100%);
     background-attachment: fixed;
-    /* Keeps the glow in place on scroll */
 }
 
-/* Links (global) */
 a {
     color: var(--accent);
     text-decoration: none;
@@ -108,7 +98,6 @@ a:hover {
     text-decoration: underline;
 }
 
-/* Code & Forms */
 code,
 pre {
     font-family: var(--mono);
@@ -128,11 +117,6 @@ code {
     border-radius: 6px;
 }
 
-/*
- * 3.0 TYPOGRAPHY
- * -----------------
- */
-
 .h-kicker {
     color: var(--muted);
     font-size: var(--step--1);
@@ -140,8 +124,6 @@ code {
     letter-spacing: 0.18em;
 }
 
-/* --- NEW --- */
-/* Added a text gradient for that premium "sheen" */
 h1,
 #main .page-title {
     font-size: var(--step-5);
@@ -149,7 +131,6 @@ h1,
     letter-spacing: -0.02em;
     font-weight: 900;
     margin-bottom: clamp(8px, 1.2vw, 12px);
-    /* Text gradient */
     background: linear-gradient(180deg, #ffffff 60%, #d7e7f7);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -160,12 +141,10 @@ h1,
 .lead {
     font-size: var(--step-2);
     color: #d7e7f7;
-    /* Brighter than --muted */
     max-width: 60ch;
     margin-bottom: var(--gap);
 }
 
-/* Base content styles (from previous step, unchanged) */
 #main h2 {
     font-size: var(--step-3);
     font-weight: 800;
@@ -199,12 +178,6 @@ h1,
     margin-bottom: 12px;
 }
 
-/*
- * 4.0 LAYOUT & CORE COMPONENTS
- * -----------------------------
- */
-
-/* Page container */
 #main {
     max-width: var(--max-width);
     margin: clamp(24px, 4vw, 64px) auto;
@@ -213,21 +186,13 @@ h1,
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     backdrop-filter: blur(12px);
-    /* --- CHANGED (more blur) --- */
-
-    /* --- CHANGED --- */
-    /* Upgraded the background to be more 'glassy' */
     background: linear-gradient(180deg,
             rgba(255, 255, 255, 0.04),
             rgba(255, 255, 255, 0.02));
-
-    /* --- NEW --- */
-    /* This ensures the container sits above the body gradient glow */
     position: relative;
     z-index: 2;
 }
 
-/* Header */
 header {
     display: flex;
     align-items: center;
@@ -267,32 +232,21 @@ header li a {
     font-size: var(--step-0);
     position: relative;
     isolation: isolate;
-
-    /* --- CHANGED --- */
-    /* Swapped underline animation for a cleaner background pill */
     transition: transform 0.12s ease, color 0.18s ease,
         background-color 0.18s ease;
 }
 
-/* --- REMOVED --- */
-/* header li a::after { ... } (Removed the underline CSS) */
-
 header li a:hover {
     color: var(--text);
     transform: translateY(-1px);
-    /* --- NEW --- */
     background-color: var(--glass);
-    /* Add a subtle background on hover */
 }
 
-/* --- CHANGED --- */
-/* Style the active link to match the hover */
 header li a[aria-current="page"] {
     color: var(--accent);
     background-color: color-mix(in oklab, var(--accent) 10%, transparent);
 }
 
-/* Footer (unchanged) */
 footer {
     margin-top: clamp(28px, 4vw, 48px);
     padding: 16px 0;
@@ -309,12 +263,6 @@ footer {
     gap: 12px;
 }
 
-/*
- * 5.0 PAGE-SPECIFIC COMPONENTS
- * -------------------------------
- */
-
-/* Section (unchanged) */
 .section {
     position: relative;
     margin: clamp(40px, 8vw, 100px) 0;
@@ -324,7 +272,6 @@ footer {
     position: sticky;
     top: 16px;
     z-index: 10;
-    /* --- CHANGED (higher z-index) --- */
     font-size: var(--step-0);
     color: var(--muted);
     text-transform: uppercase;
@@ -338,14 +285,12 @@ footer {
     margin-bottom: clamp(14px, 2vw, 20px);
 }
 
-/* Asymmetric project grid (unchanged) */
 .grid {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
     gap: clamp(12px, 2vw, 22px);
 }
 
-/* --- CARD: This section has the biggest "pretty" upgrade --- */
 .card {
     grid-column: span 4;
     background: linear-gradient(180deg,
@@ -357,29 +302,18 @@ footer {
     overflow: hidden;
     color: var(--text);
     text-decoration: none;
-
-    /* --- NEW --- */
-    /* Setup for the glow effect */
     position: relative;
     z-index: 1;
-
-    /* --- CHANGED --- */
-    /* Simplified transform, cleaner transition */
     transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
         box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-/* --- NEW --- */
-/* This pseudo-element IS the hover glow */
 .card::before {
     content: "";
     position: absolute;
     inset: -1px;
-    /* Sits 1px outside the card border */
     z-index: -1;
     border-radius: 17px;
-    /* parent radius + 1px */
-    /* This is the gradient, fading from accent to transparent */
     background: radial-gradient(400px at 50% 50%,
             color-mix(in oklab, var(--accent) 50%, transparent),
             transparent 70%);
@@ -389,15 +323,11 @@ footer {
 
 .card:hover {
     transform: translateY(-6px);
-    /* Simplified lift */
     border-color: rgba(255, 255, 255, 0.15);
-    /* Brighter border */
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
     text-decoration: none;
 }
 
-/* --- NEW --- */
-/* On hover, fade in the glow */
 .card:hover::before {
     opacity: 1;
 }
@@ -454,7 +384,6 @@ footer {
     text-decoration: underline;
 }
 
-/* simple gallery styles for project page */
 .gallery {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -470,7 +399,6 @@ footer {
     display: block;
 }
 
-/* Stagger utility (unchanged) */
 .stagger>*:nth-child(3n + 1) {
     transform: translateY(8px);
 }
@@ -483,7 +411,6 @@ footer {
     transform: translateY(16px);
 }
 
-/* Marquee (unchanged) */
 .marquee {
     display: flex;
     gap: 40px;
@@ -512,7 +439,6 @@ footer {
     }
 }
 
-/* Sticky sidebar layout (unchanged) */
 .split {
     display: grid;
     grid-template-columns: 1fr minmax(260px, 340px);
@@ -532,7 +458,6 @@ footer {
     padding: 14px;
 }
 
-/* --- BUTTONS: Upgraded the primary button --- */
 .button {
     display: inline-flex;
     align-items: center;
@@ -557,21 +482,16 @@ footer {
     opacity: 1;
 }
 
-/* --- CHANGED --- */
-/* Made the primary button "pop" with more color and a glow */
 .button--primary {
     border-color: var(--accent);
     background: color-mix(in oklab, var(--accent) 25%, transparent);
     color: #fff;
-    /* Ensure bright white text */
     text-shadow: 0 1px 4px color-mix(in oklab, var(--accent) 40%, transparent);
 }
 
 .button--primary:hover {
     background: color-mix(in oklab, var(--accent) 35%, transparent);
     border-color: color-mix(in oklab, var(--accent) 80%, white);
-    /* --- NEW --- */
-    /* Add a glow shadow on hover */
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2),
         0 0 20px color-mix(in oklab, var(--accent) 30%, transparent);
 }
@@ -629,36 +549,216 @@ footer {
     }
 }
 
-/* Reduced motion (unchanged) */
+/* MOBILE: move entire header (brand + nav) to a single fixed bottom pill.
+   Place this block near the end of the file so it overrides earlier mobile rules.
+   If you have other mobile blocks that target header/header nav/header ul, remove them
+   to avoid conflicts. */
+@media (max-width: 820px) {
+    :root {
+        --mobile-nav-h: 72px;
+    }
+
+    /* pin header to bottom center as one pill */
+    header {
+        position: fixed !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        bottom: 14px !important;
+        width: calc(100% - 36px);
+        max-width: var(--max-width);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        gap: 7rem;
+        padding: 8px 12px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.02));
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        backdrop-filter: blur(8px) saturate(120%);
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55);
+        pointer-events: auto;
+        margin: 0 auto;
+    }
+
+    /* keep brand visible inside the pill; reduce its visual weight */
+    header a[aria-label="Site home"] {
+        display: inline-flex !important;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        margin: 0;
+        color: var(--text);
+        font-weight: 700;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    /* ensure nav layout fits inside the pill */
+    header nav {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    header ul.navigation {
+        display: flex;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    header ul.navigation li {
+        margin: 0;
+    }
+
+    header ul.navigation li a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        height: 44px;
+        padding: 0 10px;
+        border-radius: 999px;
+        color: var(--muted);
+        background: transparent;
+        text-decoration: none;
+        transition: transform .12s ease, color .12s ease, background .12s ease;
+    }
+
+    header ul.navigation li a:hover,
+    header ul.navigation li a:focus {
+        color: var(--text);
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.02);
+        outline: none;
+    }
+
+    header ul.navigation li a[aria-current="page"] {
+        color: var(--accent);
+        background: color-mix(in oklab, var(--accent) 10%, transparent);
+    }
+
+    /* ensure page content is not hidden by the fixed header/pill */
+    main,
+    #main {
+        padding-bottom: calc(var(--mobile-nav-h) + 28px);
+    }
+
+    /* mobile horizontal scroll behavior (keeps previous behavior) */
+    .projects-list,
+    .horizontal-scroll {
+        display: flex;
+        gap: var(--gap);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-inline: 12px;
+        padding-bottom: 6px;
+        scroll-snap-type: x mandatory;
+        align-items: start;
+    }
+
+    .projects-list .card,
+    .horizontal-scroll .card {
+        min-width: clamp(220px, 48vw, 320px);
+        flex: 0 0 auto;
+        scroll-snap-align: start;
+        padding: clamp(12px, 2.4vw, 18px);
+        border-radius: 12px;
+    }
+}
+
+/* Desktop: projects grid, prevent stretched images, fixed card sizing */
+@media (min-width: 821px) {
+
+    /* Projects index: 2 columns */
+    .projects-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--gap, 24px);
+        align-items: start;
+    }
+
+    /* Ensure cards keep a consistent size and layout */
+    .projects-list .card,
+    .projects-list .card--feature,
+    .projects-list .card--tall {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-height: 360px;
+        /* fixed-ish card height so meta sits at bottom */
+        padding: clamp(16px, 1.6vw, 22px);
+    }
+
+    /* Larger, proportional thumbnail area on desktop (no stretching) */
+    .projects-list .card__media,
+    .home-grid .card__media {
+        aspect-ratio: 16 / 10;
+        width: 100%;
+        min-height: 220px;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 12px;
+        background: #081016;
+    }
+
+    .projects-list .card__media img,
+    .home-grid .card__media img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        /* prevents distortion, crops instead */
+        display: block;
+    }
+
+    /* Keep title/meta visible and meta pinned to bottom */
+    .projects-list .card__title,
+    .home-grid .card__title {
+        margin: 0;
+    }
+
+    .projects-list .card__meta {
+        margin-top: auto;
+        /* pushes meta to card bottom */
+        color: var(--muted);
+    }
+
+    /* Project page gallery: 2 per row on desktop */
+    .gallery {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--gap, 20px);
+    }
+
+    .gallery img {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 9;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+}
+
+/* Avoid reserving media area when there is no image (blogs) */
+/* Prefer :has() where supported; fallback to :empty for older engines */
+.card__media:not(:has(img)),
+.card__media:empty {
+    display: none;
+    margin: 0;
+    height: 0;
+    padding: 0;
+}
+
+/* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
 
-    *,
-    *::before,
-    *::after {
-        animation: none !important;
+    .projects-list,
+    .horizontal-scroll,
+    .card {
         transition: none !important;
-        transform: none !important;
-    }
-
-    .card:hover {
-        transform: none;
-    }
-
-    .button:hover {
-        transform: none;
-    }
-
-    header li a:hover {
-        transform: none;
-    }
-
-    /* --- NEW --- */
-    /* Disable the new glow effects for reduced motion */
-    .card::before {
-        display: none;
-    }
-
-    .button--primary:hover {
-        box-shadow: none;
+        animation: none !important;
+        scroll-behavior: auto;
     }
 }

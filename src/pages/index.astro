@@ -17,56 +17,48 @@ const latestPosts = posts.slice(0, 3);
 ---
 
 <Base title="Home" description="Rafaela — projects and blog.">
-	<section class="section reveal" style="margin-top: 0;">
-		<h1 class="reveal">Web Developer</h1>
-		<p class="lead reveal">
-			I build sleek, interactive web applications with a focus on clean
-			code and great design.
-		</p>
-		<a href="/about/" class="button button--primary reveal">More About Me</a
-		>
-	</section>
+    <section class="section reveal" style="margin-top: 0;">
+        <h1 class="reveal">Web Developer</h1>
+        <p class="lead reveal">I build sleek, interactive web applications with a focus on clean code and great design.</p>
+        <a href="/about/" class="button button--primary reveal">More About Me</a>
+    </section>
 
-	<section class="section reveal" aria-labelledby="home-projects">
-		<div class="section__label" id="home-projects">Latest Projects</div>
-		<div class="grid stagger">
-			{
-				latestProjects.map((p: ProjectEntry) => (
-					<a href={`/projects/${p.slug}/`} class="card">
-						<div class="card__media">
-							{p.data.media?.screenshot ? (
-								<img
-									src={p.data.media.screenshot}
-									alt={p.data.title}
-									loading="lazy"
-								/>
-							) : null}
-						</div>
-						<h3 class="card__title">{p.data.title}</h3>
-						<p class="card__meta">{p.data.year}</p>
-					</a>
-				))
-			}
-		</div>
-		<p style="margin-top: var(--gap);">
-			<a href="/projects/" class="button">See all projects</a>
-		</p>
-	</section>
+    <section class="section reveal" aria-labelledby="home-projects">
+        <div class="section__label" id="home-projects">Latest Projects</div>
+        <!-- add home-grid so desktop uses grid, mobile will still be horizontal -->
+        <div class="horizontal-scroll home-grid stagger">
+            {
+                latestProjects.map((p: ProjectEntry) => (
+                    <a href={`/projects/${p.slug}/`} class="card">
+                        <div class="card__media">
+                            {p.data.media?.screenshot ? (
+                                <img src={p.data.media.screenshot} alt={p.data.title} loading="lazy" />
+                            ) : null}
+                        </div>
+                        <h3 class="card__title">{p.data.title}</h3>
+                        <p class="card__meta">{p.data.year}</p>
+                    </a>
+                ))
+            }
+        </div>
+        <p style="margin-top: var(--gap);"><a href="/projects/" class="button">See all projects</a></p>
+    </section>
 
-	<section class="section reveal" aria-labelledby="home-blog">
-		<div class="section__label" id="home-blog">Latest Posts</div>
-		<div class="grid">
-			{
-				latestPosts.map((post: BlogEntry) => (
-					<a href={`/blog/${post.slug}/`} class="card">
-						<h3 class="card__title">{post.data.title}</h3>
-						<p class="card__meta">{post.data.date}</p>
-					</a>
-				))
-			}
-		</div>
-		<p style="margin-top: var(--gap);">
-			<a href="/blog/" class="button">See all posts</a>
-		</p>
-	</section>
+    <section class="section reveal" aria-labelledby="home-blog">
+        <div class="section__label" id="home-blog">Latest Posts</div>
+        <div class="horizontal-scroll home-grid">
+            {
+                latestPosts.map((post: BlogEntry) => (
+                    <a href={`/blog/${post.slug}/`} class="card">
+                        <div class="card__media">
+                          <!-- optional: add a small hero image for blog posts or leave blank -->
+                        </div>
+                        <h3 class="card__title">{post.data.title}</h3>
+                        <p class="card__meta">{post.data.date}</p>
+                    </a>
+                ))
+            }
+        </div>
+        <p style="margin-top: var(--gap);"><a href="/blog/" class="button">See all posts</a></p>
+    </section>
 </Base>
