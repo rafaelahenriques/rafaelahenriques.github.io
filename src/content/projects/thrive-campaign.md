@@ -11,7 +11,11 @@ scope:
   - CTA flow to retailer links
 description: "Interactive digital campaign site that explains brand story with motion and concise product sections. Built with Astro and GSAP for fast performance."
 media:
-  screenshot: ""
+    screenshot: "/src/assets/thrive/home.png"   # thumbnail for cards
+    gallery:
+    - "/src/assets/thrive/home.png"              # 1st gallery image
+    - "/src/assets/thrive/pack.png"              # 2nd gallery image
+    - "/src/assets/thrive/ritual.png"
 tags: ["Web", "Campaign", "GSAP", "Astro"]
 ---
 

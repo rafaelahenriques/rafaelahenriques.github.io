@@ -33,7 +33,15 @@ const latestPosts = posts.slice(0, 3);
 			{
 				latestProjects.map((p: ProjectEntry) => (
 					<a href={`/projects/${p.slug}/`} class="card">
-						<div class="card__media" />
+						<div class="card__media">
+							{p.data.media?.screenshot ? (
+								<img
+									src={p.data.media.screenshot}
+									alt={p.data.title}
+									loading="lazy"
+								/>
+							) : null}
+						</div>
 						<h3 class="card__title">{p.data.title}</h3>
 						<p class="card__meta">{p.data.year}</p>
 					</a>

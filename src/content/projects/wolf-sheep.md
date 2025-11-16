@@ -10,7 +10,7 @@ scope:
 description: "Python board game. I worked on validating allowed moves and refining turn logic."
 media:
   repo: "https://github.com/rafaelahenriques/Wolf-and-Sheep-Game"
-  screenshot: ""
+  screenshot: "/src/assets/ws/wolfsheepmenu.png"
 
 tags: ["Python", "Logic", "Game"]
 ---

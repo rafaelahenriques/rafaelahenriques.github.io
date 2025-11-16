@@ -15,10 +15,12 @@ const projects = defineCollection({
                 repo: z.string().optional(),
                 screenshot: z.string().optional(),
                 video: z.string().optional(),
+                gallery: z.array(z.string()).optional(),
             })
             .optional(),
         tags: z.array(z.string()).optional(),
         layout: z.string().optional(),
+
     }),
 });
 
