@@ -11,7 +11,11 @@ scope:
   - Color theme variations
 description: "Menu UI kit for a hypothetical game. I designed and illustrated the UI elements in Photoshop using a graphic tablet, focusing on clean hierarchy and user flow."
 media:
-  screenshot: "/assets/projects/ui_mock.png"
+  screenshot: "/src/assets/ui/main.png"   # thumbnail for cards
+  gallery:
+    - "/src/assets/ui/main.png"              # 1st gallery image
+    - "/src/assets/ui/pause.png"              # 2nd gallery image
+    - "/src/assets/ui/ColourVariation.png"
 tags: ["UI", "Design", "Photoshop", "Illustration"]
 ---
 
