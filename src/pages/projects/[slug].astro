@@ -1,21 +1,39 @@
 ---
 import Base from "../../layouts/BaseLayout.astro";
 import { getCollection, type CollectionEntry } from "astro:content";
-
 type ProjectEntry = CollectionEntry<"projects">;
 
 export async function getStaticPaths() {
-    const entries: ProjectEntry[] = await getCollection("projects");
-    return entries.map((entry) => ({
-        params: { slug: entry.slug },
-        props: { entry },
-    }));
+    const projects = await getCollection("projects");
+    return projects.map((p) => ({ params: { slug: p.slug } }));
 }
 
-const { entry } = Astro.props as { entry: ProjectEntry };
-const { Content } = await entry.render();
+const projects: ProjectEntry[] = await getCollection("projects");
+const project = projects.find((p) => p.slug === Astro.params.slug);
+if (!project) throw new Error("Project not found");
+
+const media = project.data.media;
 ---
 
-<Base title={entry.data.title}>
-    <Content />;
+<Base title={project.data.title} description={project.data.description}>
+    <section class="section">
+        <h1 class="page-title">{project.data.title}</h1>
+        <p class="lead">{project.data.description}</p>
+
+        {
+            media?.gallery && media.gallery.length > 0 ? (
+                <div class="gallery">
+                    {media.gallery.map((src) => (
+                        <figure>
+                            <img
+                                src={src}
+                                alt={project.data.title}
+                                loading="lazy"
+                            />
+                        </figure>
+                    ))}
+                </div>
+            ) : null
+        }
+    </section>
 </Base>

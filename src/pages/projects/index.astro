@@ -17,7 +17,15 @@ projects.sort((a, b) => (b.data.year ?? "").localeCompare(a.data.year ?? ""));
             {
                 projects.map((project: ProjectEntry) => (
                     <a href={`/projects/${project.slug}/`} class="card">
-                        <div class="card__media" />
+                        <div class="card__media">
+                            {project.data.media?.screenshot ? (
+                                <img
+                                    src={project.data.media.screenshot}
+                                    alt={project.data.title}
+                                    loading="lazy"
+                                />
+                            ) : null}
+                        </div>
                         <h3 class="card__title">{project.data.title}</h3>
                         <p class="card__meta">{project.data.year}</p>
                     </a>

@@ -11,7 +11,7 @@ scope:
 description: "Unity mini-game inspired by Howl’s Moving Castle. I built the UI and interaction logic including inventory, menu and the parallax background effect"
 media:
   repo: "https://github.com/bryanb619/HowlsGame"
-  screenshot: ""
+  screenshot: "/src/assets/howls/start.png"
 tags: ["Unity", "UI", "Prototype"]
 ---
 
