@@ -13,7 +13,10 @@ projects.sort((a, b) => (b.data.year ?? "").localeCompare(a.data.year ?? ""));
         <h1 class="page-title">Projects</h1>
         <p class="lead">A selection of my work.</p>
 
-        <div class="grid stagger" style="margin-top: calc(var(--gap) * 2)">
+        <div
+            class="projects-list stagger"
+            style="margin-top: calc(var(--gap) * 2)"
+        >
             {
                 projects.map((project: ProjectEntry) => (
                     <a href={`/projects/${project.slug}/`} class="card">
