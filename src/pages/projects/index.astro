@@ -9,16 +9,31 @@ projects.sort((a, b) => (b.data.year ?? "").localeCompare(a.data.year ?? ""));
 ---
 
 <Base title="Projects" description="Rafaela — projects.">
-    <h1>Projects</h1>
-    <ul>
-        {
-            projects.map((project: ProjectEntry) => (
-                <li>
-                    <a href={`/projects/${project.slug}/`}>
-                        {project.data.title}
+    <section class="section">
+        <h1 class="page-title">Projects</h1>
+        <p class="lead">A selection of my work.</p>
+
+        <div
+            class="projects-list stagger"
+            style="margin-top: calc(var(--gap) * 2)"
+        >
+            {
+                projects.map((project: ProjectEntry) => (
+                    <a href={`/projects/${project.slug}/`} class="card">
+                        <div class="card__media">
+                            {project.data.media?.screenshot ? (
+                                <img
+                                    src={project.data.media.screenshot}
+                                    alt={project.data.title}
+                                    loading="lazy"
+                                />
+                            ) : null}
+                        </div>
+                        <h3 class="card__title">{project.data.title}</h3>
+                        <p class="card__meta">{project.data.year}</p>
                     </a>
-                </li>
-            ))
-        }
-    </ul>
+                ))
+            }
+        </div>
+    </section>
 </Base>

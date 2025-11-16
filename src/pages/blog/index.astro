@@ -4,24 +4,25 @@ import { getCollection, type CollectionEntry } from "astro:content";
 
 type BlogEntry = CollectionEntry<"blog">;
 const posts: BlogEntry[] = await getCollection("blog");
-
-// optional: newest first by date
 posts.sort(
     (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
 );
 ---
 
 <Base title="Blog" description="Rafaela's blog posts.">
-    <h1>Blog</h1>
+    <section class="section">
+        <h1 class="page-title">Blog</h1>
+        <p class="lead">Thoughts, notes, and tutorials.</p>
 
-    <ul>
-        {
-            posts.map((post: BlogEntry) => (
-                <li>
-                    <a href={`/blog/${post.slug}/`}>{post.data.title}</a>
-                    {post.data.date ? ` — ${post.data.date}` : ""}
-                </li>
-            ))
-        }
-    </ul>
+        <div class="grid" style="margin-top: calc(var(--gap) * 2)">
+            {
+                posts.map((post: BlogEntry) => (
+                    <a href={`/blog/${post.slug}/`} class="card">
+                        <h3 class="card__title">{post.data.title}</h3>
+                        <p class="card__meta">{post.data.date}</p>
+                    </a>
+                ))
+            }
+        </div>
+    </section>
 </Base>

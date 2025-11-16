@@ -13,6 +13,11 @@ description: "First-person RPG prototype. I handled project structure, gameplay 
 media:
   video: ""
   repo: "https://github.com/bryanb619/Shattered-Soul-Stable"
+  screenshot: "/src/assets/ss/main.png"   # thumbnail for cards
+  gallery:
+    - "/src/assets/ss/main.png"              # 1st gallery image
+    - "/src/assets/ss/ss.png"              # 2nd gallery image
+    - "/src/assets/ss/ss2.png"
 tags: ["Unity", "C#", "UI"]
 ---
 
