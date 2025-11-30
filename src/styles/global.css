@@ -19,13 +19,18 @@
     --ui: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
         "Helvetica Neue", Arial;
 
-    --step--1: clamp(0.85rem, 0.8vw, 0.95rem);
-    --step-0: clamp(1rem, 1vw, 1.1rem);
-    --step-1: clamp(1.15rem, 1.2vw, 1.25rem);
-    --step-2: clamp(1.4rem, 1.8vw, 1.75rem);
+    /* Utopia type scale (base steps) */
+    /* https://utopia.fyi/type/calculator?c=320,18,1.2,1240,25,1.25,2,1 */
+    --step--1: clamp(0.9375rem, 0.8288rem + 0.5435vw, 1.25rem);
+    --step-0: clamp(1.125rem, 0.9728rem + 0.7609vw, 1.5625rem);
+    --step-1: clamp(1.35rem, 1.1402rem + 1.0489vw, 1.9531rem);
+    --step-2: clamp(1.62rem, 1.3343rem + 1.4285vw, 2.4414rem);
+
+    /* Larger display steps layered on top */
     --step-3: clamp(2.2rem, 4vw, 3.2rem);
     --step-4: clamp(3.2rem, 6vw, 5rem);
     --step-5: clamp(4.2rem, 8vw, 7.2rem);
+
     --gap: clamp(16px, 2.2vw, 28px);
 }
 
@@ -74,7 +79,7 @@ body {
     color: var(--text);
     -webkit-font-smoothing: antialiased;
     line-height: 1.5;
-    padding: 28px;
+    padding: 16px;
     background-color: var(--bg);
     background-image:
         radial-gradient(at 10% 10%,
@@ -117,6 +122,11 @@ code {
     border-radius: 6px;
 }
 
+/*
+ * 3.0 TYPOGRAPHY
+ * -------------------
+ */
+
 .h-kicker {
     color: var(--muted);
     font-size: var(--step--1);
@@ -133,7 +143,6 @@ h1,
     margin-bottom: clamp(8px, 1.2vw, 12px);
     background: linear-gradient(180deg, #ffffff 60%, #d7e7f7);
     -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -178,10 +187,15 @@ h1,
     margin-bottom: 12px;
 }
 
+/*
+ * 4.0 LAYOUT CONTAINER
+ * -------------------
+ */
+
 #main {
     max-width: var(--max-width);
-    margin: clamp(24px, 4vw, 64px) auto;
-    padding: clamp(20px, 3vw, 40px);
+    margin: 16px auto;
+    padding: 18px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
@@ -193,90 +207,19 @@ h1,
     z-index: 2;
 }
 
-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 0;
-}
-
-header nav {
-    width: 100%;
-    max-width: var(--max-width);
-    display: flex;
-    align-items: center;
-    gap: clamp(8px, 1.5vw, 18px);
-}
-
-header a[aria-label="Site home"] {
-    margin-right: auto;
-    text-decoration: none;
-    color: var(--text);
-    font-weight: 800;
-    letter-spacing: -0.01em;
-    font-size: var(--step-1);
-}
-
-header ul {
-    list-style: none;
-    display: flex;
-    gap: 6px;
-    margin-left: auto;
-}
-
-header li a {
-    color: var(--muted);
-    text-decoration: none;
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-size: var(--step-0);
-    position: relative;
-    isolation: isolate;
-    transition: transform 0.12s ease, color 0.18s ease,
-        background-color 0.18s ease;
-}
-
-header li a:hover {
-    color: var(--text);
-    transform: translateY(-1px);
-    background-color: var(--glass);
-}
-
-header li a[aria-current="page"] {
-    color: var(--accent);
-    background-color: color-mix(in oklab, var(--accent) 10%, transparent);
-}
-
-footer {
-    margin-top: clamp(28px, 4vw, 48px);
-    padding: 16px 0;
-    color: var(--muted);
-    font-size: var(--step--1);
-}
-
-.footer-wrap {
-    max-width: var(--max-width);
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
 .section {
     position: relative;
-    margin: clamp(40px, 8vw, 100px) 0;
+    margin: clamp(28px, 7vw, 80px) 0;
 }
 
 .section__label {
-    position: sticky;
-    top: 16px;
-    z-index: 10;
-    font-size: var(--step-0);
+    font-size: var(--step--1);
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.16em;
-    margin-bottom: 14px;
+    margin-bottom: 10px;
+    position: static;
+    /* becomes sticky on desktop */
 }
 
 .section__title {
@@ -285,14 +228,19 @@ footer {
     margin-bottom: clamp(14px, 2vw, 20px);
 }
 
+/*
+ * 5.0 GRID & CARD SYSTEM
+ * -------------------
+ */
+
+/* base grid: 1 column, enhanced at breakpoints */
 .grid {
     display: grid;
-    grid-template-columns: repeat(12, 1fr);
+    grid-template-columns: 1fr;
     gap: clamp(12px, 2vw, 22px);
 }
 
 .card {
-    grid-column: span 4;
     background: linear-gradient(180deg,
             rgba(255, 255, 255, 0.02),
             rgba(255, 255, 255, 0.01));
@@ -332,20 +280,19 @@ footer {
     opacity: 1;
 }
 
-.card--feature {
-    grid-column: span 8;
-}
+/* modifiers are activated on desktop via grid spans */
+.card--feature {}
 
-.card--tall {
-    grid-row: span 2;
-}
+.card--tall {}
 
 .card__media {
     width: 100%;
-    height: 160px;
+    height: 180px;
     border-radius: 10px;
     overflow: hidden;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.005));
+    background: linear-gradient(180deg,
+            rgba(255, 255, 255, 0.01),
+            rgba(255, 255, 255, 0.005));
     margin-bottom: 12px;
     display: block;
 }
@@ -363,7 +310,7 @@ footer {
 }
 
 .card__title {
-    font-size: var(--step-2);
+    font-size: var(--step-1);
     letter-spacing: -0.01em;
     font-weight: 800;
     margin-bottom: 6px;
@@ -375,26 +322,30 @@ footer {
     font-size: var(--step--1);
 }
 
-.card a {
-    color: var(--accent);
-    text-decoration: none;
+/* remove media block when there is no image (e.g. blog cards) */
+.card__media:not(:has(img)),
+.card__media:empty {
+    display: none;
+    margin: 0;
+    height: 0;
+    padding: 0;
 }
 
-.card a:hover {
-    text-decoration: underline;
-}
+/*
+ * 6.0 GALLERIES & MISC PATTERNS
+ * -------------------
+ */
 
 .gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: 1fr;
     gap: 12px;
     margin-top: 18px;
 }
 
 .gallery img {
     width: 100%;
-    height: 220px;
-    object-fit: cover;
+    height: auto;
     border-radius: 10px;
     display: block;
 }
@@ -439,16 +390,17 @@ footer {
     }
 }
 
+/* split layout (content + aside) */
+
 .split {
     display: grid;
-    grid-template-columns: 1fr minmax(260px, 340px);
+    grid-template-columns: 1fr;
     gap: clamp(18px, 3vw, 32px);
 }
 
 .split__aside {
-    position: sticky;
-    top: 20px;
-    align-self: start;
+    position: static;
+    /* sticky on desktop */
 }
 
 .split__aside .box {
@@ -457,6 +409,11 @@ footer {
     border-radius: 12px;
     padding: 14px;
 }
+
+/*
+ * 7.0 BUTTONS
+ * -------------------
+ */
 
 .button {
     display: inline-flex;
@@ -497,11 +454,35 @@ footer {
 }
 
 /*
- * 6.0 ANIMATION & MEDIA QUERIES
- * --------------------------------
+ * 8.0 PROJECT LIST / HORIZONTAL SCROLL
+ * -------------------
+ * Base = mobile: horizontal scroll.
  */
 
-/* Scroll reveal (unchanged) */
+.projects-list,
+.horizontal-scroll {
+    display: flex;
+    gap: var(--gap);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-inline: 4px;
+    padding-bottom: 6px;
+    scroll-snap-type: x mandatory;
+    align-items: stretch;
+}
+
+.projects-list .card,
+.horizontal-scroll .card {
+    min-width: clamp(220px, 75vw, 320px);
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+}
+
+/*
+ * 9.0 ANIMATION & ACCESSIBILITY
+ * -------------------
+ */
+
 .reveal {
     opacity: 0;
     transform: translateY(12px);
@@ -517,183 +498,112 @@ footer {
     }
 }
 
-/* Mobile (unchanged) */
-@media (max-width: 820px) {
-    body {
-        padding: 16px;
-    }
+@media (prefers-reduced-motion: reduce) {
 
-    #main {
-        padding: 18px;
-        margin: 16px auto;
-    }
-
-    .grid {
-        grid-template-columns: repeat(6, 1fr);
-    }
-
-    .card {
-        grid-column: span 6;
-    }
-
-    .card--feature {
-        grid-column: span 6;
-    }
-
-    .split {
-        grid-template-columns: 1fr;
-    }
-
-    .split__aside {
-        position: static;
+    .projects-list,
+    .horizontal-scroll,
+    .card,
+    .marquee__track,
+    .reveal {
+        transition: none !important;
+        animation: none !important;
+        scroll-behavior: auto;
     }
 }
 
-/* MOBILE: move entire header (brand + nav) to a single fixed bottom pill.
-   Place this block near the end of the file so it overrides earlier mobile rules.
-   If you have other mobile blocks that target header/header nav/header ul, remove them
-   to avoid conflicts. */
-@media (max-width: 820px) {
-    :root {
-        --mobile-nav-h: 72px;
+/*
+ * 10.0 BREAKPOINT 1 – TABLET (min-width: 720px)
+ * ---------------------------------------------
+ */
+
+@media (min-width: 720px) {
+    body {
+        padding: 24px;
     }
 
-    /* pin header to bottom center as one pill */
-    header {
-        position: fixed !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        bottom: 14px !important;
-        width: calc(100% - 36px);
-        max-width: var(--max-width);
-        z-index: 10000;
-        display: flex;
-        align-items: center;
-        gap: 7rem;
-        padding: 8px 12px;
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.02));
-        border-radius: 999px;
-        border: 1px solid var(--border);
-        backdrop-filter: blur(8px) saturate(120%);
-        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55);
-        pointer-events: auto;
-        margin: 0 auto;
-    }
-
-    /* keep brand visible inside the pill; reduce its visual weight */
-    header a[aria-label="Site home"] {
-        display: inline-flex !important;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 10px;
-        margin: 0;
-        color: var(--text);
-        font-weight: 700;
-        text-decoration: none;
-        white-space: nowrap;
-    }
-
-    /* ensure nav layout fits inside the pill */
-    header nav {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        width: 100%;
-        justify-content: flex-end;
-    }
-
-    header ul.navigation {
-        display: flex;
-        gap: 8px;
-        margin: 0;
-        padding: 0;
-        list-style: none;
-    }
-
-    header ul.navigation li {
-        margin: 0;
-    }
-
-    header ul.navigation li a {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 44px;
-        height: 44px;
-        padding: 0 10px;
-        border-radius: 999px;
-        color: var(--muted);
-        background: transparent;
-        text-decoration: none;
-        transition: transform .12s ease, color .12s ease, background .12s ease;
-    }
-
-    header ul.navigation li a:hover,
-    header ul.navigation li a:focus {
-        color: var(--text);
-        transform: translateY(-2px);
-        background: rgba(255, 255, 255, 0.02);
-        outline: none;
-    }
-
-    header ul.navigation li a[aria-current="page"] {
-        color: var(--accent);
-        background: color-mix(in oklab, var(--accent) 10%, transparent);
-    }
-
-    /* ensure page content is not hidden by the fixed header/pill */
-    main,
     #main {
-        padding-bottom: calc(var(--mobile-nav-h) + 28px);
+        margin: clamp(24px, 4vw, 64px) auto;
+        padding: clamp(20px, 3vw, 40px);
     }
 
-    /* mobile horizontal scroll behavior (keeps previous behavior) */
+    /* generic grid: 2 columns on tablet */
+    .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    /* projects/blog lists: switch to 2-col grid instead of horizontal scroll */
     .projects-list,
     .horizontal-scroll {
-        display: flex;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: var(--gap);
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        padding-inline: 12px;
-        padding-bottom: 6px;
-        scroll-snap-type: x mandatory;
-        align-items: start;
+        overflow-x: visible;
+        padding-inline: 0;
     }
 
     .projects-list .card,
     .horizontal-scroll .card {
-        min-width: clamp(220px, 48vw, 320px);
-        flex: 0 0 auto;
-        scroll-snap-align: start;
-        padding: clamp(12px, 2.4vw, 18px);
-        border-radius: 12px;
+        min-width: 0;
+        flex: initial;
+        scroll-snap-align: initial;
+    }
+
+    .gallery {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--gap);
     }
 }
 
-/* Desktop: projects grid, prevent stretched images, fixed card sizing */
-@media (min-width: 821px) {
+/*
+ * 11.0 BREAKPOINT 2 – DESKTOP (min-width: 1024px)
+ * -----------------------------------------------
+ */
 
-    /* Projects index: 2 columns */
-    .projects-list {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--gap, 24px);
-        align-items: start;
+@media (min-width: 1024px) {
+    body {
+        padding: 28px;
     }
 
-    /* Ensure cards keep a consistent size and layout */
-    .projects-list .card,
-    .projects-list .card--feature,
-    .projects-list .card--tall {
+    /* section labels become sticky on desktop */
+    .section__label {
+        position: sticky;
+        top: 16px;
+        z-index: 10;
+    }
+
+    /* 12-column grid for complex layouts */
+    .grid {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+
+    /* default card span in a 12-col grid */
+    .grid>.card {
+        grid-column: span 4;
+    }
+
+    .grid>.card.card--feature {
+        grid-column: span 8;
+    }
+
+    .grid>.card.card--tall {
+        grid-row: span 2;
+    }
+
+    /* projects list: 2-column grid with consistent card heights */
+    .projects-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--gap);
+    }
+
+    .projects-list .card {
         display: flex;
         flex-direction: column;
         gap: 12px;
         min-height: 360px;
-        /* fixed-ish card height so meta sits at bottom */
         padding: clamp(16px, 1.6vw, 22px);
     }
 
-    /* Larger, proportional thumbnail area on desktop (no stretching) */
     .projects-list .card__media,
     .home-grid .card__media {
         aspect-ratio: 16 / 10;
@@ -710,11 +620,9 @@ footer {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        /* prevents distortion, crops instead */
         display: block;
     }
 
-    /* Keep title/meta visible and meta pinned to bottom */
     .projects-list .card__title,
     .home-grid .card__title {
         margin: 0;
@@ -722,43 +630,22 @@ footer {
 
     .projects-list .card__meta {
         margin-top: auto;
-        /* pushes meta to card bottom */
         color: var(--muted);
     }
 
-    /* Project page gallery: 2 per row on desktop */
-    .gallery {
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--gap, 20px);
+    /* split layout: 2 columns with sticky aside */
+    .split {
+        grid-template-columns: minmax(0, 2fr) minmax(260px, 340px);
+        align-items: flex-start;
+    }
+
+    .split__aside {
+        position: sticky;
+        top: 20px;
+        align-self: start;
     }
 
     .gallery img {
-        width: 100%;
-        height: auto;
         aspect-ratio: 16 / 9;
-        object-fit: cover;
-        border-radius: 10px;
-    }
-}
-
-/* Avoid reserving media area when there is no image (blogs) */
-/* Prefer :has() where supported; fallback to :empty for older engines */
-.card__media:not(:has(img)),
-.card__media:empty {
-    display: none;
-    margin: 0;
-    height: 0;
-    padding: 0;
-}
-
-/* Respect reduced motion */
-@media (prefers-reduced-motion: reduce) {
-
-    .projects-list,
-    .horizontal-scroll,
-    .card {
-        transition: none !important;
-        animation: none !important;
-        scroll-behavior: auto;
     }
 }

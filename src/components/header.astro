@@ -29,3 +29,106 @@ const path = Astro.url.pathname.endsWith("/")
         </ul>
     </nav>
 </header>
+<style>
+    /* Base = mobile / ~320px+ */
+
+    header {
+        display: flex;
+        justify-content: center;
+        padding-block: 8px;
+    }
+
+    header nav {
+        width: 100%;
+        max-width: var(--max-width);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    header a[aria-label="Site home"] {
+        margin-right: auto;
+        text-decoration: none;
+        color: var(--text);
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        font-size: var(--step-1);
+    }
+
+    header ul.navigation {
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-left: auto;
+        padding: 0;
+    }
+
+    header ul.navigation li {
+        margin: 0;
+    }
+
+    header ul.navigation li a {
+        color: var(--muted);
+        text-decoration: none;
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: var(--step--1);
+        position: relative;
+        isolation: isolate;
+        transition:
+            transform 0.12s ease,
+            color 0.18s ease,
+            background-color 0.18s ease;
+    }
+
+    header ul.navigation li a:hover {
+        color: var(--text);
+        transform: translateY(-1px);
+        background-color: var(--glass);
+    }
+
+    header ul.navigation li a[aria-current="page"] {
+        color: var(--accent);
+        background-color: color-mix(in oklab, var(--accent) 10%, transparent);
+    }
+
+    /* 720px+ (tablet) */
+
+    @media (min-width: 720px) {
+        header {
+            padding-block: 10px;
+        }
+
+        header nav {
+            flex-wrap: nowrap;
+            gap: clamp(8px, 1.5vw, 18px);
+        }
+
+        header ul.navigation {
+            gap: 8px;
+        }
+
+        header ul.navigation li a {
+            font-size: var(--step-0);
+            padding: 10px 14px;
+        }
+    }
+
+    /* 1024px+ (desktop) */
+
+    @media (min-width: 1024px) {
+        header {
+            padding-block: 12px;
+        }
+
+        header nav {
+            gap: clamp(12px, 1.8vw, 24px);
+        }
+
+        header a[aria-label="Site home"] {
+            font-size: var(--step-1);
+        }
+    }
+</style>
