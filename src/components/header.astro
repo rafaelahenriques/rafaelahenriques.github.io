@@ -1,87 +1,57 @@
 ---
+import ThemeToggle from "./ThemeIcon.astro";
+
 const links = [
     { href: "/", label: "Home" },
     { href: "/projects/", label: "Projects" },
     { href: "/blog/", label: "Blog" },
     { href: "/about/", label: "About" },
 ];
+
 const path = Astro.url.pathname.endsWith("/")
     ? Astro.url.pathname
     : Astro.url.pathname + "/";
 ---
 
-<header>
+<header class="site-header">
     <nav aria-label="Primary" class="site-nav">
         <!-- BRAND -->
         <div class="site-nav__brand">
-            <a href="/" aria-label="Site home">Rafaela Henriques</a>
+            <a href="/" aria-label="Site home" class="site-nav__logo">
+                Rafaela Henriques
+            </a>
         </div>
 
-        <!-- NAV -->
+        <!-- NAVIGATION -->
         <ul class="navigation">
             {
-                links.map((l) => (
-                    <li>
+                links.map((link) => (
+                    <li class="navigation__item">
                         <a
-                            href={l.href}
-                            aria-current={path === l.href ? "page" : undefined}
+                            href={link.href}
+                            class="navigation__link"
+                            aria-current={
+                                path === link.href ? "page" : undefined
+                            }
                         >
-                            {l.label}
+                            {link.label}
                         </a>
                     </li>
                 ))
             }
         </ul>
 
-        <!-- THEME SWITCH -->
+        <!-- CONTROLS (THEME TOGGLE, future stuff) -->
         <div class="site-nav__controls">
-            <label class="theme-toggle" for="theme-switch">
-                <input
-                    type="checkbox"
-                    id="theme-switch"
-                    class="theme-toggle__checkbox"
-                />
-
-                <span class="theme-toggle__track">
-                    <span class="theme-toggle__thumb">
-                        <span class="icon-sun">☀</span>
-                        <span class="icon-moon">🌙</span>
-                    </span>
-                </span>
-            </label>
+            <ThemeToggle />
         </div>
     </nav>
 </header>
 
-<!-- CLIENT JS -->
-<script>
-    if (typeof window !== "undefined") {
-        const checkbox = document.getElementById(
-            "theme-switch",
-        ) as HTMLInputElement;
-
-        const prefersDark = window.matchMedia(
-            "(prefers-color-scheme: dark)",
-        ).matches;
-        const saved = window.localStorage.getItem("theme");
-        const initial = saved ?? (prefersDark ? "dark" : "light");
-
-        document.documentElement.dataset.theme = initial;
-
-        if (checkbox) {
-            checkbox.checked = initial === "light";
-
-            checkbox.addEventListener("change", () => {
-                const theme = checkbox.checked ? "light" : "dark";
-                document.documentElement.dataset.theme = theme;
-                window.localStorage.setItem("theme", theme);
-            });
-        }
-    }
-</script>
-
 <style>
-    header {
+    /* Base: mobile-first */
+
+    .site-header {
         display: flex;
         justify-content: center;
         padding-block: 8px;
@@ -96,9 +66,13 @@ const path = Astro.url.pathname.endsWith("/")
         flex-wrap: wrap;
     }
 
-    .site-nav__brand a {
-        color: var(--text);
+    .site-nav__brand {
+        flex: 0 0 auto;
+    }
+
+    .site-nav__logo {
         text-decoration: none;
+        color: var(--text);
         font-weight: 800;
         letter-spacing: -0.01em;
         font-size: var(--step-1);
@@ -108,31 +82,37 @@ const path = Astro.url.pathname.endsWith("/")
     .navigation {
         list-style: none;
         display: flex;
+        flex-wrap: wrap;
         gap: 6px;
         padding: 0;
         margin: 0;
         margin-left: auto;
     }
 
-    .navigation a {
+    .navigation__item {
+        margin: 0;
+    }
+
+    .navigation__link {
         color: var(--muted);
         text-decoration: none;
         padding: 8px 12px;
         border-radius: 999px;
         font-size: var(--step--1);
+        position: relative;
         transition:
             transform 0.12s ease,
             color 0.18s ease,
             background 0.18s ease;
     }
 
-    .navigation a:hover {
+    .navigation__link:hover {
         color: var(--text);
         background: var(--glass);
         transform: translateY(-1px);
     }
 
-    .navigation a[aria-current="page"] {
+    .navigation__link[aria-current="page"] {
         color: var(--accent);
         background: color-mix(in oklab, var(--accent) 10%, transparent);
     }
@@ -140,97 +120,13 @@ const path = Astro.url.pathname.endsWith("/")
     .site-nav__controls {
         display: flex;
         align-items: center;
-        margin-left: 0;
+        gap: 8px;
     }
 
-    /* THEME TOGGLE */
-    .theme-toggle {
-        display: inline-flex;
-        position: relative;
-        cursor: pointer;
-        user-select: none;
-    }
+    /* Tablet: tighten layout, keep mobile-first philosophy */
 
-    .theme-toggle__checkbox {
-        position: absolute;
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
-
-    .theme-toggle__track {
-        width: 46px;
-        height: 24px;
-        border-radius: 999px;
-        background: var(--glass);
-        border: 1px solid var(--border);
-        padding: 2px;
-        display: flex;
-        align-items: center;
-        transition:
-            background 0.18s ease,
-            border-color 0.18s ease;
-    }
-
-    .theme-toggle__thumb {
-        width: 20px;
-        height: 20px;
-        border-radius: 999px;
-        background: var(--surface);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        transform: translateX(0);
-        transition:
-            transform 0.18s ease,
-            background 0.18s ease;
-        overflow: hidden;
-    }
-
-    .icon-sun,
-    .icon-moon {
-        position: absolute;
-        font-size: 0.8rem;
-        transition:
-            opacity 0.18s ease,
-            transform 0.18s ease;
-    }
-
-    .icon-sun {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    .icon-moon {
-        opacity: 0;
-        transform: translateY(6px);
-    }
-
-    .theme-toggle__checkbox:checked + .theme-toggle__track {
-        background: color-mix(in oklab, var(--accent) 18%, transparent);
-        border-color: color-mix(in oklab, var(--accent) 65%, white);
-    }
-
-    .theme-toggle__checkbox:checked
-        + .theme-toggle__track
-        .theme-toggle__thumb {
-        transform: translateX(20px);
-        background: var(--accent);
-    }
-
-    .theme-toggle__checkbox:checked + .theme-toggle__track .icon-sun {
-        opacity: 0;
-        transform: translateY(-6px);
-    }
-
-    .theme-toggle__checkbox:checked + .theme-toggle__track .icon-moon {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-    /* TABLET */
     @media (min-width: 720px) {
-        header {
+        .site-header {
             padding-block: 10px;
         }
 
@@ -239,19 +135,28 @@ const path = Astro.url.pathname.endsWith("/")
             gap: clamp(8px, 1.5vw, 18px);
         }
 
-        .navigation a {
+        .navigation {
+            gap: 8px;
+        }
+
+        .navigation__link {
             font-size: var(--step-0);
             padding: 10px 14px;
         }
     }
 
-    /* DESKTOP */
+    /* Desktop: more breathing room */
+
     @media (min-width: 1024px) {
-        header {
+        .site-header {
             padding-block: 12px;
         }
 
-        .site-nav__brand a {
+        .site-nav {
+            gap: clamp(12px, 1.8vw, 24px);
+        }
+
+        .site-nav__logo {
             font-size: var(--step-1);
         }
     }
