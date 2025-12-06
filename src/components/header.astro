@@ -14,63 +14,58 @@ const path = Astro.url.pathname.endsWith("/")
 ---
 
 <header class="site-header">
-    <nav aria-label="Primary" class="site-nav">
-        <!-- BRAND -->
-        <div class="site-nav__brand">
-            <a href="/" aria-label="Site home" class="site-nav__logo">
-                Rafaela Henriques
-            </a>
-        </div>
+    <div class="site-header__inner">
+        <!-- BRAND (top, not fixed on mobile) -->
+        <a href="/" aria-label="Site home" class="site-header__brand">
+            Rafaela Henriques
+        </a>
 
-        <!-- NAVIGATION -->
-        <ul class="navigation">
-            {
-                links.map((link) => (
-                    <li class="navigation__item">
-                        <a
-                            href={link.href}
-                            class="navigation__link"
-                            aria-current={
-                                path === link.href ? "page" : undefined
-                            }
-                        >
-                            {link.label}
-                        </a>
-                    </li>
-                ))
-            }
-        </ul>
-
-        <!-- CONTROLS (THEME TOGGLE, future stuff) -->
-        <div class="site-nav__controls">
+        <!-- THEME TOGGLE (top-right on mobile, far right on desktop) -->
+        <div class="site-header__controls">
             <ThemeToggle />
         </div>
-    </nav>
+
+        <!-- PRIMARY NAV (fixed at bottom on mobile, inline in bar on desktop) -->
+        <nav aria-label="Primary" class="site-nav">
+            <ul class="navigation">
+                {
+                    links.map((link) => (
+                        <li class="navigation__item">
+                            <a
+                                href={link.href}
+                                class="navigation__link"
+                                aria-current={
+                                    path === link.href ? "page" : undefined
+                                }
+                            >
+                                {link.label}
+                            </a>
+                        </li>
+                    ))
+                }
+            </ul>
+        </nav>
+    </div>
 </header>
 
 <style>
     /* Base: mobile-first */
 
     .site-header {
-        display: flex;
-        justify-content: center;
-        padding-block: 8px;
+        position: relative;
+        z-index: 40;
     }
 
-    .site-nav {
-        width: 100%;
+    .site-header__inner {
+        position: relative;
         max-width: var(--max-width);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
+        margin: 0 auto;
+        padding: 8px 16px 0;
     }
 
-    .site-nav__brand {
-        flex: 0 0 auto;
-    }
-
-    .site-nav__logo {
+    .site-header__brand {
+        display: block;
+        text-align: center;
         text-decoration: none;
         color: var(--text);
         font-weight: 800;
@@ -79,14 +74,34 @@ const path = Astro.url.pathname.endsWith("/")
         white-space: nowrap;
     }
 
+    .site-header__controls {
+        position: absolute;
+        top: 8px;
+        right: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Mobile bottom nav (fixed) */
+    .site-nav {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 8px 16px calc(10px + env(safe-area-inset-bottom));
+        background: color-mix(in oklab, var(--surface) 96%, transparent);
+        border-top: 1px solid var(--border);
+        backdrop-filter: blur(18px);
+    }
+
     .navigation {
         list-style: none;
         display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
+        justify-content: center;
+        gap: 10px;
         padding: 0;
         margin: 0;
-        margin-left: auto;
     }
 
     .navigation__item {
@@ -117,26 +132,19 @@ const path = Astro.url.pathname.endsWith("/")
         background: color-mix(in oklab, var(--accent) 10%, transparent);
     }
 
-    .site-nav__controls {
-        display: flex;
-        align-items: center;
-        gap: 8px;
+    /* Give room for fixed bottom nav on small screens */
+    :global(body) {
+        padding-bottom: 72px;
     }
 
-    /* Tablet: tighten layout, keep mobile-first philosophy */
-
+    /* Tablet tweaks if needed (nav still bottom-fixed, just nicer spacing) */
     @media (min-width: 720px) {
-        .site-header {
-            padding-block: 10px;
-        }
-
-        .site-nav {
-            flex-wrap: nowrap;
-            gap: clamp(8px, 1.5vw, 18px);
+        .site-header__inner {
+            padding: 10px 20px 0;
         }
 
         .navigation {
-            gap: 8px;
+            gap: 12px;
         }
 
         .navigation__link {
@@ -145,19 +153,61 @@ const path = Astro.url.pathname.endsWith("/")
         }
     }
 
-    /* Desktop: more breathing room */
+    /* Desktop: header fixed at top, nav inline in bar, no bottom-fixed nav */
 
     @media (min-width: 1024px) {
         .site-header {
-            padding-block: 12px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            background: color-mix(in oklab, var(--bg) 92%, transparent);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .site-header__inner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding: 12px 24px;
+        }
+
+        .site-header__brand {
+            flex: 0 0 auto;
+            text-align: left;
+            font-size: var(--step-1);
         }
 
         .site-nav {
-            gap: clamp(12px, 1.8vw, 24px);
+            position: static;
+            flex: 1 1 auto;
+            padding: 0;
+            background: none;
+            border-top: none;
+            backdrop-filter: none;
         }
 
-        .site-nav__logo {
-            font-size: var(--step-1);
+        .navigation {
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .site-header__controls {
+            position: static;
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        /* Adjust global body padding for fixed top header on desktop */
+        :global(body) {
+            padding-top: 80px;
+            padding-bottom: 28px;
         }
     }
 </style>
