@@ -1,137 +1,130 @@
-<label class="theme-toggle" for="theme-switch">
-    <input
-        id="theme-switch"
-        class="theme-toggle__checkbox"
-        type="checkbox"
-        role="switch"
-        aria-label="Toggle light and dark mode"
-    />
-    <span class="theme-toggle__track">
-        <span class="theme-toggle__thumb">
-            <span
-                class="theme-toggle__icon theme-toggle__icon--sun"
-                aria-hidden="true"
-            >
-                ☀
-            </span>
-            <span
-                class="theme-toggle__icon theme-toggle__icon--moon"
-                aria-hidden="true"
-            >
-                🌙
-            </span>
-        </span>
-    </span>
-</label>
+---
+/**
+ * Icon-only theme toggle.
+ * Modern 2025 pattern:
+ * - <button> with aria-pressed
+ * - SVG sun/moon icons (minimalist)
+ * - html.dark class toggling
+ * - LocalStorage persistence
+ * - No flicker, no layout shift
+ */
+---
+
+<button
+    type="button"
+    class="theme-icon"
+    data-theme-toggle
+    aria-pressed="false"
+    aria-label="Toggle dark mode"
+    title="Toggle dark mode"
+>
+    <!-- SUN ICON -->
+    <svg viewBox="0 0 24 24" class="icon icon-sun" aria-hidden="true">
+        <circle
+            cx="12"
+            cy="12"
+            r="5"
+            stroke="currentColor"
+            stroke-width="2"
+            fill="none"></circle>
+        <g stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </g>
+    </svg>
+
+    <!-- MOON ICON -->
+    <svg viewBox="0 0 24 24" class="icon icon-moon" aria-hidden="true">
+        <path
+            d="M21 12.79A9 9 0 0 1 11.21 3 
+         7 7 0 1 0 21 12.79z"
+            fill="currentColor"></path>
+    </svg>
+</button>
 
 <style>
-    .theme-toggle {
-        display: inline-flex;
+    .theme-icon {
         position: relative;
-        cursor: pointer;
-        user-select: none;
-    }
-
-    .theme-toggle__checkbox {
-        position: absolute;
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
-
-    .theme-toggle__track {
-        width: 46px;
-        height: 24px;
+        width: 36px;
+        height: 36px;
         border-radius: 999px;
-        background: var(--glass);
         border: 1px solid var(--border);
-        padding: 2px;
-        display: flex;
-        align-items: center;
-        transition:
-            background 0.18s ease,
-            border-color 0.18s ease;
-        box-sizing: border-box;
-    }
-
-    .theme-toggle__thumb {
-        width: 20px;
-        height: 20px;
-        border-radius: 999px;
-        background: var(--surface);
-        display: flex;
+        background: var(--glass);
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        position: relative;
-        transform: translateX(0);
+        cursor: pointer;
+        padding: 0;
         transition:
-            transform 0.18s ease,
-            background 0.18s ease;
-        overflow: hidden;
+            background 0.18s ease,
+            border-color 0.18s ease,
+            transform 0.12s ease,
+            box-shadow 0.18s ease;
     }
 
-    .theme-toggle__icon {
+    .theme-icon:hover {
+        background: color-mix(in oklab, var(--accent) 15%, transparent);
+        border-color: color-mix(in oklab, var(--accent) 50%, var(--border));
+        transform: translateY(-1px);
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+    }
+
+    .theme-icon:active {
+        transform: translateY(0);
+        box-shadow: none;
+    }
+
+    .theme-icon:focus-visible {
+        outline: 2px solid color-mix(in oklab, var(--accent) 80%, white);
+        outline-offset: 2px;
+    }
+
+    .icon {
+        width: 18px;
+        height: 18px;
         position: absolute;
-        font-size: 0.8rem;
         transition:
-            opacity 0.18s ease,
-            transform 0.18s ease;
+            opacity 0.25s ease,
+            transform 0.25s ease;
     }
 
-    .theme-toggle__icon--sun {
+    /* Initial state: LIGHT MODE → show sun */
+    .icon-sun {
         opacity: 1;
-        transform: translateY(0);
+        transform: rotate(0deg) scale(1);
     }
 
-    .theme-toggle__icon--moon {
+    .icon-moon {
         opacity: 0;
-        transform: translateY(6px);
+        transform: rotate(-30deg) scale(0.7);
     }
 
-    /* Visual state from checkbox */
-    .theme-toggle__checkbox:checked + .theme-toggle__track {
-        background: color-mix(in oklab, var(--accent) 18%, transparent);
-        border-color: color-mix(in oklab, var(--accent) 65%, white);
-    }
-
-    .theme-toggle__checkbox:checked
-        + .theme-toggle__track
-        .theme-toggle__thumb {
-        transform: translateX(20px);
-        background: var(--accent);
-    }
-
-    .theme-toggle__checkbox:checked
-        + .theme-toggle__track
-        .theme-toggle__icon--sun {
+    /* DARK MODE → swap icons */
+    :global(html.dark) .icon-sun {
         opacity: 0;
-        transform: translateY(-6px);
+        transform: rotate(30deg) scale(0.7);
     }
 
-    .theme-toggle__checkbox:checked
-        + .theme-toggle__track
-        .theme-toggle__icon--moon {
+    :global(html.dark) .icon-moon {
         opacity: 1;
-        transform: translateY(0);
+        transform: rotate(0deg) scale(1);
     }
-
-    /* OPTIONAL: if you want icons to follow actual theme class, not just checkbox,
-     you can also add: :global(html.dark) .theme-toggle__icon--sun {...} etc. */
 </style>
 
 <script is:inline>
     const getInitialTheme = () => {
-        const stored = localStorage.getItem("theme");
+        const saved = localStorage.getItem("theme");
+        if (saved === "light" || saved === "dark") return saved;
 
-        if (stored === "light" || stored === "dark") {
-            return stored;
-        }
-
-        const prefersDark = window.matchMedia(
-            "(prefers-color-scheme: dark)",
-        ).matches;
-
-        return prefersDark ? "dark" : "light";
+        return window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
     };
 
     const applyTheme = (theme) => {
@@ -140,21 +133,28 @@
 
         root.classList.toggle("dark", isDark);
         root.style.colorScheme = isDark ? "dark" : "light";
-        localStorage.setItem("theme", isDark ? "dark" : "light");
+
+        localStorage.setItem("theme", theme);
+
+        const btn = document.querySelector("[data-theme-toggle]");
+        if (btn instanceof HTMLButtonElement) {
+            btn.setAttribute("aria-pressed", isDark ? "true" : "false");
+            btn.setAttribute(
+                "aria-label",
+                isDark ? "Switch to light mode" : "Switch to dark mode",
+            );
+        }
     };
 
-    const initialTheme = getInitialTheme();
-    applyTheme(initialTheme);
+    const initial = getInitialTheme();
+    applyTheme(initial);
 
-    const checkbox = document.getElementById("theme-switch");
-
-    if (checkbox instanceof HTMLInputElement) {
-        // sync UI with theme
-        checkbox.checked = initialTheme === "light";
-
-        checkbox.addEventListener("change", () => {
-            const nextTheme = checkbox.checked ? "light" : "dark";
-            applyTheme(nextTheme);
+    const button = document.querySelector("[data-theme-toggle]");
+    if (button instanceof HTMLButtonElement) {
+        button.addEventListener("click", () => {
+            const isDark = document.documentElement.classList.contains("dark");
+            const next = isDark ? "light" : "dark";
+            applyTheme(next);
         });
     }
 </script>
