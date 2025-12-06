@@ -2,33 +2,59 @@
 import Base from "../layouts/BaseLayout.astro";
 ---
 
-<Base title="About" description="About Rafaela">
+<Base title="About" description="About Rafaela Henriques">
     <section class="section">
         <h1 class="page-title">About Me</h1>
+
         <p class="lead">
-            I develop web interfaces and applications. My background includes
-            game development (Unity, C#) and programming in C, C++, Python, and
-            JavaScript.
-        </p>
-        <p>
-            I optimize for clarity, structure, and maintainability. If a feature
-            has no purpose, it does not ship.
+            I’m a web developer who enjoys building fast, focused interfaces
+            with as little noise as possible. My background mixes web
+            development, creative coding, and game development in Unity.
         </p>
 
-        <h2>Skills</h2>
+        <p>
+            I care about structure, performance, and clear communication in the
+            UI. Every component should have a reason to exist—if a feature
+            doesn’t help the user or the product, it doesn’t ship.
+        </p>
+
+        <p>
+            I like working close to the front end: establishing design tokens,
+            building responsive layouts, and wiring up interactions that feel
+            smooth but never distracting.
+        </p>
+
+        <h2>What I work with</h2>
         <ul>
-            <li>Web: HTML, CSS, JavaScript, Astro, React</li>
-            <li>Interaction: GSAP, Framer Motion</li>
-            <li>Programming: C#, C++, Python</li>
-            <li>Game dev: Unity (controllers, UI, physics)</li>
-            <li>Tools: Git, GitHub, VS Code, Figma</li>
+            <li><strong>Web</strong>: HTML, CSS, JavaScript, Astro, React</li>
+            <li><strong>Interaction & motion</strong>: GSAP, Framer Motion</li>
+            <li><strong>Programming</strong>: C#, C++, Python, JavaScript</li>
+            <li>
+                <strong>Game development</strong>: Unity (input, UI, basic
+                physics, game flow)
+            </li>
+            <li><strong>Tools</strong>: Git, GitHub, VS Code, Figma</li>
+        </ul>
+
+        <h2>How I work</h2>
+        <ul>
+            <li>Mobile-first layouts, then refine for larger breakpoints.</li>
+            <li>Reusable components over copy–paste styling.</li>
+            <li>Accessibility as a requirement, not an add-on.</li>
+            <li>
+                Prefer small, focused features over bloated “all-in-one” pages.
+            </li>
         </ul>
 
         <h2>Contact</h2>
         <p>
-            <a href="mailto:rafaela.henriques@student.howest.be" class="button"
-                >Email me</a
+            <a
+                href="mailto:rafaela.henriques@student.howest.be"
+                class="button button--primary"
+                aria-label="Email Rafaela"
             >
+                Email me
+            </a>
         </p>
     </section>
 </Base>
