@@ -1,7 +1,12 @@
 ---
-const { frontmatter } = Astro.props;
+interface Props {
+	title?: string;
+	description?: string;
+}
+const { title = "", description = "" } = Astro.props as Props;
+import Base from "./BaseLayout.astro";
 ---
 
-<meta charset="utf-8" />
-<h1>{frontmatter.title}</h1>
-<slot />
+<Base title={title} description={description}>
+	<slot />
+</Base>

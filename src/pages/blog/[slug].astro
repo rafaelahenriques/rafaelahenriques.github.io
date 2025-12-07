@@ -38,7 +38,9 @@ const tags = Array.isArray(entry.data.tags) ? entry.data.tags : [];
 const sorted = [...entries].sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime()
 );
-const currentIndex = sorted.findIndex((p) => p.id.replace(/\.md$/, "") === currentId);
+const currentIndex = sorted.findIndex(
+  (p) => p.id.replace(/\.md$/, "") === currentId
+);
 const prev = currentIndex > 0 ? sorted[currentIndex - 1] : null;
 const next =
   currentIndex < sorted.length - 1 ? sorted[currentIndex + 1] : null;
@@ -75,17 +77,35 @@ const next =
     {(prev || next) && (
       <nav class="blog-nav" aria-label="Post navigation">
         {prev ? (
-          <a href={`/blog/${prev.id.replace(/\.md$/, "")}/`} class="blog-nav__link blog-nav__prev">
-            ← {prev.data.title}
+          <a
+            href={`/blog/${prev.id.replace(/\.md$/, "")}/`}
+            class="blog-nav__link blog-nav__prev"
+            aria-label={`Previous: ${prev.data.title}`}
+          >
+            {/* MOBILE: circle only */}
+            <span class="blog-nav__circle" aria-hidden="true">←</span>
+
+            {/* DESKTOP: keep old text style */}
+            <span class="blog-nav__label">← {prev.data.title}</span>
           </a>
         ) : (
           <span />
         )}
 
-        {next && (
-          <a href={`/blog/${next.id.replace(/\.md$/, "")}/`} class="blog-nav__link blog-nav__next">
-            {next.data.title} →
+        {next ? (
+          <a
+            href={`/blog/${next.id.replace(/\.md$/, "")}/`}
+            class="blog-nav__link blog-nav__next"
+            aria-label={`Next: ${next.data.title}`}
+          >
+            {/* DESKTOP: keep old text style */}
+            <span class="blog-nav__label">{next.data.title} →</span>
+
+            {/* MOBILE: circle only */}
+            <span class="blog-nav__circle" aria-hidden="true">→</span>
           </a>
+        ) : (
+          <span />
         )}
       </nav>
     )}
@@ -93,7 +113,6 @@ const next =
     <section class="blog-body">
       <Content />
     </section>
-
   </article>
 </Base>
 
@@ -119,7 +138,10 @@ const next =
     text-decoration: none;
     padding: 4px 10px;
     border-radius: 999px;
-    background: color-mix(in oklab, var(--surface) 96%, transparent);
+    background: light-dark(
+      color-mix(in oklab, var(--surface) 96%, transparent),
+      color-mix(in oklab, var(--bg) 80%, var(--accent) 10%)
+    );
     border: 1px solid var(--border);
     transition:
       background 0.18s ease,
@@ -236,6 +258,9 @@ const next =
   }
 
   .blog-nav__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
     max-width: 48%;
     color: var(--muted);
     text-decoration: none;
@@ -258,10 +283,36 @@ const next =
 
   .blog-nav__prev {
     text-align: left;
+    justify-content: flex-start;
   }
 
   .blog-nav__next {
     text-align: right;
+    justify-content: flex-end;
+  }
+
+  .blog-nav__label {
+    white-space: nowrap;
+  }
+
+  .blog-nav__circle {
+    display: none; /* visible only on mobile */
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: color-mix(in oklab, var(--accent) 15%, transparent);
+    border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent);
+    align-items: center;
+    justify-content: center;
+    font-size: var(--fontsize-1);
+    color: var(--text);
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  .blog-nav__link:hover .blog-nav__circle {
+    background: var(--glass);
+    border-color: var(--accent);
   }
 
   @media (max-width: 599px) {
@@ -273,13 +324,24 @@ const next =
       font-size: var(--fontsize-0);
     }
 
+    /* Keep arrows left/right on a row, no column */
     .blog-nav {
-      flex-direction: column;
-      align-items: stretch;
+      flex-direction: row;
+      align-items: center;
     }
 
     .blog-nav__link {
-      max-width: 100%;
+      max-width: unset;
+      background: transparent;
+      padding-inline: 0;
+    }
+
+    .blog-nav__label {
+      display: none;
+    }
+
+    .blog-nav__circle {
+      display: flex;
     }
   }
 </style>

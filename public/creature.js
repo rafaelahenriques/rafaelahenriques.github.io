@@ -9,28 +9,35 @@ const shadow = group?.querySelector(".footer-creature__shadow");
 const z = group?.querySelector(".footer-creature__z");
 
 if (group && body && shadow && z) {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const isDark = () =>
         document.documentElement.classList.contains("dark");
 
-    // Breathing animation
-    gsap.to(body, {
-        y: -3,
-        scaleX: 1.04,
-        scaleY: 0.98,
-        duration: 2,
-        ease: "sine.inOut",
-        repeat: -1,
-        yoyo: true,
-    });
+    const startBreathing = () => {
+        gsap.to(body, {
+            y: -3,
+            scaleX: 1.04,
+            scaleY: 0.98,
+            duration: 2,
+            ease: "sine.inOut",
+            repeat: -1,
+            yoyo: true,
+        });
+        gsap.to(shadow, {
+            scaleX: 1.12,
+            opacity: 0.55,
+            duration: 2,
+            ease: "sine.inOut",
+            repeat: -1,
+            yoyo: true,
+        });
+    };
 
-    gsap.to(shadow, {
-        scaleX: 1.12,
-        opacity: 0.55,
-        duration: 2,
-        ease: "sine.inOut",
-        repeat: -1,
-        yoyo: true,
-    });
+    const stopBreathing = () => {
+        gsap.killTweensOf([body, shadow]);
+        gsap.set(body, { y: 0, scaleX: 1, scaleY: 1 });
+        gsap.set(shadow, { scaleX: 1, opacity: 0.55 });
+    };
 
     // Z loop (dark only)
     let zTimeline = null;
@@ -74,12 +81,27 @@ if (group && body && shadow && z) {
         }
     };
 
+    // Initial state: respect reduced motion
+    if (prefersReducedMotion.matches) {
+        stopBreathing();
+    } else {
+        startBreathing();
+    }
     // Initial sync + watch theme
     syncTheme();
     const observer = new MutationObserver(syncTheme);
     observer.observe(document.documentElement, {
         attributes: true,
         attributeFilter: ["class"],
+    });
+
+    // Watch for reduced-motion changes
+    prefersReducedMotion.addEventListener('change', (e) => {
+        if (e.matches) {
+            stopBreathing();
+        } else {
+            startBreathing();
+        }
     });
 
     const horizontalRange = () =>
