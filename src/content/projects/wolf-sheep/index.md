@@ -11,9 +11,9 @@ scope:
 description: "A digital adaptation of the asymmetrical strategy board game. I architected the core rule enforcement, movement validation system, and the integration of the single-player AI loop."
 media:
   repo: "https://github.com/rafaelahenriques/Wolf-and-Sheep-Game"
-  screenshot: "/src/assets/ws/wolfsheepmenu.png"
+  screenshot: "./wolfsheepmenu.png"
   gallery:
-    - "/src/assets/ws/wolfsheepmenu.png" 
+    - "./wolfsheepmenu.png" 
 
 tags: ["Python", "Game Logic", "AI Integration", "Strategy", "Game Dev"]
 ---

@@ -4,6 +4,7 @@ import {
   getCollection,
   type CollectionEntry,
 } from "astro:content";
+import { Picture } from "astro:assets";
 
 type ProjectEntry = CollectionEntry<"projects">;
 
@@ -34,7 +35,9 @@ const projects = sortProjects(allProjects);
 <Base title="Projects" description="Rafaela — projects.">
   <section class="section projects-section">
     <h1 class="page-title">Projects</h1>
-    <p class="lead">Selected work from my time at university and personal side projects. I use these projects to test new tools, refine my workflow, and bridge the gap between strict logic and fluid design.</p>
+    <p class="lead">
+      Selected work from my time at university and personal side projects. I use these projects to test new tools, refine my workflow, and bridge the gap between strict logic and fluid design.
+    </p>
 
     <!-- FILTER BAR -->
     <nav
@@ -83,6 +86,7 @@ const projects = sortProjects(allProjects);
     >
       {projects.map((project) => {
         const categories = getCategories(project);
+        const screenshot = project.data.media?.screenshot;
         return (
           <a
             href={`/projects/${project.id}/`}
@@ -90,11 +94,14 @@ const projects = sortProjects(allProjects);
             data-project-category={categories.join(" ")}
           >
             <div class="card__media">
-              {project.data.media?.screenshot && (
-                <img
-                  src={project.data.media.screenshot}
+              {screenshot && (
+                <Picture
+                  src={screenshot}
                   alt={project.data.title}
                   loading="lazy"
+                  formats={["avif", "webp", "png"]}
+                  widths={[320, 640, 768, 1024, 1400]}
+                  sizes="(max-width: 719px) 100vw, (max-width: 1023px) 50vw, (max-width: 1399px) 33vw, 25vw"
                 />
               )}
             </div>

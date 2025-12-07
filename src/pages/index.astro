@@ -1,6 +1,7 @@
 ---
 import Base from "../layouts/BaseLayout.astro";
 import { getCollection, type CollectionEntry } from "astro:content";
+import { Picture } from "astro:assets";
 
 type ProjectEntry = CollectionEntry<"projects">;
 type BlogEntry = CollectionEntry<"blog">;
@@ -33,21 +34,27 @@ const latestPosts = posts.slice(0, 3);
 
     <!-- 1-column on mobile, 2-column grid from 720px+ -->
     <div class="grid home-grid home-projects-grid stagger">
-      {latestProjects.map((p) => (
-        <a href={`/projects/${p.id}/`} class="card">
-          <div class="card__media">
-            {p.data.media?.screenshot ? (
-              <img
-                src={p.data.media.screenshot}
-                alt={p.data.title}
-                loading="lazy"
-              />
-            ) : null}
-          </div>
-          <h3 class="card__title">{p.data.title}</h3>
-          <p class="card__meta">{p.data.year}</p>
-        </a>
-      ))}
+      {latestProjects.map((p) => {
+        const screenshot = p.data.media?.screenshot;
+        return (
+          <a href={`/projects/${p.id}/`} class="card">
+            <div class="card__media">
+              {screenshot && (
+                <Picture
+                  src={screenshot}
+                  alt={p.data.title}
+                  loading="lazy"
+                  formats={["avif", "webp", "png"]}
+                  widths={[320, 640, 768, 1024, 1400]}
+                  sizes="(max-width: 719px) 100vw, (max-width: 1023px) 50vw, (max-width: 1399px) 33vw, 25vw"
+                />
+              )}
+            </div>
+            <h3 class="card__title">{p.data.title}</h3>
+            <p class="card__meta">{p.data.year}</p>
+          </a>
+        );
+      })}
     </div>
 
     <p style={`margin-top: var(--gap);`}>
