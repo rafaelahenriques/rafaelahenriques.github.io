@@ -4,7 +4,6 @@ date: 2024-11-06
 tags: ["CSS", "Web Design", "Frontend"]
 description: "How to build fluid, robust layouts using modern CSS features—no media queries required."
 ---
-# Responsive Layout Tips with Pure CSS
 
 We often reach for heavy UI frameworks or write dozens of `@media` queries to make a site responsive. While media queries are still necessary for major layout shifts, modern CSS has given us tools to create "fluid" interfaces that adapt automatically to their container.
 

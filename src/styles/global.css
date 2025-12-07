@@ -7,6 +7,7 @@
 :root {
     color-scheme: light;
 
+    /* Color tokens */
     --bg: #ffffff;
     --surface: #f5f7fa;
     --text: #0d0f12;
@@ -18,22 +19,65 @@
 
     --radius: 14px;
     --max-width: 1200px;
-    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
-    --ui: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-        "Helvetica Neue", Arial;
 
-    /* Utopia type scale (base steps) */
-    --step--1: clamp(0.9375rem, 0.8288rem + 0.5435vw, 1.25rem);
-    --step-0: clamp(1.125rem, 0.9728rem + 0.7609vw, 1.5625rem);
-    --step-1: clamp(1.35rem, 1.1402rem + 1.0489vw, 1.9531rem);
-    --step-2: clamp(1.62rem, 1.3343rem + 1.4285vw, 2.4414rem);
+    /* Font families */
+    --font-title: "Press Start 2P", system-ui;
+    --font-tag: "Anonymous Pro", monospace;
+    --font-body: "Anonymous Pro", monospace;
 
-    /* Larger display steps layered on top */
-    --step-3: clamp(2.2rem, 4vw, 3.2rem);
-    --step-4: clamp(3.2rem, 6vw, 5rem);
-    --step-5: clamp(4.2rem, 8vw, 7.2rem);
+    --ui: var(--font-body);
 
-    --gap: clamp(16px, 2.2vw, 28px);
+    /* Utopia – fluid font sizes */
+    /* @link https://utopia.fyi/type/calculator?c=320,18,1.2,1240,27,1.25,7,2,&s=0.75|0.5|0.25,1.5|2|3|4|6,s-l&g=s,l,xl,12 */
+--fontsize--3: clamp(0.5787rem, 0.5574rem + 0.1066vw, 0.64rem);
+  --fontsize--2: clamp(0.6944rem, 0.6577rem + 0.1836vw, 0.8rem);
+  --fontsize--1: clamp(0.8333rem, 0.7754rem + 0.2899vw, 1rem);
+  --fontsize-0: clamp(1rem, 0.913rem + 0.4348vw, 1.25rem);
+  --fontsize-1: clamp(1.2rem, 1.0739rem + 0.6304vw, 1.5625rem);
+  --fontsize-2: clamp(1.44rem, 1.2615rem + 0.8924vw, 1.9531rem);
+  --fontsize-3: clamp(1.728rem, 1.4799rem + 1.2407vw, 2.4414rem);
+  --fontsize-4: clamp(2.0736rem, 1.7334rem + 1.7011vw, 3.0518rem);
+
+    /* Backwards-compat aliases for step-* tokens */
+    --step--1: var(--fontsize--1);
+    --step-0: var(--fontsize-0);
+    --step-1: var(--fontsize-1);
+    --step-2: var(--fontsize-2);
+    --step-3: var(--fontsize-3);
+    --step-4: var(--fontsize-4);
+    --step-5: var(--fontsize-5);
+
+    /* Utopia – spacing scale */
+    /* @link https://utopia.fyi/space/calculator?c=320,18,1.2,1240,27,1.25,7,2,&s=0.75|0.5|0.25,1.5|2|3|4|6,s-l&g=s,l,xl,12 */
+    --space-3xs: clamp(0.3125rem, 0.269rem + 0.2174vw, 0.4375rem);
+    --space-2xs: clamp(0.5625rem, 0.4538rem + 0.5435vw, 0.875rem);
+    --space-xs: clamp(0.875rem, 0.7446rem + 0.6522vw, 1.25rem);
+    --space-s: clamp(1.125rem, 0.9293rem + 0.9783vw, 1.6875rem);
+    --space-m: clamp(1.6875rem, 1.3832rem + 1.5217vw, 2.5625rem);
+    --space-l: clamp(2.25rem, 1.8587rem + 1.9565vw, 3.375rem);
+    --space-xl: clamp(3.375rem, 2.788rem + 2.9348vw, 5.0625rem);
+    --space-2xl: clamp(4.5rem, 3.7174rem + 3.913vw, 6.75rem);
+    --space-3xl: clamp(6.75rem, 5.5761rem + 5.8696vw, 10.125rem);
+
+    /* One-up pairs */
+    --space-3xs-2xs: clamp(0.3125rem, 0.1168rem + 0.9783vw, 0.875rem);
+    --space-2xs-xs: clamp(0.5625rem, 0.3234rem + 1.1957vw, 1.25rem);
+    --space-xs-s: clamp(0.875rem, 0.5924rem + 1.413vw, 1.6875rem);
+    --space-s-m: clamp(1.125rem, 0.625rem + 2.5vw, 2.5625rem);
+    --space-m-l: clamp(1.6875rem, 1.1005rem + 2.9348vw, 3.375rem);
+    --space-l-xl: clamp(2.25rem, 1.2717rem + 4.8913vw, 5.0625rem);
+    --space-xl-2xl: clamp(3.375rem, 2.2011rem + 5.8696vw, 6.75rem);
+    --space-2xl-3xl: clamp(4.5rem, 2.5435rem + 9.7826vw, 10.125rem);
+
+    /* Custom pair */
+    --space-s-l: clamp(1.125rem, 0.3424rem + 3.913vw, 3.375rem);
+
+    /* Generic layout gap token */
+    --gap: var(--space-m);
+
+    /* Generic fluid clamp example (free to use anywhere) */
+    /* @link https://utopia.fyi/clamp/calculator?a=320,1240,16—48 */
+    --fluid-16-48: clamp(1rem, 0.3043rem + 3.4783vw, 3rem);
 }
 
 /* DARK THEME OVERRIDES (triggered by html.dark from ThemeToggle) */
@@ -61,9 +105,14 @@ html.dark {
     box-sizing: border-box;
 }
 
+html {
+   
+}
+
 html,
 body {
-    height: 100%;
+    height: auto;
+    max-width: 100%;
 }
 
 html,
@@ -91,21 +140,27 @@ dd {
 }
 
 body {
-    font-family: var(--ui);
+    font-family: var(--font-body);
+    font-weight: 700;
     color: var(--text);
     -webkit-font-smoothing: antialiased;
     line-height: 1.5;
-    padding: 16px;
+    padding-block: var(--space-2xs);
+    padding-inline-start: max(var(--space-2xs), env(safe-area-inset-left));
+    padding-inline-end: max(var(--space-2xs), env(safe-area-inset-right));
 
-    /* THEMED BACKGROUND */
     background-color: var(--bg);
     background-image:
-        radial-gradient(at 10% 10%,
+        radial-gradient(
+            at 10% 10%,
             color-mix(in oklab, var(--accent) 18%, transparent) 0%,
-            transparent 40%),
-        radial-gradient(1200px 600px at 20% 0%,
+            transparent 40%
+        ),
+        radial-gradient(
+            1200px 600px at 20% 0%,
             color-mix(in oklab, var(--surface) 96%, transparent) 0%,
-            color-mix(in oklab, var(--bg) 100%, transparent) 60%);
+            color-mix(in oklab, var(--bg) 100%, transparent) 60%
+        );
     background-attachment: fixed;
 }
 
@@ -122,16 +177,18 @@ a:hover {
 
 code,
 pre {
-    font-family: var(--mono);
+    font-family: var(--font-tag);
+    font-weight: 400;
     background: var(--glass);
     color: var(--text);
     border: 1px solid var(--border);
     border-radius: 10px;
+    font-size: var(--fontsize--1);
 }
 
 pre {
-    padding: 14px;
-    overflow: auto;
+    padding: var(--space-xs);
+
 }
 
 code {
@@ -146,26 +203,25 @@ code {
 
 .h-kicker {
     color: var(--muted);
-    font-size: var(--step--1);
+    font-size: var(--fontsize--1);
     text-transform: uppercase;
     letter-spacing: 0.18em;
 }
 
 h1,
 #main .page-title {
-    font-size: var(--step-5);
-    line-height: 0.95;
-    letter-spacing: -0.02em;
-    font-weight: 900;
-    margin-bottom: clamp(8px, 1.2vw, 12px);
-    /* Light theme: bold dark gradient */
+    font-family: var(--font-title);
+    font-size: var(--fontsize-2);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    font-weight: 400;
+    margin-bottom: var(--space-s);
     background: linear-gradient(180deg, #111111 40%, #4a4a4a);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
-/* Dark theme: glow white gradient on dark bg */
 html.dark h1,
 html.dark #main .page-title {
     background: linear-gradient(180deg, #ffffff 60%, #d7e7f7);
@@ -175,43 +231,46 @@ html.dark #main .page-title {
 }
 
 .lead {
-    font-size: var(--step-2);
+    font-size: var(--fontsize-2);
     color: color-mix(in oklab, var(--text) 92%, transparent);
-    max-width: 60ch;
     margin-bottom: var(--gap);
 }
 
 #main h2 {
-    font-size: var(--step-3);
-    font-weight: 800;
+    font-family: var(--font-title);
+    font-size: var(--fontsize-1);
+    font-weight: 400;
+    line-height: 1.4;
     letter-spacing: -0.01em;
     margin-bottom: var(--gap);
     margin-top: calc(var(--gap) * 1.5);
+
 }
 
 #main h3 {
-    font-size: var(--step-2);
+    font-family: var(--font-body);
+    font-size: var(--fontsize-1);
     font-weight: 700;
-    margin-bottom: clamp(10px, 1.5vw, 16px);
+    line-height: 1.3;
+    margin-bottom: var(--space-xs);
     margin-top: calc(var(--gap) * 1.5);
 }
 
 #main p,
 #main ul,
 #main ol {
-    font-size: var(--step-0);
-    margin-bottom: var(--gap);
-    max-width: 70ch;
+    font-size: var(--fontsize-0);
+    margin-bottom: var(--space-xs);
     line-height: 1.7;
 }
 
 #main ul,
 #main ol {
-    padding-left: 24px;
+    padding-left: 1.5rem;
 }
 
 #main li {
-    margin-bottom: 12px;
+    margin-bottom: var(--space-3xs);
 }
 
 /*
@@ -221,38 +280,41 @@ html.dark #main .page-title {
 
 #main {
     max-width: var(--max-width);
-    margin: 16px auto;
-    padding: 18px;
+    width: 100%;
+    margin: var(--space-2xs) auto;
+    padding: var(--space-xs);
+    padding-bottom: var(--space-3xs);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     backdrop-filter: blur(12px);
-    background: linear-gradient(180deg,
-            color-mix(in oklab, var(--surface) 96%, transparent),
-            color-mix(in oklab, var(--surface) 90%, transparent));
+    background: linear-gradient(
+        180deg,
+        color-mix(in oklab, var(--surface) 96%, transparent),
+        color-mix(in oklab, var(--surface) 90%, transparent)
+    );
     position: relative;
     z-index: 2;
 }
 
 .section {
     position: relative;
-    margin: clamp(28px, 7vw, 80px) 0;
+    margin: var(--space-l) 0;
 }
 
 .section__label {
-    font-size: var(--step--1);
+    font-size: var(--fontsize--1);
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.16em;
     margin-bottom: 10px;
     position: static;
-    /* becomes sticky on desktop */
 }
 
 .section__title {
-    font-size: var(--step-4);
+    font-size: var(--fontsize-4);
     line-height: 0.95;
-    margin-bottom: clamp(14px, 2vw, 20px);
+    margin-bottom: var(--space-s);
 }
 
 /*
@@ -260,20 +322,25 @@ html.dark #main .page-title {
  * -------------------
  */
 
-/* base grid: 1 column, enhanced at breakpoints */
-.grid {
+/* Base: 1-column grid for content + lists */
+.grid,
+.projects-list,
+.home-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: clamp(12px, 2vw, 22px);
+    gap: var(--gap);
 }
 
+/* Card component */
 .card {
-    background: linear-gradient(180deg,
-            color-mix(in oklab, var(--surface) 98%, transparent),
-            color-mix(in oklab, var(--surface) 92%, transparent));
+    background: linear-gradient(
+        180deg,
+        color-mix(in oklab, var(--surface) 98%, transparent),
+        color-mix(in oklab, var(--surface) 92%, transparent)
+    );
     border: 1px solid var(--border);
     border-radius: 16px;
-    padding: clamp(14px, 1.8vw, 22px);
+    padding: var(--space-xs);
     overflow: hidden;
     color: var(--text);
     text-decoration: none;
@@ -292,9 +359,11 @@ html.dark #main .page-title {
     inset: -1px;
     z-index: -1;
     border-radius: 17px;
-    background: radial-gradient(400px at 50% 50%,
-            color-mix(in oklab, var(--accent) 50%, transparent),
-            transparent 70%);
+    background: radial-gradient(
+        400px at 50% 50%,
+        color-mix(in oklab, var(--accent) 50%, transparent),
+        transparent 70%
+    );
     opacity: 0;
     transition: opacity 0.2s ease;
 }
@@ -302,7 +371,6 @@ html.dark #main .page-title {
 .card:hover {
     transform: translateY(-6px);
     border-color: rgba(255, 255, 255, 0.15);
-    /* fine even on light, subtle */
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
     text-decoration: none;
 }
@@ -310,11 +378,6 @@ html.dark #main .page-title {
 .card:hover::before {
     opacity: 1;
 }
-
-/* modifiers are activated on desktop via grid spans */
-.card--feature {}
-
-.card--tall {}
 
 .card__media {
     width: 100%;
@@ -339,19 +402,38 @@ html.dark #main .page-title {
 }
 
 .card__title {
-    font-size: var(--step-1);
+    font-family: var(--font-body);
+    font-size: var(--fontsize-1);
     letter-spacing: -0.01em;
-    font-weight: 800;
+    font-weight: 700;
     margin-bottom: 6px;
     color: var(--text);
 }
 
 .card__meta {
     color: var(--muted);
-    font-size: var(--step--1);
+    font-size: var(--fontsize--1);
 }
 
-/* remove media block when there is no image (e.g. blog cards) */
+/* Tag pills for card lists */
+.card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3xs);
+    margin-top: var(--space-3xs);
+}
+
+.tag-pill {
+    font-family: var(--font-tag);
+    font-size: var(--fontsize--2);
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: color-mix(in oklab, var(--surface) 96%, transparent);
+    color: var(--muted);
+}
+
+/* remove media block when there is no image */
 .card__media:not(:has(img)),
 .card__media:empty {
     display: none;
@@ -368,8 +450,8 @@ html.dark #main .page-title {
 .gallery {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 12px;
-    margin-top: 18px;
+    gap: var(--space-xs);
+    margin-top: var(--space-xs);
 }
 
 .gallery img {
@@ -379,15 +461,15 @@ html.dark #main .page-title {
     display: block;
 }
 
-.stagger>*:nth-child(3n + 1) {
+.stagger > *:nth-child(3n + 1) {
     transform: translateY(8px);
 }
 
-.stagger>*:nth-child(3n + 2) {
+.stagger > *:nth-child(3n + 2) {
     transform: translateY(0);
 }
 
-.stagger>*:nth-child(3n + 3) {
+.stagger > *:nth-child(3n + 3) {
     transform: translateY(16px);
 }
 
@@ -398,11 +480,13 @@ html.dark #main .page-title {
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
     padding: 14px 0;
-    mask-image: linear-gradient(90deg,
-            transparent,
-            #000 10%,
-            #000 90%,
-            transparent);
+    mask-image: linear-gradient(
+        90deg,
+        transparent,
+        #000 10%,
+        #000 90%,
+        transparent
+    );
 }
 
 .marquee__track {
@@ -420,23 +504,21 @@ html.dark #main .page-title {
 }
 
 /* split layout (content + aside) */
-
 .split {
     display: grid;
     grid-template-columns: 1fr;
-    gap: clamp(18px, 3vw, 32px);
+    gap: var(--space-m);
 }
 
 .split__aside {
     position: static;
-    /* sticky on desktop */
 }
 
 .split__aside .box {
     background: var(--glass);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 14px;
+    padding: var(--space-xs);
 }
 
 /*
@@ -451,9 +533,11 @@ html.dark #main .page-title {
     padding: 12px 16px;
     border-radius: 999px;
     border: 1px solid var(--border);
-    background: linear-gradient(180deg,
-            rgba(255, 255, 255, 0.04),
-            rgba(255, 255, 255, 0.02));
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.04),
+        rgba(255, 255, 255, 0.02)
+    );
     font-weight: 700;
     letter-spacing: 0.01em;
     transition:
@@ -487,29 +571,12 @@ html.dark #main .page-title {
 }
 
 /*
- * 8.0 PROJECT LIST / HORIZONTAL SCROLL
+ * 8.0 PROJECT / BLOG LISTS
  * -------------------
- * Base = mobile: horizontal scroll.
+ * No horizontal scroll. Pure grids.
  */
 
-.projects-list,
-.horizontal-scroll {
-    display: flex;
-    gap: var(--gap);
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-inline: 4px;
-    padding-bottom: 6px;
-    scroll-snap-type: x mandatory;
-    align-items: stretch;
-}
-
-.projects-list .card,
-.horizontal-scroll .card {
-    min-width: clamp(220px, 75vw, 320px);
-    flex: 0 0 auto;
-    scroll-snap-align: start;
-}
+/* already covered by .grid, .projects-list, .home-grid base rule */
 
 /*
  * 9.0 ANIMATION & ACCESSIBILITY
@@ -532,9 +599,8 @@ html.dark #main .page-title {
 }
 
 @media (prefers-reduced-motion: reduce) {
-
     .projects-list,
-    .horizontal-scroll,
+    .home-grid,
     .card,
     .marquee__track,
     .reveal {
@@ -551,12 +617,14 @@ html.dark #main .page-title {
 
 @media (min-width: 720px) {
     body {
-        padding: 24px;
+        padding-block: var(--space-m);
+        padding-inline-start: max(var(--space-m), env(safe-area-inset-left));
+        padding-inline-end: max(var(--space-m), env(safe-area-inset-right));
     }
 
     #main {
-        margin: clamp(24px, 4vw, 64px) auto;
-        padding: clamp(20px, 3vw, 40px);
+        margin: var(--space-m) auto;
+        padding: var(--space-s);
     }
 
     /* generic grid: 2 columns on tablet */
@@ -564,26 +632,40 @@ html.dark #main .page-title {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    /* projects/blog lists: switch to 2-col grid instead of horizontal scroll */
+    /* project/blog home lists: 2 columns tablet+ */
     .projects-list,
-    .horizontal-scroll {
-        display: grid;
+    .home-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: var(--gap);
-        overflow-x: visible;
-        padding-inline: 0;
-    }
-
-    .projects-list .card,
-    .horizontal-scroll .card {
-        min-width: 0;
-        flex: initial;
-        scroll-snap-align: initial;
     }
 
     .gallery {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: var(--gap);
+    }
+}
+
+/*
+ * 10.5 BREAKPOINT 1.5 – TABLET+ (min-width: 900px)
+ * -----------------------------------------------
+ * Intermediate breakpoint for better tablet UX
+ */
+
+@media (min-width: 900px) {
+    body {
+        padding-block: var(--space-m);
+        padding-inline-start: max(var(--space-m), env(safe-area-inset-left));
+        padding-inline-end: max(var(--space-m), env(safe-area-inset-right));
+    }
+
+    #main {
+        margin: var(--space-m) auto;
+        max-width: 96%;
+        padding: var(--space-s);
+        padding-bottom: var(--space-2xs);
+    }
+
+    .section {
+        margin: calc(var(--space-l) * 1.25) 0;
     }
 }
 
@@ -594,76 +676,32 @@ html.dark #main .page-title {
 
 @media (min-width: 1024px) {
     body {
-        padding: 28px;
+        padding-block: var(--space-m);
+        padding-inline-start: max(var(--space-m), env(safe-area-inset-left));
+        padding-inline-end: max(var(--space-m), env(safe-area-inset-right));
     }
 
-    /* section labels become sticky on desktop */
+    #main {
+        max-width: 96%;
+        padding: var(--space-m);
+        padding-bottom: var(--space-s);
+    }
+
     .section__label {
         position: sticky;
         top: 16px;
         z-index: 10;
     }
 
-    /* 12-column grid for complex layouts */
+    /* generic grid: 3 columns on ultra-wide */
     .grid {
-        grid-template-columns: repeat(12, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     }
 
-    /* default card span in a 12-col grid */
-    .grid>.card {
-        grid-column: span 4;
-    }
-
-    .grid>.card.card--feature {
-        grid-column: span 8;
-    }
-
-    .grid>.card.card--tall {
-        grid-row: span 2;
-    }
-
-    /* projects list: 2-column grid with consistent card heights */
-    .projects-list {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: var(--gap);
-    }
-
-    .projects-list .card {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        min-height: 360px;
-        padding: clamp(16px, 1.6vw, 22px);
-    }
-
-    .projects-list .card__media,
-    .home-grid .card__media {
-        aspect-ratio: 16 / 10;
-        width: 100%;
-        min-height: 220px;
-        border-radius: 12px;
-        overflow: hidden;
-        margin-bottom: 12px;
-        background: color-mix(in oklab, var(--surface) 95%, transparent);
-    }
-
-    .projects-list .card__media img,
-    .home-grid .card__media img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
-
-    .projects-list .card__title,
-    .home-grid .card__title {
-        margin: 0;
-    }
-
-    .projects-list .card__meta {
-        margin-top: auto;
-        color: var(--muted);
+    /* projects/blog lists: 3 columns on desktop, 4 on ultra-wide */
+    .projects-list,
+    .home-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     }
 
     /* split layout: 2 columns with sticky aside */
@@ -680,5 +718,26 @@ html.dark #main .page-title {
 
     .gallery img {
         aspect-ratio: 16 / 9;
+    }
+
+    .gallery {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/*
+ * 12.0 BREAKPOINT 3 – ULTRA-WIDE (min-width: 1400px)
+ * ---------------------------------------------------
+ */
+
+@media (min-width: 1400px) {
+    .projects-list,
+    .home-grid,
+    .grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .gallery {
+        grid-template-columns: repeat(4, 1fr);
     }
 }

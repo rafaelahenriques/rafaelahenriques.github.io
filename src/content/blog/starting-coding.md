@@ -4,7 +4,6 @@ date: 2024-11-06
 tags: ["Learning", "Beginner", "Programming"]
 description: "Mindset shifts and practical habits that help you start coding without drowning in complexity."
 ---
-# Tips when coding for the first time: A Survival Guide
 
 When you write your first lines of code, you aren't just learning a language; you are learning a new way of thinking. It can feel overwhelming to stare at a screen full of syntax, terrified that one wrong keystroke will break everything.
 

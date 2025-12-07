@@ -3,58 +3,287 @@ import Base from "../layouts/BaseLayout.astro";
 ---
 
 <Base title="About" description="About Rafaela Henriques">
-    <section class="section">
-        <h1 class="page-title">About Me</h1>
+  <section class="section about">
+    <!-- HEADER / INTRO -->
+    <header class="about__header">
+      <h1 class="page-title">About Me</h1>
 
-        <p class="lead">
-            I’m a web developer who enjoys building fast, focused interfaces
-            with as little noise as possible. My background mixes web
-            development, creative coding, and game development in Unity.
-        </p>
+       <!-- TRAIT PILLS -->
+      <div class="about__traits" aria-label="Personal traits">
+        {["Adaptable", "Hard-working", "Friendly", "Curious", "Observant", "Proactive"].map(
+          (trait) => (
+            <span class="about__trait-pill">{trait}</span>
+          ),
+        )}
+      </div>
 
-        <p>
-            I care about structure, performance, and clear communication in the
-            UI. Every component should have a reason to exist—if a feature
-            doesn’t help the user or the product, it doesn’t ship.
-        </p>
+      <p class="lead">
+        I’m a web developer with a background in game development. Right now I’m
+        studying Digital Design &amp; Development (Devine) at Howest, where I
+        focus on building interfaces that feel sharp, fast, and clear.
+      </p>
 
-        <p>
-            I like working close to the front end: establishing design tokens,
-            building responsive layouts, and wiring up interactions that feel
-            smooth but never distracting.
-        </p>
+      <p>
+        I’m Angolan and Portuguese, and that mix shows up in how I think about
+        products: practical, direct, but still open to experimentation when it
+        actually improves the experience.
+      </p>
 
-        <h2>What I work with</h2>
-        <ul>
-            <li><strong>Web</strong>: HTML, CSS, JavaScript, Astro, React</li>
-            <li><strong>Interaction & motion</strong>: GSAP, Framer Motion</li>
-            <li><strong>Programming</strong>: C#, C++, Python, JavaScript</li>
-            <li>
-                <strong>Game development</strong>: Unity (input, UI, basic
-                physics, game flow)
-            </li>
-            <li><strong>Tools</strong>: Git, GitHub, VS Code, Figma</li>
-        </ul>
+      <p>
+        I like working close to the front end: design tokens, responsive
+        layouts, and interactions that feel intentional instead of noisy.
+      </p>
 
-        <h2>How I work</h2>
-        <ul>
-            <li>Mobile-first layouts, then refine for larger breakpoints.</li>
-            <li>Reusable components over copy–paste styling.</li>
-            <li>Accessibility as a requirement, not an add-on.</li>
-            <li>
-                Prefer small, focused features over bloated “all-in-one” pages.
-            </li>
-        </ul>
+    </header>
 
-        <h2>Contact</h2>
-        <p>
-            <a
-                href="mailto:rafaela.henriques@student.howest.be"
-                class="button button--primary"
-                aria-label="Email Rafaela"
-            >
-                Email me
-            </a>
-        </p>
+    <!-- WHAT I WORK WITH -->
+    <section class="about__skills" aria-labelledby="about-skills-heading">
+      <h2 id="about-skills-heading" class="about__skills-title">
+        What I work with
+      </h2>
+
+      <div class="about__skills-grid">
+        <!-- Web -->
+        <article class="about__card">
+          <h3 class="about__card-title">Web</h3>
+          <div class="about__pill-row">
+            {["HTML", "CSS", "JavaScript", "Astro", "React"].map((item) => (
+              <span class="about__pill">{item}</span>
+            ))}
+          </div>
+        </article>
+
+        <!-- Interaction & motion -->
+        <article class="about__card">
+          <h3 class="about__card-title">Interaction &amp; motion</h3>
+          <div class="about__pill-row">
+            {["GSAP", "Framer Motion"].map((item) => (
+              <span class="about__pill">{item}</span>
+            ))}
+          </div>
+        </article>
+
+        <!-- Programming -->
+        <article class="about__card">
+          <h3 class="about__card-title">Programming</h3>
+          <div class="about__pill-row">
+            {["C" ,"C#","C++", "Python", "JavaScript"].map((item) => (
+              <span class="about__pill">{item}</span>
+            ))}
+          </div>
+        </article>
+
+        <!-- Game development -->
+        <article class="about__card">
+          <h3 class="about__card-title">Game development</h3>
+          <div class="about__pill-row">
+            {["Unity", "Unreal", "Game flow"].map(
+              (item) => (
+                <span class="about__pill">{item}</span>
+              ),
+            )}
+          </div>
+        </article>
+
+        <!-- Tools -->
+        <article class="about__card">
+          <h3 class="about__card-title">Tools</h3>
+          <div class="about__pill-row">
+            {["Git", "GitHub", "VS Code", "Figma"].map((item) => (
+              <span class="about__pill">{item}</span>
+            ))}
+          </div>
+        </article>
+      </div>
     </section>
+
+    <!-- CONTACT BLOCK (SEPARATE & CENTERED) -->
+    <section class="about__contact" aria-labelledby="about-contact-heading">
+      <h2 id="about-contact-heading" class="about__contact-title">
+        Contact
+      </h2>
+      <p class="about__contact-text">
+        Open for front-end focused roles, collaboration, and projects where
+        design and development actually talk to each other.
+      </p>
+      <a
+        href="mailto:rafaela.henriques@student.howest.be"
+        class="button button--primary"
+        aria-label="Email Rafaela"
+      >
+        Email me
+      </a>
+    </section>
+  </section>
+
+  <style>
+    .about {
+      display: flex;
+      flex-direction: column;
+      gap: calc(var(--gap) * 2);
+    }
+
+    .about__header {
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap);
+    }
+
+    /* More space between title and text */
+    .about .page-title {
+      margin-bottom: calc(var(--gap) * 1.5);
+    }
+
+
+    /* Trait pills */
+    .about__traits {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .about__trait-pill {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: color-mix(in oklab, var(--surface) 95%, transparent);
+      font-size: var(--step--1);
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    /* Skills section */
+    .about__skills {
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap);
+    }
+
+    .about__skills-title {
+      font-size: var(--step-2);
+      margin-bottom: 4px;
+    }
+
+    .about__skills-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--gap);
+    }
+
+    .about__card {
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: linear-gradient(
+        145deg,
+        color-mix(in oklab, var(--surface) 96%, transparent),
+        color-mix(in oklab, var(--surface) 90%, transparent)
+      );
+      padding: clamp(14px, 2vw, 20px);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+        align-items: center;
+        text-align: center;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+      transition:
+        transform 0.18s ease,
+        box-shadow 0.2s ease,
+        border-color 0.18s ease,
+        background 0.18s ease;
+    }
+
+    .about__card::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      opacity: 0;
+      background: radial-gradient(
+        circle at 0 0,
+        color-mix(in oklab, var(--accent) 35%, transparent),
+        transparent 60%
+      );
+      z-index: -1;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      transform: translate3d(-10px, -10px, 0);
+    }
+
+    .about__card:hover,
+    .about__card:focus-within {
+      transform: translateY(-4px);
+      border-color: color-mix(in oklab, var(--accent) 55%, white);
+      background: color-mix(in oklab, var(--accent) 8%, var(--surface));
+      box-shadow: 0 20px 52px rgba(0, 0, 0, 0.2);
+    }
+
+    .about__card:hover::before,
+    .about__card:focus-within::before {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+
+    .about__card-title {
+      font-size: var(--step-1);
+      margin: 0;
+    }
+
+    .about__pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .about__pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: var(--step--1);
+      background: color-mix(in oklab, var(--bg) 70%, var(--accent) 15%);
+      border: 1px solid color-mix(in oklab, var(--accent) 45%, transparent);
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    /* Contact block separated & centered */
+    .about__contact {
+      margin-top: calc(var(--gap) * 1);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .about__contact-title {
+      font-size: var(--step-2);
+    }
+
+    .about__contact-text {
+      margin: 0 auto;
+    }
+
+    /* Tablet */
+    @media (min-width: 720px) {
+      .about {
+        gap: calc(var(--gap) * 2.5);
+      }
+
+      .about__skills-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    /* Desktop: intro left, skills right */
+    @media (min-width: 1024px) {
+      .about {
+       gap: calc(var(--gap) * 3.5);
+      }
+      
+       .about__skills-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+  </style>
 </Base>
