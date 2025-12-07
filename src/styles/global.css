@@ -7,6 +7,7 @@
 :root {
     color-scheme: light;
 
+    /* Color tokens */
     --bg: #ffffff;
     --surface: #f5f7fa;
     --text: #0d0f12;
@@ -18,22 +19,67 @@
 
     --radius: 14px;
     --max-width: 1200px;
+
+    /* Font families */
     --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
-    --ui: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-        "Helvetica Neue", Arial;
+    --font-title: "Gasoek One", sans-serif;
+    --font-body: "Roboto", sans-serif;
+    --font-logo: "Rubik Glitch", system-ui;
+    --ui: var(--font-body);
 
-    /* Utopia type scale (base steps) */
-    --step--1: clamp(0.9375rem, 0.8288rem + 0.5435vw, 1.25rem);
-    --step-0: clamp(1.125rem, 0.9728rem + 0.7609vw, 1.5625rem);
-    --step-1: clamp(1.35rem, 1.1402rem + 1.0489vw, 1.9531rem);
-    --step-2: clamp(1.62rem, 1.3343rem + 1.4285vw, 2.4414rem);
+    /* Utopia – fluid font sizes */
+    /* @link https://utopia.fyi/type/calculator?c=320,18,1.2,1240,27,1.25,7,2,&s=0.75|0.5|0.25,1.5|2|3|4|6,s-l&g=s,l,xl,12 */
+    --fontsize--2: clamp(0.7813rem, 0.6773rem + 0.5196vw, 1.08rem);
+    --fontsize--1: clamp(0.9375rem, 0.794rem + 0.7174vw, 1.35rem);
+    --fontsize-0: clamp(1.125rem, 0.9293rem + 0.9783vw, 1.6875rem);
+    --fontsize-1: clamp(1.35rem, 1.0859rem + 1.3207vw, 2.1094rem);
+    --fontsize-2: clamp(1.62rem, 1.2664rem + 1.7682vw, 2.6367rem);
+    --fontsize-3: clamp(1.944rem, 1.4738rem + 2.3511vw, 3.2959rem);
+    --fontsize-4: clamp(2.3328rem, 1.7112rem + 3.108vw, 4.1199rem);
+    --fontsize-5: clamp(2.7994rem, 1.9818rem + 4.0878vw, 5.1498rem);
+    --fontsize-6: clamp(3.3592rem, 2.2886rem + 5.3532vw, 6.4373rem);
+    --fontsize-7: clamp(4.0311rem, 2.6344rem + 6.9836vw, 8.0466rem);
 
-    /* Larger display steps layered on top */
-    --step-3: clamp(2.2rem, 4vw, 3.2rem);
-    --step-4: clamp(3.2rem, 6vw, 5rem);
-    --step-5: clamp(4.2rem, 8vw, 7.2rem);
+    /* Backwards-compat aliases (so existing code using --step-* still works) */
+    --step--1: var(--fontsize--1);
+    --step-0: var(--fontsize-0);
+    --step-1: var(--fontsize-1);
+    --step-2: var(--fontsize-2);
+    --step-3: var(--fontsize-3);
+    --step-4: var(--fontsize-4);
+    --step-5: var(--fontsize-5);
 
-    --gap: clamp(16px, 2.2vw, 28px);
+    /* Utopia – spacing scale */
+    /* @link https://utopia.fyi/space/calculator?c=320,18,1.2,1240,27,1.25,7,2,&s=0.75|0.5|0.25,1.5|2|3|4|6,s-l&g=s,l,xl,12 */
+    --space-3xs: clamp(0.3125rem, 0.269rem + 0.2174vw, 0.4375rem);
+    --space-2xs: clamp(0.5625rem, 0.4538rem + 0.5435vw, 0.875rem);
+    --space-xs: clamp(0.875rem, 0.7446rem + 0.6522vw, 1.25rem);
+    --space-s: clamp(1.125rem, 0.9293rem + 0.9783vw, 1.6875rem);
+    --space-m: clamp(1.6875rem, 1.3832rem + 1.5217vw, 2.5625rem);
+    --space-l: clamp(2.25rem, 1.8587rem + 1.9565vw, 3.375rem);
+    --space-xl: clamp(3.375rem, 2.788rem + 2.9348vw, 5.0625rem);
+    --space-2xl: clamp(4.5rem, 3.7174rem + 3.913vw, 6.75rem);
+    --space-3xl: clamp(6.75rem, 5.5761rem + 5.8696vw, 10.125rem);
+
+    /* One-up pairs */
+    --space-3xs-2xs: clamp(0.3125rem, 0.1168rem + 0.9783vw, 0.875rem);
+    --space-2xs-xs: clamp(0.5625rem, 0.3234rem + 1.1957vw, 1.25rem);
+    --space-xs-s: clamp(0.875rem, 0.5924rem + 1.413vw, 1.6875rem);
+    --space-s-m: clamp(1.125rem, 0.625rem + 2.5vw, 2.5625rem);
+    --space-m-l: clamp(1.6875rem, 1.1005rem + 2.9348vw, 3.375rem);
+    --space-l-xl: clamp(2.25rem, 1.2717rem + 4.8913vw, 5.0625rem);
+    --space-xl-2xl: clamp(3.375rem, 2.2011rem + 5.8696vw, 6.75rem);
+    --space-2xl-3xl: clamp(4.5rem, 2.5435rem + 9.7826vw, 10.125rem);
+
+    /* Custom pair */
+    --space-s-l: clamp(1.125rem, 0.3424rem + 3.913vw, 3.375rem);
+
+    /* Generic layout gap token */
+    --gap: var(--space-m);
+
+    /* Generic fluid clamp example (free to use anywhere) */
+    /* @link https://utopia.fyi/clamp/calculator?a=320,1240,16—48 */
+    --fluid-16-48: clamp(1rem, 0.3043rem + 3.4783vw, 3rem);
 }
 
 /* DARK THEME OVERRIDES (triggered by html.dark from ThemeToggle) */
@@ -63,7 +109,7 @@ html.dark {
 
 html,
 body {
-    height: 100%;
+    height: auto;
 }
 
 html,
@@ -91,21 +137,25 @@ dd {
 }
 
 body {
-    font-family: var(--ui);
+    font-family: var(--font-body);
     color: var(--text);
     -webkit-font-smoothing: antialiased;
     line-height: 1.5;
-    padding: 16px;
+    padding: var(--space-s);
 
     /* THEMED BACKGROUND */
     background-color: var(--bg);
     background-image:
-        radial-gradient(at 10% 10%,
+        radial-gradient(
+            at 10% 10%,
             color-mix(in oklab, var(--accent) 18%, transparent) 0%,
-            transparent 40%),
-        radial-gradient(1200px 600px at 20% 0%,
+            transparent 40%
+        ),
+        radial-gradient(
+            1200px 600px at 20% 0%,
             color-mix(in oklab, var(--surface) 96%, transparent) 0%,
-            color-mix(in oklab, var(--bg) 100%, transparent) 60%);
+            color-mix(in oklab, var(--bg) 100%, transparent) 60%
+        );
     background-attachment: fixed;
 }
 
@@ -130,7 +180,7 @@ pre {
 }
 
 pre {
-    padding: 14px;
+    padding: var(--space-xs);
     overflow: auto;
 }
 
@@ -146,18 +196,19 @@ code {
 
 .h-kicker {
     color: var(--muted);
-    font-size: var(--step--1);
+    font-size: var(--fontsize--1);
     text-transform: uppercase;
     letter-spacing: 0.18em;
 }
 
 h1,
 #main .page-title {
-    font-size: var(--step-5);
+    font-family: var(--font-title);
+    font-size: var(--fontsize-5);
     line-height: 0.95;
     letter-spacing: -0.02em;
-    font-weight: 900;
-    margin-bottom: clamp(8px, 1.2vw, 12px);
+    font-weight: 400;
+    margin-bottom: var(--space-s);
     /* Light theme: bold dark gradient */
     background: linear-gradient(180deg, #111111 40%, #4a4a4a);
     -webkit-background-clip: text;
@@ -175,43 +226,42 @@ html.dark #main .page-title {
 }
 
 .lead {
-    font-size: var(--step-2);
+    font-size: var(--fontsize-2);
     color: color-mix(in oklab, var(--text) 92%, transparent);
-    max-width: 60ch;
     margin-bottom: var(--gap);
 }
 
 #main h2 {
-    font-size: var(--step-3);
-    font-weight: 800;
+    font-family: var(--font-title);
+    font-size: var(--fontsize-3);
+    font-weight: 300;
     letter-spacing: -0.01em;
     margin-bottom: var(--gap);
     margin-top: calc(var(--gap) * 1.5);
 }
 
 #main h3 {
-    font-size: var(--step-2);
+    font-size: var(--fontsize-2);
     font-weight: 700;
-    margin-bottom: clamp(10px, 1.5vw, 16px);
+    margin-bottom: var(--space-xs);
     margin-top: calc(var(--gap) * 1.5);
 }
 
 #main p,
 #main ul,
 #main ol {
-    font-size: var(--step-0);
+    font-size: var(--fontsize-0);
     margin-bottom: var(--gap);
-    max-width: 70ch;
     line-height: 1.7;
 }
 
 #main ul,
 #main ol {
-    padding-left: 24px;
+    padding-left: 1.5rem;
 }
 
 #main li {
-    margin-bottom: 12px;
+    margin-bottom: var(--space-3xs);
 }
 
 /*
@@ -220,39 +270,40 @@ html.dark #main .page-title {
  */
 
 #main {
-    max-width: var(--max-width);
-    margin: 16px auto;
-    padding: 18px;
+
+    margin: var(--space-xs) auto;
+    padding: var(--space-s);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     backdrop-filter: blur(12px);
-    background: linear-gradient(180deg,
-            color-mix(in oklab, var(--surface) 96%, transparent),
-            color-mix(in oklab, var(--surface) 90%, transparent));
+    background: linear-gradient(
+        180deg,
+        color-mix(in oklab, var(--surface) 96%, transparent),
+        color-mix(in oklab, var(--surface) 90%, transparent)
+    );
     position: relative;
     z-index: 2;
 }
 
 .section {
     position: relative;
-    margin: clamp(28px, 7vw, 80px) 0;
+    margin: var(--space-l) 0;
 }
 
 .section__label {
-    font-size: var(--step--1);
+    font-size: var(--fontsize--1);
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.16em;
     margin-bottom: 10px;
     position: static;
-    /* becomes sticky on desktop */
 }
 
 .section__title {
-    font-size: var(--step-4);
+    font-size: var(--fontsize-4);
     line-height: 0.95;
-    margin-bottom: clamp(14px, 2vw, 20px);
+    margin-bottom: var(--space-s);
 }
 
 /*
@@ -264,16 +315,18 @@ html.dark #main .page-title {
 .grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: clamp(12px, 2vw, 22px);
+    gap: var(--gap);
 }
 
 .card {
-    background: linear-gradient(180deg,
-            color-mix(in oklab, var(--surface) 98%, transparent),
-            color-mix(in oklab, var(--surface) 92%, transparent));
+    background: linear-gradient(
+        180deg,
+        color-mix(in oklab, var(--surface) 98%, transparent),
+        color-mix(in oklab, var(--surface) 92%, transparent)
+    );
     border: 1px solid var(--border);
     border-radius: 16px;
-    padding: clamp(14px, 1.8vw, 22px);
+    padding: var(--space-xs);
     overflow: hidden;
     color: var(--text);
     text-decoration: none;
@@ -292,9 +345,11 @@ html.dark #main .page-title {
     inset: -1px;
     z-index: -1;
     border-radius: 17px;
-    background: radial-gradient(400px at 50% 50%,
-            color-mix(in oklab, var(--accent) 50%, transparent),
-            transparent 70%);
+    background: radial-gradient(
+        400px at 50% 50%,
+        color-mix(in oklab, var(--accent) 50%, transparent),
+        transparent 70%
+    );
     opacity: 0;
     transition: opacity 0.2s ease;
 }
@@ -302,7 +357,6 @@ html.dark #main .page-title {
 .card:hover {
     transform: translateY(-6px);
     border-color: rgba(255, 255, 255, 0.15);
-    /* fine even on light, subtle */
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
     text-decoration: none;
 }
@@ -313,7 +367,6 @@ html.dark #main .page-title {
 
 /* modifiers are activated on desktop via grid spans */
 .card--feature {}
-
 .card--tall {}
 
 .card__media {
@@ -339,7 +392,7 @@ html.dark #main .page-title {
 }
 
 .card__title {
-    font-size: var(--step-1);
+    font-size: var(--fontsize-1);
     letter-spacing: -0.01em;
     font-weight: 800;
     margin-bottom: 6px;
@@ -348,7 +401,7 @@ html.dark #main .page-title {
 
 .card__meta {
     color: var(--muted);
-    font-size: var(--step--1);
+    font-size: var(--fontsize--1);
 }
 
 /* remove media block when there is no image (e.g. blog cards) */
@@ -368,8 +421,8 @@ html.dark #main .page-title {
 .gallery {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 12px;
-    margin-top: 18px;
+    gap: var(--space-xs);
+    margin-top: var(--space-xs);
 }
 
 .gallery img {
@@ -379,15 +432,15 @@ html.dark #main .page-title {
     display: block;
 }
 
-.stagger>*:nth-child(3n + 1) {
+.stagger > *:nth-child(3n + 1) {
     transform: translateY(8px);
 }
 
-.stagger>*:nth-child(3n + 2) {
+.stagger > *:nth-child(3n + 2) {
     transform: translateY(0);
 }
 
-.stagger>*:nth-child(3n + 3) {
+.stagger > *:nth-child(3n + 3) {
     transform: translateY(16px);
 }
 
@@ -398,11 +451,13 @@ html.dark #main .page-title {
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
     padding: 14px 0;
-    mask-image: linear-gradient(90deg,
-            transparent,
-            #000 10%,
-            #000 90%,
-            transparent);
+    mask-image: linear-gradient(
+        90deg,
+        transparent,
+        #000 10%,
+        #000 90%,
+        transparent
+    );
 }
 
 .marquee__track {
@@ -424,19 +479,18 @@ html.dark #main .page-title {
 .split {
     display: grid;
     grid-template-columns: 1fr;
-    gap: clamp(18px, 3vw, 32px);
+    gap: var(--space-m);
 }
 
 .split__aside {
     position: static;
-    /* sticky on desktop */
 }
 
 .split__aside .box {
     background: var(--glass);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 14px;
+    padding: var(--space-xs);
 }
 
 /*
@@ -451,9 +505,11 @@ html.dark #main .page-title {
     padding: 12px 16px;
     border-radius: 999px;
     border: 1px solid var(--border);
-    background: linear-gradient(180deg,
-            rgba(255, 255, 255, 0.04),
-            rgba(255, 255, 255, 0.02));
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.04),
+        rgba(255, 255, 255, 0.02)
+    );
     font-weight: 700;
     letter-spacing: 0.01em;
     transition:
@@ -532,7 +588,6 @@ html.dark #main .page-title {
 }
 
 @media (prefers-reduced-motion: reduce) {
-
     .projects-list,
     .horizontal-scroll,
     .card,
@@ -551,12 +606,12 @@ html.dark #main .page-title {
 
 @media (min-width: 720px) {
     body {
-        padding: 24px;
+        padding: var(--space-m);
     }
 
     #main {
-        margin: clamp(24px, 4vw, 64px) auto;
-        padding: clamp(20px, 3vw, 40px);
+        margin: var(--space-m) auto;
+        padding: var(--space-s);
     }
 
     /* generic grid: 2 columns on tablet */
@@ -594,7 +649,7 @@ html.dark #main .page-title {
 
 @media (min-width: 1024px) {
     body {
-        padding: 28px;
+        padding: var(--space-m);
     }
 
     /* section labels become sticky on desktop */
@@ -610,15 +665,15 @@ html.dark #main .page-title {
     }
 
     /* default card span in a 12-col grid */
-    .grid>.card {
+    .grid > .card {
         grid-column: span 4;
     }
 
-    .grid>.card.card--feature {
+    .grid > .card.card--feature {
         grid-column: span 8;
     }
 
-    .grid>.card.card--tall {
+    .grid > .card.card--tall {
         grid-row: span 2;
     }
 
