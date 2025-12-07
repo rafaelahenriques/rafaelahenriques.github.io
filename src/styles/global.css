@@ -5,7 +5,7 @@
 
 /* LIGHT THEME (DEFAULT + NO-JS) */
 :root {
-    color-scheme: light;
+    color-scheme: light dark;
 
     /* Color tokens */
     --bg: #ffffff;
@@ -94,6 +94,11 @@ html.dark {
     --shadow: 0 35px 90px rgba(0, 0, 0, 0.65);
 }
 
+/* Manual LIGHT override (wins over system dark) */
+html.light {
+    color-scheme: light;
+}
+
 /*
  * 2.0 BASE & RESET
  * -------------------
@@ -103,10 +108,6 @@ html.dark {
 *::before,
 *::after {
     box-sizing: border-box;
-}
-
-html {
-   
 }
 
 html,
@@ -132,7 +133,6 @@ li,
 figure,
 figcaption,
 blockquote,
-dl,
 dt,
 dd {
     margin: 0;
@@ -603,10 +603,32 @@ html.dark #main .page-title {
     .home-grid,
     .card,
     .marquee__track,
-    .reveal {
+        .reveal,
+        .navigation__link,
+        .button,
+        .theme-icon {
         transition: none !important;
         animation: none !important;
         scroll-behavior: auto;
+    }
+}
+
+/* High contrast preferences */
+@media (prefers-contrast: more) {
+    :root {
+        --border: color-mix(in oklab, var(--text) 35%, transparent);
+        --glass: color-mix(in oklab, var(--bg) 94%, transparent);
+    }
+    a { text-decoration: underline; }
+    .button, .navigation__link, .blog-back, .blog-nav__link, .project-filters__button, .blog-filters__button {
+        border-width: 2px;
+    }
+    .site-header { backdrop-filter: none; }
+}
+
+@media (prefers-contrast: less) {
+    :root {
+        --border: color-mix(in oklab, var(--border) 70%, transparent);
     }
 }
 
@@ -693,15 +715,19 @@ html.dark #main .page-title {
         z-index: 10;
     }
 
-    /* generic grid: 3 columns on ultra-wide */
+    /* generic grid for non-card layouts */
     .grid {
         grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     }
 
-    /* projects/blog lists: 3 columns on desktop, 4 on ultra-wide */
+    /* CARD GRIDS – projects + home + blog → MAX 2 COLUMNS */
     .projects-list,
-    .home-grid {
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    .home-grid,
+    .blog-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        max-width: 1200px;
+        margin-inline: auto;
+        gap: var(--space-m);
     }
 
     /* split layout: 2 columns with sticky aside */
@@ -731,13 +757,36 @@ html.dark #main .page-title {
  */
 
 @media (min-width: 1400px) {
+    /* generic grids can expand further if used elsewhere */
+    .grid {
+        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    }
+
+    /* CARD GRIDS STAY AT 2 COLUMNS → big cards */
     .projects-list,
     .home-grid,
-    .grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+    .blog-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        max-width: 1300px;
+        margin-inline: auto;
+        gap: var(--space-m);
     }
 
     .gallery {
         grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* System dark mode fallback when user hasn't toggled manually */
+@media (prefers-color-scheme: dark) {
+    html:not(.dark):not(.light) {
+        --bg: #050608;
+        --surface: #0b0f13;
+        --text: #f2f6ff;
+        --muted: #c2ccd8;
+        --accent: #4da6ff;
+        --glass: rgba(255, 255, 255, 0.04);
+        --border: rgba(255, 255, 255, 0.14);
+        --shadow: 0 35px 90px rgba(0, 0, 0, 0.65);
     }
 }

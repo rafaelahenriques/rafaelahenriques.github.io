@@ -33,7 +33,9 @@ const sortedProjects = [...projects].sort((a, b) => {
   return (a.data.title ?? "").localeCompare(b.data.title ?? "");
 });
 
-const currentIndex = sortedProjects.findIndex((p) => p.id.replace(/\.md$/, "") === currentId);
+const currentIndex = sortedProjects.findIndex(
+  (p) => p.id.replace(/\.md$/, "") === currentId
+);
 const prev =
   currentIndex > 0 ? sortedProjects[currentIndex - 1] : null;
 const next =
@@ -72,28 +74,41 @@ const roles: string[] = Array.isArray(rawRole)
       </div>
     )}
 
-    <nav class="project-nav" aria-label="Project navigation">
-      <div class="project-nav__side">
-        {prev && (
-          <a
-            href={`/projects/${prev.id.replace(/\.md$/, "")}/`}
-            class="nav-link nav-prev"
-          >
-            ← Previous: {prev.data.title}
-          </a>
-        )}
-      </div>
-      <div class="project-nav__side project-nav__side--right">
-        {next && (
-          <a
-            href={`/projects/${next.id.replace(/\.md$/, "")}/`}
-            class="nav-link nav-next"
-          >
-            Next: {next.data.title} →
-          </a>
-        )}
-      </div>
-    </nav>
+    {(prev || next) && (
+      <nav class="project-nav" aria-label="Project navigation">
+        <div class="project-nav__side">
+          {prev && (
+            <a
+              href={`/projects/${prev.id.replace(/\.md$/, "")}/`}
+              class="nav-link nav-prev"
+              aria-label={`Previous: ${prev.data.title}`}
+            >
+              {/* MOBILE CIRCLE ARROW ONLY */}
+              <span class="nav-circle" aria-hidden="true">←</span>
+
+              {/* DESKTOP TEXT + ARROW (SAME LOOK AS BEFORE) */}
+              <span class="nav-label">← Previous: {prev.data.title}</span>
+            </a>
+          )}
+        </div>
+
+        <div class="project-nav__side project-nav__side--right">
+          {next && (
+            <a
+              href={`/projects/${next.id.replace(/\.md$/, "")}/`}
+              class="nav-link nav-next"
+              aria-label={`Next: ${next.data.title}`}
+            >
+              {/* DESKTOP TEXT + ARROW (SAME LOOK AS BEFORE) */}
+              <span class="nav-label">Next: {next.data.title} →</span>
+
+              {/* MOBILE CIRCLE ARROW ONLY */}
+              <span class="nav-circle" aria-hidden="true">→</span>
+            </a>
+          )}
+        </div>
+      </nav>
+    )}
   </section>
 
   <section class="project-body">
@@ -160,7 +175,7 @@ const roles: string[] = Array.isArray(rawRole)
     justify-content: space-between;
     margin-top: var(--gap);
     gap: 8px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     border-top: 1px solid var(--border);
     padding-top: 10px;
   }
@@ -175,6 +190,9 @@ const roles: string[] = Array.isArray(rawRole)
   }
 
   .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
     font-size: var(--step--1);
     color: var(--muted);
     text-decoration: none;
@@ -190,6 +208,33 @@ const roles: string[] = Array.isArray(rawRole)
     color: var(--text);
     background: var(--glass);
     transform: translateY(-1px);
+    text-decoration: none;
+  }
+
+  /* Circle (mobile only by default) */
+  .nav-circle {
+    display: none; /* hidden on desktop */
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: color-mix(in oklab, var(--accent) 15%, transparent);
+    border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--fontsize-1);
+    color: var(--text);
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  .nav-link:hover .nav-circle {
+    background: var(--glass);
+    border-color: var(--accent);
+  }
+
+  .nav-label {
+    white-space: nowrap;
   }
 
   .project-body {
@@ -220,6 +265,35 @@ const roles: string[] = Array.isArray(rawRole)
   @media (min-width: 1024px) {
     .gallery {
       grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* MOBILE BEHAVIOUR: circles only, no text; arrows aligned left/right */
+  @media (max-width: 599px) {
+    .project-nav {
+      flex-wrap: nowrap;
+      justify-content: space-between;
+    }
+
+    .nav-label {
+      display: none;
+    }
+
+    .nav-circle {
+      display: flex;
+    }
+
+    .project-nav__side {
+      justify-content: flex-start;
+    }
+
+    .project-nav__side--right {
+      justify-content: flex-end;
+    }
+
+    .nav-link {
+      padding-inline: 0;
+      background: transparent;
     }
   }
 </style>
