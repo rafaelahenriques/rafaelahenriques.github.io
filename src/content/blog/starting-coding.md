@@ -1,6 +1,6 @@
 ---
 title: "Tips when coding for the first time: A Survival Guide"
-date: "2025-11-06"
+date: 2024-11-06
 tags: ["Learning", "Beginner", "Programming"]
 description: "Mindset shifts and practical habits that help you start coding without drowning in complexity."
 ---

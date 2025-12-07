@@ -1,7 +1,7 @@
 ---
 title: "Thrive Beer: 'Play & Unwind' Campaign"
 year: "2025"
-tech: ["Astro", "GSAP", "Tailwind", "Motion Design"]
+tech: ["Astro", "GSAP",  "Motion Design"]
 role: "Creative Developer"
 context: "Concept Campaign (Academic Brief)"
 scope:
@@ -15,7 +15,7 @@ media:
     - "/src/assets/thrive/home.png"
     - "/src/assets/thrive/pack.png"
     - "/src/assets/thrive/ritual.png"
-tags: ["Web Development", "GSAP", "Astro", "Campaign"]
+tags: ["Web Dev", "GSAP", "Astro", "Campaign", "Design"]
 ---
 
 ## The Challenge
