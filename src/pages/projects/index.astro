@@ -89,7 +89,7 @@ const projects = sortProjects(allProjects);
         const screenshot = project.data.media?.screenshot;
         return (
           <a
-            href={`/projects/${project.id}/`}
+            href={`/projects/${project.id.replace(/\.md$/, "")}/`}
             class="card"
             data-project-category={categories.join(" ")}
           >

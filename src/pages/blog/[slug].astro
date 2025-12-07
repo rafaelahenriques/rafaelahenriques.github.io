@@ -15,7 +15,7 @@ export async function getStaticPaths() {
   const entries = (await getCollection("blog")) as BlogEntry[];
   return entries.map((entry) => ({
     // URL param is still called "slug", value comes from entry.id
-    params: { slug: entry.id },
+    params: { slug: entry.id.replace(/\.md$/, "") },
   }));
 }
 
@@ -23,7 +23,7 @@ const entries = (await getCollection("blog")) as BlogEntry[];
 const currentId = Astro.params.slug;
 
 // current entry
-const entry = entries.find((p) => p.id === currentId);
+const entry = entries.find((p) => p.id.replace(/\.md$/, "") === currentId);
 if (!entry) {
   throw new Error("Post not found");
 }
@@ -38,7 +38,7 @@ const tags = Array.isArray(entry.data.tags) ? entry.data.tags : [];
 const sorted = [...entries].sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime()
 );
-const currentIndex = sorted.findIndex((p) => p.id === entry.id);
+const currentIndex = sorted.findIndex((p) => p.id.replace(/\.md$/, "") === currentId);
 const prev = currentIndex > 0 ? sorted[currentIndex - 1] : null;
 const next =
   currentIndex < sorted.length - 1 ? sorted[currentIndex + 1] : null;
@@ -75,7 +75,7 @@ const next =
     {(prev || next) && (
       <nav class="blog-nav" aria-label="Post navigation">
         {prev ? (
-          <a href={`/blog/${prev.id}/`} class="blog-nav__link blog-nav__prev">
+          <a href={`/blog/${prev.id.replace(/\.md$/, "")}/`} class="blog-nav__link blog-nav__prev">
             ← {prev.data.title}
           </a>
         ) : (
@@ -83,7 +83,7 @@ const next =
         )}
 
         {next && (
-          <a href={`/blog/${next.id}/`} class="blog-nav__link blog-nav__next">
+          <a href={`/blog/${next.id.replace(/\.md$/, "")}/`} class="blog-nav__link blog-nav__next">
             {next.data.title} →
           </a>
         )}
@@ -176,7 +176,7 @@ const next =
   /* ---- TITLE ---- */
   .blog-title {
     font-family: var(--font-title);
-    font-size: var(--fontsize-5);
+    font-size: var(--fontsize--1);
     line-height: 1.1;
   }
 
@@ -193,6 +193,7 @@ const next =
     line-height: 1.7;
     color: var(--text);
     margin-top: var(--space-xl);
+    overflow-wrap: break-word;
   }
 
   .blog-body p {
@@ -269,7 +270,7 @@ const next =
     }
 
     .blog-title {
-      font-size: var(--fontsize-4);
+      font-size: var(--fontsize-0);
     }
 
     .blog-nav {
