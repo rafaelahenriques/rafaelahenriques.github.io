@@ -4,7 +4,6 @@ date: 2024-11-06
 tags: ["Mindset", "Career", "DevLife"]
 description: "Strategies to overcome analysis paralysis, escape tutorial hell, and push through the intimidation phase of learning."
 ---
-# The blank editor cursor: Getting over the fear of starting
 
 There is a specific feeling every developer knows. You’ve just run `npm create astro@latest`, the dependencies are installed, and you open `index.astro`. The cursor blinks. And you freeze.
 

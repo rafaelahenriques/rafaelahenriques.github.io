@@ -21,10 +21,10 @@
     --max-width: 1200px;
 
     /* Font families */
-    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
-    --font-title: "Gasoek One", sans-serif;
-    --font-body: "Roboto", sans-serif;
-    --font-logo: "Rubik Glitch", system-ui;
+    --font-title: "Press Start 2P", system-ui;
+    --font-tag: "Anonymous Pro", monospace;
+    --font-body: "Anonymous Pro", monospace;
+
     --ui: var(--font-body);
 
     /* Utopia – fluid font sizes */
@@ -40,7 +40,7 @@
     --fontsize-6: clamp(3.3592rem, 2.2886rem + 5.3532vw, 6.4373rem);
     --fontsize-7: clamp(4.0311rem, 2.6344rem + 6.9836vw, 8.0466rem);
 
-    /* Backwards-compat aliases (so existing code using --step-* still works) */
+    /* Backwards-compat aliases for step-* tokens */
     --step--1: var(--fontsize--1);
     --step-0: var(--fontsize-0);
     --step-1: var(--fontsize-1);
@@ -107,9 +107,14 @@ html.dark {
     box-sizing: border-box;
 }
 
+html {
+    overflow-x: hidden;
+}
+
 html,
 body {
     height: auto;
+    max-width: 100%;
 }
 
 html,
@@ -138,12 +143,12 @@ dd {
 
 body {
     font-family: var(--font-body);
+    font-weight: 700;
     color: var(--text);
     -webkit-font-smoothing: antialiased;
     line-height: 1.5;
-    padding: var(--space-s);
+    padding: var(--space-2xs);
 
-    /* THEMED BACKGROUND */
     background-color: var(--bg);
     background-image:
         radial-gradient(
@@ -172,7 +177,8 @@ a:hover {
 
 code,
 pre {
-    font-family: var(--mono);
+    font-family: var(--font-tag);
+    font-weight: 400;
     background: var(--glass);
     color: var(--text);
     border: 1px solid var(--border);
@@ -204,19 +210,20 @@ code {
 h1,
 #main .page-title {
     font-family: var(--font-title);
-    font-size: var(--fontsize-5);
-    line-height: 0.95;
-    letter-spacing: -0.02em;
+    font-size: clamp(1.5rem, 5vw, var(--fontsize-5));
+    line-height: 1.3;
+    letter-spacing: -0.01em;
     font-weight: 400;
     margin-bottom: var(--space-s);
-    /* Light theme: bold dark gradient */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
     background: linear-gradient(180deg, #111111 40%, #4a4a4a);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
-/* Dark theme: glow white gradient on dark bg */
 html.dark h1,
 html.dark #main .page-title {
     background: linear-gradient(180deg, #ffffff 60%, #d7e7f7);
@@ -233,16 +240,21 @@ html.dark #main .page-title {
 
 #main h2 {
     font-family: var(--font-title);
-    font-size: var(--fontsize-3);
-    font-weight: 300;
+    font-size: clamp(1.2rem, 4vw, var(--fontsize-3));
+    font-weight: 400;
+    line-height: 1.4;
     letter-spacing: -0.01em;
     margin-bottom: var(--gap);
     margin-top: calc(var(--gap) * 1.5);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 #main h3 {
-    font-size: var(--fontsize-2);
+    font-family: var(--font-body);
+    font-size: var(--fontsize-1);
     font-weight: 700;
+    line-height: 1.3;
     margin-bottom: var(--space-xs);
     margin-top: calc(var(--gap) * 1.5);
 }
@@ -251,8 +263,10 @@ html.dark #main .page-title {
 #main ul,
 #main ol {
     font-size: var(--fontsize-0);
-    margin-bottom: var(--gap);
+    margin-bottom: var(--space-xs);
     line-height: 1.7;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 #main ul,
@@ -270,9 +284,11 @@ html.dark #main .page-title {
  */
 
 #main {
-
-    margin: var(--space-xs) auto;
-    padding: var(--space-s);
+    max-width: var(--max-width);
+    width: 100%;
+    margin: var(--space-2xs) auto;
+    padding: var(--space-xs);
+    padding-bottom: var(--space-3xs);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
@@ -311,13 +327,16 @@ html.dark #main .page-title {
  * -------------------
  */
 
-/* base grid: 1 column, enhanced at breakpoints */
-.grid {
+/* Base: 1-column grid for content + lists */
+.grid,
+.projects-list,
+.home-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--gap);
 }
 
+/* Card component */
 .card {
     background: linear-gradient(
         180deg,
@@ -365,10 +384,6 @@ html.dark #main .page-title {
     opacity: 1;
 }
 
-/* modifiers are activated on desktop via grid spans */
-.card--feature {}
-.card--tall {}
-
 .card__media {
     width: 100%;
     height: 180px;
@@ -392,9 +407,10 @@ html.dark #main .page-title {
 }
 
 .card__title {
+    font-family: var(--font-body);
     font-size: var(--fontsize-1);
     letter-spacing: -0.01em;
-    font-weight: 800;
+    font-weight: 700;
     margin-bottom: 6px;
     color: var(--text);
 }
@@ -404,7 +420,25 @@ html.dark #main .page-title {
     font-size: var(--fontsize--1);
 }
 
-/* remove media block when there is no image (e.g. blog cards) */
+/* Tag pills for card lists */
+.card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3xs);
+    margin-top: var(--space-3xs);
+}
+
+.tag-pill {
+    font-family: var(--font-tag);
+    font-size: var(--fontsize--2);
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: color-mix(in oklab, var(--surface) 96%, transparent);
+    color: var(--muted);
+}
+
+/* remove media block when there is no image */
 .card__media:not(:has(img)),
 .card__media:empty {
     display: none;
@@ -475,7 +509,6 @@ html.dark #main .page-title {
 }
 
 /* split layout (content + aside) */
-
 .split {
     display: grid;
     grid-template-columns: 1fr;
@@ -543,29 +576,12 @@ html.dark #main .page-title {
 }
 
 /*
- * 8.0 PROJECT LIST / HORIZONTAL SCROLL
+ * 8.0 PROJECT / BLOG LISTS
  * -------------------
- * Base = mobile: horizontal scroll.
+ * No horizontal scroll. Pure grids.
  */
 
-.projects-list,
-.horizontal-scroll {
-    display: flex;
-    gap: var(--gap);
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-inline: 4px;
-    padding-bottom: 6px;
-    scroll-snap-type: x mandatory;
-    align-items: stretch;
-}
-
-.projects-list .card,
-.horizontal-scroll .card {
-    min-width: clamp(220px, 75vw, 320px);
-    flex: 0 0 auto;
-    scroll-snap-align: start;
-}
+/* already covered by .grid, .projects-list, .home-grid base rule */
 
 /*
  * 9.0 ANIMATION & ACCESSIBILITY
@@ -589,7 +605,7 @@ html.dark #main .page-title {
 
 @media (prefers-reduced-motion: reduce) {
     .projects-list,
-    .horizontal-scroll,
+    .home-grid,
     .card,
     .marquee__track,
     .reveal {
@@ -619,26 +635,38 @@ html.dark #main .page-title {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    /* projects/blog lists: switch to 2-col grid instead of horizontal scroll */
+    /* project/blog home lists: 2 columns tablet+ */
     .projects-list,
-    .horizontal-scroll {
-        display: grid;
+    .home-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: var(--gap);
-        overflow-x: visible;
-        padding-inline: 0;
-    }
-
-    .projects-list .card,
-    .horizontal-scroll .card {
-        min-width: 0;
-        flex: initial;
-        scroll-snap-align: initial;
     }
 
     .gallery {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: var(--gap);
+    }
+}
+
+/*
+ * 10.5 BREAKPOINT 1.5 – TABLET+ (min-width: 900px)
+ * -----------------------------------------------
+ * Intermediate breakpoint for better tablet UX
+ */
+
+@media (min-width: 900px) {
+    body {
+        padding: var(--space-m);
+    }
+
+    #main {
+        margin: var(--space-m) auto;
+        max-width: 96%;
+        padding: var(--space-s);
+        padding-bottom: var(--space-2xs);
+    }
+
+    .section {
+        margin: calc(var(--space-l) * 1.25) 0;
     }
 }
 
@@ -652,73 +680,27 @@ html.dark #main .page-title {
         padding: var(--space-m);
     }
 
-    /* section labels become sticky on desktop */
+    #main {
+        max-width: 96%;
+        padding: var(--space-m);
+        padding-bottom: var(--space-s);
+    }
+
     .section__label {
         position: sticky;
         top: 16px;
         z-index: 10;
     }
 
-    /* 12-column grid for complex layouts */
+    /* generic grid: 3 columns on ultra-wide */
     .grid {
-        grid-template-columns: repeat(12, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     }
 
-    /* default card span in a 12-col grid */
-    .grid > .card {
-        grid-column: span 4;
-    }
-
-    .grid > .card.card--feature {
-        grid-column: span 8;
-    }
-
-    .grid > .card.card--tall {
-        grid-row: span 2;
-    }
-
-    /* projects list: 2-column grid with consistent card heights */
-    .projects-list {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: var(--gap);
-    }
-
-    .projects-list .card {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        min-height: 360px;
-        padding: clamp(16px, 1.6vw, 22px);
-    }
-
-    .projects-list .card__media,
-    .home-grid .card__media {
-        aspect-ratio: 16 / 10;
-        width: 100%;
-        min-height: 220px;
-        border-radius: 12px;
-        overflow: hidden;
-        margin-bottom: 12px;
-        background: color-mix(in oklab, var(--surface) 95%, transparent);
-    }
-
-    .projects-list .card__media img,
-    .home-grid .card__media img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
-
-    .projects-list .card__title,
-    .home-grid .card__title {
-        margin: 0;
-    }
-
-    .projects-list .card__meta {
-        margin-top: auto;
-        color: var(--muted);
+    /* projects/blog lists: 3 columns on desktop, 4 on ultra-wide */
+    .projects-list,
+    .home-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     }
 
     /* split layout: 2 columns with sticky aside */
@@ -735,5 +717,26 @@ html.dark #main .page-title {
 
     .gallery img {
         aspect-ratio: 16 / 9;
+    }
+
+    .gallery {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/*
+ * 12.0 BREAKPOINT 3 – ULTRA-WIDE (min-width: 1400px)
+ * ---------------------------------------------------
+ */
+
+@media (min-width: 1400px) {
+    .projects-list,
+    .home-grid,
+    .grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .gallery {
+        grid-template-columns: repeat(4, 1fr);
     }
 }

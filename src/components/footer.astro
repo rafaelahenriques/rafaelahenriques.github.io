@@ -67,11 +67,10 @@
 
     /* --- CREATURE --- */
 
-    /* Mobile: fixed to viewport bottom (as before) */
     .footer-creature {
         position: absolute;
         bottom: 10px;
-        left: 25rem;
+        left: 20rem;
         right: 0;
         display: flex;
         justify-content: center;
@@ -108,7 +107,7 @@
         border-radius: 999px;
         background: var(--accent);
         position: absolute;
-        bottom: 8px; /* sits just above the shadow */
+        bottom: 8px;
         left: 50%;
         transform: translateX(-50%);
         box-shadow:
@@ -131,30 +130,55 @@
         gap: 10px;
     }
 
-    /* LIGHT MODE = awake eyes */
+    /* --- EYES --- */
+
+    /* Base (light mode, calm / awake) */
     .footer-creature__eye {
         position: relative;
-        width: 12px;
-        height: 12px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.95);
-        box-shadow: 0 0 0 2px rgb(43, 88, 172);
+        width: 10px;
+        height: 15px;
+        border-radius: 5px;
+        background: rgba(232, 249, 255, 0.95);
         overflow: hidden;
     }
 
+    .footer-creature__eye::before,
     .footer-creature__eye::after {
         content: "";
         position: absolute;
-        width: 9px;
-        height: 11px;
-        border-radius: 50%;
-        background: #0f2f80;
-        top: 50%;
-        left: 50%;
-        transform: translate(-70%, -40%);
+        inset: 0;
+        display: none; /* enabled in specific states below */
     }
 
-    /* DARK MODE = sleeping eyes */
+   /* --- EXCITED EYES (light mode only, shows literal >< ) --- */
+
+.footer-creature__group.footer-creature--excited .footer-creature__eye {
+    background: none;
+    width: 18px;
+    height: 18px;
+    position: relative;
+}
+
+.footer-creature__group.footer-creature--excited .footer-creature__eye::before,
+.footer-creature__group.footer-creature--excited .footer-creature__eye::after {
+    display: none; /* remove any previous drawing */
+}
+
+.footer-creature__group.footer-creature--excited .footer-creature__eye::after {
+    display: block;
+    content: "> <";
+    font-family: var(--font-body);
+    font-size: 2rem;
+    font-weight: bold;
+    color: rgba(232, 249, 255, 0.95);
+    position: absolute;
+    top: 5%;
+    left: 50%;
+    transform: translate(-50%, -55%);
+    line-height: 1;
+}
+
+    /* DARK MODE = sleeping eyes (always, ignore excited class) */
     html.dark .footer-creature__eye {
         width: 14px;
         height: 6px;
@@ -162,14 +186,13 @@
         box-shadow: none;
     }
 
+    html.dark .footer-creature__eye::before,
     html.dark .footer-creature__eye::after {
         display: none;
     }
 
     html.dark .footer-creature__eye::before {
-        content: "";
-        position: absolute;
-        inset: 0;
+        display: block;
         border-bottom: 2px solid rgba(255, 255, 255, 0.9);
         border-radius: 999px;
     }
@@ -186,16 +209,14 @@
         pointer-events: none;
     }
 
-    /* Desktop: creature is part of the footer, not fixed to viewport */
     @media (min-width: 1024px) {
         .footer-creature {
             position: relative;
-            bottom: 20rem;
+            bottom: 15rem;
             left: auto;
             right: auto;
-            justify-content: right; /* or flex-end if you want it right */
+            justify-content: right;
         }
-
 
         .footer-creature__group {
             width: 200px;
@@ -204,7 +225,7 @@
 
         .footer-creature__body {
             width: 130px;
-            height: 95px; /* closer to a circle = rounder */
+            height: 95px;
             bottom: 10px;
         }
 
@@ -220,7 +241,5 @@
         .footer-creature__eye {
             transform: scale(1.2);
         }
-
-
     }
 </style>

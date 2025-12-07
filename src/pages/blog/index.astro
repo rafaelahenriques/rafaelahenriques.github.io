@@ -19,8 +19,11 @@ posts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 <Base title="Blog" description="Rafaela's blog posts.">
   <section class="section">
     <h1 class="page-title">Blog</h1>
-    <p class="lead">Thoughts, notes, and tutorials.</p>
+    <p class="lead">
+      A collection of notes, technical snippets, and observations. I use this space to document what I’m learning—from CSS architecture and performance patterns to game development logic.
+    </p>
 
+    <!-- 1-column mobile, 2-column from 720px+; never more than 2 -->
     <div class="grid" style={`margin-top: calc(var(--gap) * 2)`}>
       {posts.map((post) => (
         <a href={`/blog/${post.id}/`} class="card">
@@ -28,6 +31,14 @@ posts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
           <p class="card__meta">
             {formatDate(post.data.date)}
           </p>
+
+          {post.data.tags && post.data.tags.length > 0 && (
+            <div class="card__tags" aria-label="Tags">
+              {post.data.tags.map((tag) => (
+                <span class="tag-pill">{tag}</span>
+              ))}
+            </div>
+          )}
         </a>
       ))}
     </div>
