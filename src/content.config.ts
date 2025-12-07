@@ -1,3 +1,4 @@
+// src/content.config.ts
 import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
 
@@ -21,7 +22,6 @@ const projects = defineCollection({
         .object({
           repo: z.string().url().optional(),
           video: z.string().url().optional(),
-          // use Astro's image() helper for optimized images
           screenshot: image().optional(),
           gallery: z.array(image()).optional(),
         })
@@ -39,10 +39,24 @@ const blog = defineCollection({
   schema: () =>
     z.object({
       title: z.string(),
-      date: z.date(), // matches how you're using date in code
+      date: z.date(),
       description: z.string().optional(),
       tags: z.array(z.string()).optional(),
     }),
 });
 
-export const collections = { projects, blog };
+// ABOUT / SKILLS COLLECTION
+const skills = defineCollection({
+  loader: glob({
+    pattern: "**/*.md",
+    base: "./src/content/about",
+  }),
+  schema: () =>
+    z.object({
+      category: z.string(),          // e.g. "Web", "Programming"
+      items: z.array(z.string()),    // e.g. ["HTML", "CSS", "Astro"]
+      order: z.number().optional(),  // for manual ordering
+    }),
+});
+
+export const collections = { projects, blog, skills };

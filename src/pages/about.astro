@@ -1,5 +1,19 @@
 ---
 import Base from "../layouts/BaseLayout.astro";
+import { getCollection, type CollectionEntry } from "astro:content";
+
+type SkillEntry = CollectionEntry<"skills">;
+
+// Load skills groups from content collection
+let skills = (await getCollection("skills")) as SkillEntry[];
+
+// Sort by `order`, then by category name
+skills = skills.sort((a, b) => {
+  const orderA = a.data.order ?? 999;
+  const orderB = b.data.order ?? 999;
+  if (orderA !== orderB) return orderA - orderB;
+  return a.data.category.localeCompare(b.data.category);
+});
 ---
 
 <Base title="About" description="About Rafaela Henriques">
@@ -8,7 +22,7 @@ import Base from "../layouts/BaseLayout.astro";
     <header class="about__header">
       <h1 class="page-title">About Me</h1>
 
-       <!-- TRAIT PILLS -->
+      <!-- TRAIT PILLS -->
       <div class="about__traits" aria-label="Personal traits">
         {["Adaptable", "Hard-working", "Friendly", "Curious", "Observant", "Proactive"].map(
           (trait) => (
@@ -33,67 +47,28 @@ import Base from "../layouts/BaseLayout.astro";
         I like working close to the front end: design tokens, responsive
         layouts, and interactions that feel intentional instead of noisy.
       </p>
-
     </header>
 
-    <!-- WHAT I WORK WITH -->
+    <!-- WHAT I WORK WITH (from content collection) -->
     <section class="about__skills" aria-labelledby="about-skills-heading">
       <h2 id="about-skills-heading" class="about__skills-title">
         What I work with
       </h2>
 
       <div class="about__skills-grid">
-        <!-- Web -->
-        <article class="about__card">
-          <h3 class="about__card-title">Web</h3>
-          <div class="about__pill-row">
-            {["HTML", "CSS", "JavaScript", "Astro", "React"].map((item) => (
-              <span class="about__pill">{item}</span>
-            ))}
-          </div>
-        </article>
+        {skills.map((group) => (
+          <article class="about__card">
+            <h3 class="about__card-title">
+              {group.data.category}
+            </h3>
 
-        <!-- Interaction & motion -->
-        <article class="about__card">
-          <h3 class="about__card-title">Interaction &amp; motion</h3>
-          <div class="about__pill-row">
-            {["GSAP", "Framer Motion"].map((item) => (
-              <span class="about__pill">{item}</span>
-            ))}
-          </div>
-        </article>
-
-        <!-- Programming -->
-        <article class="about__card">
-          <h3 class="about__card-title">Programming</h3>
-          <div class="about__pill-row">
-            {["C" ,"C#","C++", "Python", "JavaScript"].map((item) => (
-              <span class="about__pill">{item}</span>
-            ))}
-          </div>
-        </article>
-
-        <!-- Game development -->
-        <article class="about__card">
-          <h3 class="about__card-title">Game development</h3>
-          <div class="about__pill-row">
-            {["Unity", "Unreal", "Game flow"].map(
-              (item) => (
+            <div class="about__pill-row">
+              {group.data.items.map((item) => (
                 <span class="about__pill">{item}</span>
-              ),
-            )}
-          </div>
-        </article>
-
-        <!-- Tools -->
-        <article class="about__card">
-          <h3 class="about__card-title">Tools</h3>
-          <div class="about__pill-row">
-            {["Git", "GitHub", "VS Code", "Figma"].map((item) => (
-              <span class="about__pill">{item}</span>
-            ))}
-          </div>
-        </article>
+              ))}
+            </div>
+          </article>
+        ))}
       </div>
     </section>
 
@@ -120,7 +95,7 @@ import Base from "../layouts/BaseLayout.astro";
     .about {
       display: flex;
       flex-direction: column;
-      gap: calc(var(--gap) * 2);
+      gap: var(--space-s);
     }
 
     .about__header {
@@ -129,13 +104,10 @@ import Base from "../layouts/BaseLayout.astro";
       gap: var(--gap);
     }
 
-    /* More space between title and text */
     .about .page-title {
       margin-bottom: calc(var(--gap) * 1.5);
     }
 
-
-    /* Trait pills */
     .about__traits {
       display: flex;
       flex-wrap: wrap;
@@ -153,7 +125,6 @@ import Base from "../layouts/BaseLayout.astro";
       white-space: nowrap;
     }
 
-    /* Skills section */
     .about__skills {
       display: flex;
       flex-direction: column;
@@ -183,8 +154,8 @@ import Base from "../layouts/BaseLayout.astro";
       box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
       display: flex;
       flex-direction: column;
-        align-items: center;
-        text-align: center;
+      align-items: center;
+      text-align: center;
       gap: 10px;
       position: relative;
       overflow: hidden;
@@ -234,6 +205,7 @@ import Base from "../layouts/BaseLayout.astro";
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
+      justify-content: center;
     }
 
     .about__pill {
@@ -246,7 +218,6 @@ import Base from "../layouts/BaseLayout.astro";
       white-space: nowrap;
     }
 
-    /* Contact block separated & centered */
     .about__contact {
       margin-top: calc(var(--gap) * 1);
       text-align: center;
@@ -262,9 +233,9 @@ import Base from "../layouts/BaseLayout.astro";
 
     .about__contact-text {
       margin: 0 auto;
+      max-width: 40rem;
     }
 
-    /* Tablet */
     @media (min-width: 720px) {
       .about {
         gap: calc(var(--gap) * 2.5);
@@ -275,13 +246,12 @@ import Base from "../layouts/BaseLayout.astro";
       }
     }
 
-    /* Desktop: intro left, skills right */
     @media (min-width: 1024px) {
       .about {
-       gap: calc(var(--gap) * 3.5);
+        gap: calc(var(--gap) * 3.5);
       }
-      
-       .about__skills-grid {
+
+      .about__skills-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
     }

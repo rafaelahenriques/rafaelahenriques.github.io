@@ -1,7 +1,7 @@
 ---
 title: "Responsive Layout Tips with Pure CSS"
-date: 2024-11-06
-tags: ["CSS", "Web Design", "Frontend"]
+date: 2025-11-06
+tags: ["Web Dev", "Design", "Programming"]
 description: "How to build fluid, robust layouts using modern CSS features—no media queries required."
 ---
 
