@@ -11,9 +11,9 @@ scope:
 description: "A pixel-art platformer inspired by 'Howl’s Moving Castle'."
 media:
   repo: "https://github.com/bryanb619/HowlsGame"
-  screenshot: "/src/assets/howls/start.png"
+  screenshot: "./start.png"
   gallery:
-    - "/src/assets/howls/start.png" 
+    - "./start.png" 
 tags: ["Unity", "Platformer", "Game Design","Game Dev"]
 ---
 
