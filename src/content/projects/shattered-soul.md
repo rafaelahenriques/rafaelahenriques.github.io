@@ -19,7 +19,7 @@ media:
     - "/src/assets/ss/main.png"
     - "/src/assets/ss/ss.png"
     - "/src/assets/ss/ss2.png"
-tags: ["Unity", "C#", "3D", "Game Design"]
+tags: ["Unity", "C#", "3D", "Game Design", "Game Dev"]
 ---
 
 ## Overview

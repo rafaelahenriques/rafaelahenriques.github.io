@@ -1,50 +1,84 @@
 ---
-title: "Howl's Game"
+title: "Wolf & Sheep"
 year: "2021"
-tech: ["Python", "AI"]
-role: "Gameplay Programmer"
-context: "Team of 3 (University Project)"
+tech: ["Python", "Game Development", "Algorithmic Logic"]
+role: "Core Logic & Rules Engine"
+context: "Team of 3 - Academic Project"
 scope:
-  - Artificial Intelligence (Single Player)
-  - Game Loop Logic
-  - Win/Loss Condition State Machine
-description: "A digital adaptation of the classic strategy board game 'Wolf and Sheep'. "
+  - Movement validation algorithms
+  - Game state management
+  - PvE (Player vs Environment) Loop
+description: "A digital adaptation of the asymmetrical strategy board game. I architected the core rule enforcement, movement validation system, and the integration of the single-player AI loop."
 media:
-  repo: "https://github.com/bryanb619/HowlsGame"
-  screenshot: "/src/assets/howls/start.png"
+  repo: "https://github.com/rafaelahenriques/Wolf-and-Sheep-Game"
+  screenshot: "/src/assets/ws/wolfsheepmenu.png"
   gallery:
-    - "/src/assets/howls/start.png" 
-tags: ["Unity", "AI", "Board Game"]
+    - "/src/assets/ws/wolfsheepmenu.png" 
+
+tags: ["Python", "Game Logic", "AI Integration", "Strategy", "Game Dev"]
 ---
 
 ## Overview
-Howl's Game is a digital implementation of the asymmetric abstract strategy game *Wolf and Sheep* (often known as Fox and Hounds). 
+**Wolf & Sheep** is an asymmetrical strategy game played on an 8x8 checkerboard. Unlike traditional games like Chess or Checkers where forces are equal, this game relies on disparate goals and capabilities:
+* **The Sheep (1 Unit):** Starts at the bottom. **Goal:** Reach one of the four top-row squares.
+* **The Wolves (4 Units):** Start at the top. **Goal:** Surround the sheep so it has no legal moves remaining.
 
-The game is played on an 8x8 checkerboard. The player controls the **Sheep** (aiming to reach the top row), while the opponent controls **4 Wolves** (aiming to surround and block the sheep).
+The project supports both **2-Player Local** (Hotseat) and **Single Player** (User vs. AI) modes.
 
-## Key Technical Contributions
+## My Contribution
+My role focused on the "Brain" of the game—ensuring that the rules were enforced strictly and that the game state updated correctly after every interaction.
 
-### 1. The Artificial Intelligence (AI)
-My primary contribution was the single-player mode. I programmed the "brain" for the computer opponent when playing as the Wolves.
-* **Decision Making:** The AI analyzes the board state to calculate the best move to block the sheep.
-* **Coordination:** Since the AI controls 4 units, I had to write logic ensuring they work as a pack rather than moving randomly, prioritizing "walls" to trap the player.
+### 1. Movement Validation Engine
+I replaced basic coordinate checking with a robust validation system using an $(x, y)$ grid system:
+* **Directional Logic:** Hard-coded the movement deltas.
+    * *Sheep:* Can move `(x+1, y+1)`, `(x-1, y+1)`, `(x+1, y-1)`, or `(x-1, y-1)`.
+    * *Wolf:* Can only move "forward" relative to their start `(x+1, y+1)` or `(x-1, y+1)`.
+* **Boundary & Collision:** Implemented checks to ensure `0 <= x <= 7` and that no unit could land on a tile occupied by another wolf or the sheep.
 
-### 2. Core Game Loop & Rules
-I implemented the strict rules engine that governs the gameplay:
-* **Turn Management:** Enforced the "Sheep moves first" rule and alternating turns.
-* **Movement Validation:** Restricted movement to diagonal steps only (like checkers).
-* **Win Condition Checks:** Written algorithms to check the board state after every move:
-    * *Did the Sheep reach row 8?* (Sheep Win)
-    * *Is the Sheep unable to move?* (Wolf Win)
+### 2. Game State & Victory Conditions
+I developed the logic to detect end-game states instantly:
+* **Sheep Victory:** Triggered immediately when the Sheep's Y-coordinate equals `0` (the top row).
+* **Wolf Victory (The Trapping Algorithm):** This was the most complex logic. The game calculates all 4 potential moves for the sheep; if all 4 result in either a collision or an out-of-bounds error, the Wolves are declared winners.
 
-### 3. Game Modes
-I implemented the architecture to support two distinct modes using a shared codebase:
-* **PvP (Hotseat):** Two human players taking turns on the same device.
-* **PvAI:** One human player vs. my Computer script.
+### 3. The AI Integration (PvE)
+I implemented the game loop that handles the Single Player experience.
+* **Turn Management:** The system enforces the "Sheep Starts First" rule.
+* **The AI Handoff:** When the user (Sheep) finishes a move, my logic locks user input, passes the board state to the AI function to calculate the optimal Wolf move, updates the board, and then unlocks user input again.
 
-## Challenges & Learnings
-* **Asymmetric Balance:** Unlike chess where pieces are equal, this game is asymmetric. Debugging the AI was difficult because I had to ensure the computer didn't just make *legal* moves, but *smart* blocking moves.
-* **State Management:** Tracking the positions of 5 different distinct pieces on a grid and refreshing the UI without desyncing the internal data board.
+## Logic Snippet
+Here is a simplified representation of the movement validation logic I implemented:
 
-## Result
-A fully functional strategy game where the computer poses a genuine challenge to the player.
+```python
+def is_move_legal(piece, current_pos, target_pos, board_state):
+    # 1. Check if target is inside the 8x8 board
+    if not (0 <= target_pos.x < 8 and 0 <= target_pos.y < 8):
+        return False
+
+    # 2. Check if the move is a valid diagonal step
+    dx = target_pos.x - current_pos.x
+    dy = target_pos.y - current_pos.y
+
+    if abs(dx) != 1 or abs(dy) != 1:
+        return False # Must move exactly one square diagonally
+
+    # 3. Check for specific unit constraints
+    if piece.type == "WOLF" and dy < 0:
+        return False # Wolves cannot move backwards
+
+    # 4. Check collision
+    if board_state[target_pos] is not None:
+        return False # Tile is occupied
+
+    return True
+```
+## Challenges & Solutions
+**Challenge:** Handling the four wolves as a single "Player." 
+
+**Solution:** In the standard turn logic, a player usually moves "their piece." Since the Wolf player has 4 pieces, I had to create a two-step selection state:
+
+1. Select a specific Wolf unit.
+
+2. Validate if that specific wolf has legal moves available before locking in the selection.
+
+## Learnings
+This project deepened my understanding of ` Object-Oriented Programming`  in Python, specifically how to separate Game Logic (The Rules) from Game Rendering (The UI), ensuring that the code is clean, testable, and modular.

@@ -1,21 +1,47 @@
 ---
 import Base from "../../layouts/BaseLayout.astro";
-import { getCollection, type CollectionEntry } from "astro:content";
+import {
+  getCollection,
+  render,
+  type CollectionEntry,
+} from "astro:content";
 
 type BlogEntry = CollectionEntry<"blog">;
 
+const formatDate = (d: Date): string =>
+  d.toLocaleDateString("en-GB", { dateStyle: "medium" });
+
 export async function getStaticPaths() {
-    const entries: BlogEntry[] = await getCollection("blog");
-    return entries.map((entry) => ({
-        params: { slug: entry.slug },
-        props: { entry },
-    }));
+  const entries = (await getCollection("blog")) as BlogEntry[];
+  return entries.map((entry) => ({
+    params: { slug: entry.id },
+  }));
 }
 
-const { entry } = Astro.props as { entry: BlogEntry };
-const { Content } = await entry.render();
+const entries = (await getCollection("blog")) as BlogEntry[];
+const currentId = Astro.params.slug;
+
+const entry = entries.find((p) => p.id === currentId);
+if (!entry) {
+  throw new Error("Post not found");
+}
+
+const { Content } = await render(entry);
 ---
 
-<Base title={entry.data.title}>
-    <Content />
+<Base title={entry.data.title} description={entry.data.description}>
+  <article class="blog-post">
+    <header class="blog-post__header">
+      <h1 class="page-title">{entry.data.title}</h1>
+      {entry.data.date && (
+        <p class="blog-post__meta">
+          {formatDate(entry.data.date)}
+        </p>
+      )}
+    </header>
+
+    <div class="blog-post__body">
+      <Content />
+    </div>
+  </article>
 </Base>
