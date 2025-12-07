@@ -34,9 +34,7 @@ const path = Astro.url.pathname.endsWith("/")
                             <a
                                 href={link.href}
                                 class="navigation__link"
-                                aria-current={
-                                    path === link.href ? "page" : undefined
-                                }
+                                aria-current={path === link.href ? "page" : undefined}
                             >
                                 {link.label}
                             </a>
@@ -68,10 +66,12 @@ const path = Astro.url.pathname.endsWith("/")
         text-align: center;
         text-decoration: none;
         color: var(--text);
-        font-weight: 800;
-        letter-spacing: -0.01em;
-        font-size: var(--step-1);
+        font-family: var(--font-logo);
+        font-weight: 400;
+        letter-spacing: 0.02em;
+        font-size: var(--fontsize-2);
         white-space: nowrap;
+        text-transform: uppercase;
     }
 
     .site-header__controls {
@@ -100,8 +100,8 @@ const path = Astro.url.pathname.endsWith("/")
         display: flex;
         justify-content: center;
         gap: 10px;
-        padding: 0;
-        margin: 0;
+        padding: 0.5rem;
+        margin: 0.5rem;
     }
 
     .navigation__item {
@@ -109,11 +109,12 @@ const path = Astro.url.pathname.endsWith("/")
     }
 
     .navigation__link {
+        font-family: var(--font-body);
         color: var(--muted);
         text-decoration: none;
         padding: 8px 12px;
         border-radius: 999px;
-        font-size: var(--step--1);
+        font-size: var(--fontsize--1);
         position: relative;
         transition:
             transform 0.12s ease,
@@ -137,10 +138,14 @@ const path = Astro.url.pathname.endsWith("/")
         padding-bottom: 72px;
     }
 
-    /* Tablet tweaks if needed (nav still bottom-fixed, just nicer spacing) */
+    /* Tablet tweaks (nav still bottom-fixed) */
     @media (min-width: 720px) {
         .site-header__inner {
             padding: 10px 20px 0;
+        }
+
+        .site-header__brand {
+            font-size: var(--fontsize-3);
         }
 
         .navigation {
@@ -148,13 +153,12 @@ const path = Astro.url.pathname.endsWith("/")
         }
 
         .navigation__link {
-            font-size: var(--step-0);
+            font-size: var(--fontsize-0);
             padding: 10px 14px;
         }
     }
 
-    /* Desktop: header fixed at top, nav inline in bar, no bottom-fixed nav */
-
+    /* Desktop: header fixed at top, nav inline, no bottom-fixed nav */
     @media (min-width: 1024px) {
         .site-header {
             position: fixed;
@@ -178,13 +182,13 @@ const path = Astro.url.pathname.endsWith("/")
         .site-header__brand {
             flex: 0 0 auto;
             text-align: left;
-            font-size: var(--step-1);
+            font-size: var(--fontsize--1);
         }
 
         .site-nav {
             position: static;
             flex: 1 1 auto;
-            padding: 0;
+            padding: ;
             background: none;
             border-top: none;
             backdrop-filter: none;
