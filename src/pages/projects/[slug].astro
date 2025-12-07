@@ -5,33 +5,27 @@ import {
   render,
   type CollectionEntry,
 } from "astro:content";
+import { Picture } from "astro:assets";
 
 type ProjectEntry = CollectionEntry<"projects">;
 
 export async function getStaticPaths() {
   const entries = await getCollection("projects");
   return entries.map((entry) => ({
-    // In Astro v5, use `id` as the slug for routing
     params: { slug: entry.id },
   }));
 }
 
-// Get all projects (typed)
 const projects: ProjectEntry[] = await getCollection("projects");
 
-// Current id from URL
 const currentId = Astro.params.slug;
-
-// Find current project by id
 const project = projects.find((p) => p.id === currentId);
 if (!project) {
   throw new Error("Project not found");
 }
 
-// Use Astro v5 render API
 const { Content } = await render(project);
 
-// Optional: sort projects for consistent prev/next (by year desc, then title)
 const sortedProjects = [...projects].sort((a, b) => {
   const yearA = a.data.year ?? "";
   const yearB = b.data.year ?? "";
@@ -39,7 +33,6 @@ const sortedProjects = [...projects].sort((a, b) => {
   return (a.data.title ?? "").localeCompare(b.data.title ?? "");
 });
 
-// Find index in sorted list
 const currentIndex = sortedProjects.findIndex((p) => p.id === currentId);
 const prev =
   currentIndex > 0 ? sortedProjects[currentIndex - 1] : null;
@@ -50,7 +43,6 @@ const next =
 
 const media = project.data.media;
 
-// Normalise roles: string | string[] → string[]
 const rawRole = project.data.role;
 const roles: string[] = Array.isArray(rawRole)
   ? rawRole
@@ -108,20 +100,21 @@ const roles: string[] = Array.isArray(rawRole)
     <Content />
 
     {media?.gallery && media.gallery.length > 0 && (
-  <div class="gallery">
-    {media.gallery.map((src: string) => (
-      <figure class="gallery__item">
-        <img
-          src={src}
-          alt={project.data.title}
-          loading="lazy"
-        />
-      </figure>
-    ))}
-  </div>
-)}
-
-
+      <div class="gallery">
+        {media.gallery.map((img) => (
+          <figure class="gallery__item">
+            <Picture
+              src={img}
+              alt={`${project.data.title} – screenshot`}
+              loading="lazy"
+              formats={["avif", "webp", "png"]}
+              widths={[320, 640, 768, 1024]}
+              sizes="(max-width: 719px) 100vw, (max-width: 1023px) 50vw, 33vw"
+            />
+          </figure>
+        ))}
+      </div>
+    )}
   </section>
 </Base>
 

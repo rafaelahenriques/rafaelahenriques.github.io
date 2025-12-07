@@ -12,13 +12,12 @@ scope:
 outcome: "Playable Vertical Slice"
 description: "A first-person puzzle RPG set in a mysterious Greek temple."
 media:
-  video: ""
   repo: "https://github.com/bryanb619/Shattered-Soul-Stable"
-  screenshot: "/src/assets/ss/main.png"
+  screenshot: "./main.png"
   gallery:
-    - "/src/assets/ss/main.png"
-    - "/src/assets/ss/ss.png"
-    - "/src/assets/ss/ss2.png"
+    - "./main.png"
+    - "./ss.png"
+    - "./ss2.png"
 tags: ["Unity", "C#", "3D", "Game Design", "Game Dev"]
 ---
 

@@ -10,11 +10,11 @@ scope:
   - Responsive Component Architecture
 description: "A high-performance digital campaign site designed to reposition Thrive Beer from a niche sports drink to a broader lifestyle brand. Built with Astro for speed and GSAP for immersive storytelling."
 media:
-    screenshot: "/src/assets/thrive/home.png"
+    screenshot: "./home.png"
     gallery:
-    - "/src/assets/thrive/home.png"
-    - "/src/assets/thrive/pack.png"
-    - "/src/assets/thrive/ritual.png"
+    - "./home.png"
+    - "./pack.png"
+    - "./ritual.png"
 tags: ["Web Dev", "GSAP", "Astro", "Campaign", "Design"]
 ---
 

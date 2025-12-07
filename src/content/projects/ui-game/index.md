@@ -10,11 +10,11 @@ scope:
   - Color Theme Systems
 description: "A comprehensive UI kit for a hypothetical game. I designed and illustrated the assets from scratch in Photoshop, focusing on modularity, affordance, and implementation-readiness."
 media:
-  screenshot: "/src/assets/ui/main.png"
+  screenshot: "./mainUi.png"
   gallery:
-    - "/src/assets/ui/main.png"
-    - "/src/assets/ui/pause.png"
-    - "/src/assets/ui/ColourVariation.png"
+    - "./mainUi.png"
+    - "./pause.png"
+    - "./ColourVariation.png"
 tags: ["UI", "Design", "Photoshop", "Game Dev"]
 ---
 
