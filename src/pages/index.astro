@@ -6,10 +6,10 @@ type ProjectEntry = CollectionEntry<"projects">;
 type BlogEntry = CollectionEntry<"blog">;
 
 // Sort helpers
-const sortProjects = (items: ProjectEntry[]): ProjectEntry[] =>
+const sortProjects = (items: ProjectEntry[]) =>
   [...items].sort((a, b) => (b.data.year ?? "").localeCompare(a.data.year ?? ""));
 
-const sortPosts = (items: BlogEntry[]): BlogEntry[] =>
+const sortPosts = (items: BlogEntry[]) =>
   [...items].sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
 const projects = sortProjects(await getCollection("projects") as ProjectEntry[]);
@@ -31,7 +31,8 @@ const latestPosts = posts.slice(0, 3);
   <section class="section reveal" aria-labelledby="home-projects">
     <div class="section__label" id="home-projects">Latest Projects</div>
 
-    <div class="horizontal-scroll home-grid stagger">
+    <!-- 1-column on mobile, 2-column grid from 720px+ -->
+    <div class="grid home-grid home-projects-grid stagger">
       {latestProjects.map((p) => (
         <a href={`/projects/${p.id}/`} class="card">
           <div class="card__media">
@@ -49,7 +50,7 @@ const latestPosts = posts.slice(0, 3);
       ))}
     </div>
 
-    <p style="margin-top: var(--gap);">
+    <p style={`margin-top: var(--gap);`}>
       <a href="/projects/" class="button">See all projects</a>
     </p>
   </section>
@@ -57,21 +58,26 @@ const latestPosts = posts.slice(0, 3);
   <section class="section reveal" aria-labelledby="home-blog">
     <div class="section__label" id="home-blog">Latest Posts</div>
 
-    <div class="horizontal-scroll home-grid">
+    <!-- 1-column on mobile, 2-column grid from 720px+ -->
+    <div class="grid home-grid home-blog-grid">
       {latestPosts.map((post) => (
         <a href={`/blog/${post.id}/`} class="card">
-          <div class="card__media">
-            {/* optional: add a small hero image for blog posts later */}
-          </div>
           <h3 class="card__title">{post.data.title}</h3>
           <p class="card__meta">
             {post.data.date.toLocaleDateString("en-GB", { dateStyle: "medium" })}
           </p>
+          {post.data.tags && post.data.tags.length > 0 && (
+            <div class="card__tags" aria-label="Tags">
+              {post.data.tags.map((tag) => (
+                <span class="tag-pill">{tag}</span>
+              ))}
+            </div>
+          )}
         </a>
       ))}
     </div>
 
-    <p style="margin-top: var(--gap);">
+    <p style={`margin-top: var(--gap);`}>
       <a href="/blog/" class="button">See all posts</a>
     </p>
   </section>

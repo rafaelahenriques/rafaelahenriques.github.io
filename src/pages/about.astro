@@ -8,6 +8,15 @@ import Base from "../layouts/BaseLayout.astro";
     <header class="about__header">
       <h1 class="page-title">About Me</h1>
 
+       <!-- TRAIT PILLS -->
+      <div class="about__traits" aria-label="Personal traits">
+        {["Adaptable", "Hard-working", "Friendly", "Curious", "Observant", "Proactive"].map(
+          (trait) => (
+            <span class="about__trait-pill">{trait}</span>
+          ),
+        )}
+      </div>
+
       <p class="lead">
         I’m a web developer with a background in game development. Right now I’m
         studying Digital Design &amp; Development (Devine) at Howest, where I
@@ -25,14 +34,6 @@ import Base from "../layouts/BaseLayout.astro";
         layouts, and interactions that feel intentional instead of noisy.
       </p>
 
-      <!-- TRAIT PILLS -->
-      <div class="about__traits" aria-label="Personal traits">
-        {["Adaptable", "Hard-working", "Friendly", "Curious", "Observant", "Proactive"].map(
-          (trait) => (
-            <span class="about__trait-pill">{trait}</span>
-          ),
-        )}
-      </div>
     </header>
 
     <!-- WHAT I WORK WITH -->
@@ -66,7 +67,7 @@ import Base from "../layouts/BaseLayout.astro";
         <article class="about__card">
           <h3 class="about__card-title">Programming</h3>
           <div class="about__pill-row">
-            {["C#", "C++", "Python", "JavaScript"].map((item) => (
+            {["C" ,"C#","C++", "Python", "JavaScript"].map((item) => (
               <span class="about__pill">{item}</span>
             ))}
           </div>
@@ -76,7 +77,7 @@ import Base from "../layouts/BaseLayout.astro";
         <article class="about__card">
           <h3 class="about__card-title">Game development</h3>
           <div class="about__pill-row">
-            {["Unity", "UI", "Input", "Basic physics", "Game flow"].map(
+            {["Unity", "Unreal", "Game flow"].map(
               (item) => (
                 <span class="about__pill">{item}</span>
               ),

@@ -9,7 +9,8 @@ const shadow = group?.querySelector(".footer-creature__shadow");
 const z = group?.querySelector(".footer-creature__z");
 
 if (group && body && shadow && z) {
-    const container = group.parentElement;
+    const isDark = () =>
+        document.documentElement.classList.contains("dark");
 
     // Breathing animation
     gsap.to(body, {
@@ -31,7 +32,7 @@ if (group && body && shadow && z) {
         yoyo: true,
     });
 
-    // Z animation (dark only)
+    // Z loop (dark only)
     let zTimeline = null;
 
     const startZLoop = () => {
@@ -64,18 +65,16 @@ if (group && body && shadow && z) {
         gsap.set(z, { opacity: 0, y: 0, scale: 0.7 });
     };
 
-    const isDark = () =>
-        document.documentElement.classList.contains("dark");
-
     const syncTheme = () => {
         if (isDark()) {
+            group.classList.remove("footer-creature--excited");
             startZLoop();
         } else {
             stopZLoop();
         }
     };
 
-    // Initial + observe theme changes
+    // Initial sync + watch theme
     syncTheme();
     const observer = new MutationObserver(syncTheme);
     observer.observe(document.documentElement, {
@@ -83,13 +82,23 @@ if (group && body && shadow && z) {
         attributeFilter: ["class"],
     });
 
-    // Horizontal-only drag, bounded to its container
+    const horizontalRange = () =>
+        Math.max(40, window.innerWidth / 2 - 80);
+
     Draggable.create(group, {
         type: "x",
-        bounds: container,
+        bounds: {
+            minX: -horizontalRange(),
+            maxX: horizontalRange(),
+        },
         inertia: false,
         dragResistance: 0.2,
         onPress() {
+            // only show >< in light mode
+            if (!isDark()) {
+                group.classList.add("footer-creature--excited");
+            }
+
             gsap.to(body, {
                 scaleY: 0.9,
                 scaleX: 1.08,
@@ -97,6 +106,10 @@ if (group && body && shadow && z) {
             });
         },
         onRelease() {
+            if (!isDark()) {
+                group.classList.remove("footer-creature--excited");
+            }
+
             gsap.to(body, {
                 scaleX: 1,
                 scaleY: 1,
@@ -104,5 +117,16 @@ if (group && body && shadow && z) {
                 ease: "elastic.out(1, 0.5)",
             });
         },
+    });
+
+    window.addEventListener("resize", () => {
+        const draggable = Draggable.get(group);
+        if (draggable) {
+            const range = horizontalRange();
+            draggable.applyBounds({
+                minX: -range,
+                maxX: range,
+            });
+        }
     });
 }
