@@ -14,7 +14,7 @@ media:
   screenshot: "/src/assets/howls/start.png"
   gallery:
     - "/src/assets/howls/start.png" 
-tags: ["Unity", "Platformer", "Game Design"]
+tags: ["Unity", "Platformer", "Game Design","Game Dev"]
 ---
 
 ## Overview

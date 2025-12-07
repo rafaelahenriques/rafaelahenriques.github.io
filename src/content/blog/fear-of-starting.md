@@ -1,6 +1,6 @@
 ---
 title: "The blank editor cursor: Getting over the fear of starting"
-date: "2025-11-06"
+date: 2024-11-06
 tags: ["Mindset", "Career", "DevLife"]
 description: "Strategies to overcome analysis paralysis, escape tutorial hell, and push through the intimidation phase of learning."
 ---

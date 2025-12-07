@@ -1,39 +1,232 @@
 ---
 import Base from "../../layouts/BaseLayout.astro";
-import { getCollection, type CollectionEntry } from "astro:content";
+import {
+  getCollection,
+  render,
+  type CollectionEntry,
+} from "astro:content";
+
 type ProjectEntry = CollectionEntry<"projects">;
 
 export async function getStaticPaths() {
-    const projects = await getCollection("projects");
-    return projects.map((p) => ({ params: { slug: p.slug } }));
+  const entries = await getCollection("projects");
+  return entries.map((entry) => ({
+    // In Astro v5, use `id` as the slug for routing
+    params: { slug: entry.id },
+  }));
 }
 
+// Get all projects (typed)
 const projects: ProjectEntry[] = await getCollection("projects");
-const project = projects.find((p) => p.slug === Astro.params.slug);
-if (!project) throw new Error("Project not found");
+
+// Current id from URL
+const currentId = Astro.params.slug;
+
+// Find current project by id
+const project = projects.find((p) => p.id === currentId);
+if (!project) {
+  throw new Error("Project not found");
+}
+
+// Use Astro v5 render API
+const { Content } = await render(project);
+
+// Optional: sort projects for consistent prev/next (by year desc, then title)
+const sortedProjects = [...projects].sort((a, b) => {
+  const yearA = a.data.year ?? "";
+  const yearB = b.data.year ?? "";
+  if (yearA !== yearB) return yearB.localeCompare(yearA);
+  return (a.data.title ?? "").localeCompare(b.data.title ?? "");
+});
+
+// Find index in sorted list
+const currentIndex = sortedProjects.findIndex((p) => p.id === currentId);
+const prev =
+  currentIndex > 0 ? sortedProjects[currentIndex - 1] : null;
+const next =
+  currentIndex < sortedProjects.length - 1
+    ? sortedProjects[currentIndex + 1]
+    : null;
 
 const media = project.data.media;
+
+// Normalise roles: string | string[] → string[]
+const rawRole = project.data.role;
+const roles: string[] = Array.isArray(rawRole)
+  ? rawRole
+  : typeof rawRole === "string" && rawRole.trim().length > 0
+  ? rawRole
+      .split(/[,/]|&/)
+      .map((r) => r.trim())
+      .filter(Boolean)
+  : [];
 ---
 
 <Base title={project.data.title} description={project.data.description}>
-    <section class="section">
-        <h1 class="page-title">{project.data.title}</h1>
-        <p class="lead">{project.data.description}</p>
+  <section class="project-header">
+    <a href="/projects/" class="back-link">← Back to all projects</a>
 
-        {
-            media?.gallery && media.gallery.length > 0 ? (
-                <div class="gallery">
-                    {media.gallery.map((src) => (
-                        <figure>
-                            <img
-                                src={src}
-                                alt={project.data.title}
-                                loading="lazy"
-                            />
-                        </figure>
-                    ))}
-                </div>
-            ) : null
-        }
-    </section>
+    <h1 class="page-title">{project.data.title}</h1>
+
+    {project.data.description && (
+      <p class="lead">{project.data.description}</p>
+    )}
+
+    {roles.length > 0 && (
+      <div class="roles">
+        {roles.map((role) => (
+          <span class="role-pill">{role}</span>
+        ))}
+      </div>
+    )}
+
+    <nav class="project-nav" aria-label="Project navigation">
+      <div class="project-nav__side">
+        {prev && (
+          <a
+            href={`/projects/${prev.id}/`}
+            class="nav-link nav-prev"
+          >
+            ← Previous: {prev.data.title}
+          </a>
+        )}
+      </div>
+      <div class="project-nav__side project-nav__side--right">
+        {next && (
+          <a
+            href={`/projects/${next.id}/`}
+            class="nav-link nav-next"
+          >
+            Next: {next.data.title} →
+          </a>
+        )}
+      </div>
+    </nav>
+  </section>
+
+  <section class="project-body">
+    <Content />
+
+    {media?.gallery && media.gallery.length > 0 && (
+  <div class="gallery">
+    {media.gallery.map((src: string) => (
+      <figure class="gallery__item">
+        <img
+          src={src}
+          alt={project.data.title}
+          loading="lazy"
+        />
+      </figure>
+    ))}
+  </div>
+)}
+
+
+  </section>
 </Base>
+
+<style>
+  .project-header {
+    margin-bottom: var(--gap);
+    display: grid;
+    gap: var(--gap);
+  }
+
+  .back-link {
+    font-size: var(--step--1);
+    text-decoration: none;
+    color: var(--accent);
+    opacity: 0.9;
+    transition: opacity 0.2s ease;
+  }
+
+  .back-link:hover {
+    opacity: 1;
+  }
+
+  .roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .role-pill {
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--accent) 15%, transparent);
+    border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent);
+    font-size: var(--step--1);
+    color: var(--text);
+    backdrop-filter: blur(6px);
+    white-space: nowrap;
+  }
+
+  .project-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: var(--gap);
+    gap: 8px;
+    flex-wrap: wrap;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+  }
+
+  .project-nav__side {
+    display: flex;
+    flex: 1 1 auto;
+  }
+
+  .project-nav__side--right {
+    justify-content: flex-end;
+  }
+
+  .nav-link {
+    font-size: var(--step--1);
+    color: var(--muted);
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 999px;
+    transition:
+      color 0.18s ease,
+      background 0.18s ease,
+      transform 0.12s ease;
+  }
+
+  .nav-link:hover {
+    color: var(--text);
+    background: var(--glass);
+    transform: translateY(-1px);
+  }
+
+  .project-body {
+    margin-top: calc(var(--gap) * 2);
+    display: grid;
+    gap: var(--gap);
+  }
+
+  .gallery {
+    display: grid;
+    gap: var(--gap);
+    grid-template-columns: 1fr;
+  }
+
+  .gallery__item img {
+    width: 100%;
+    border-radius: var(--radius);
+    object-fit: cover;
+    border: 1px solid var(--border);
+  }
+
+  @media (min-width: 720px) {
+    .gallery {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .gallery {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

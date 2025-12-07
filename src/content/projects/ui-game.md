@@ -1,7 +1,7 @@
 ---
 title: "UI Game Menu Mock Assets"
 year: "2024"
-tech: ["Photoshop", "Graphic Tablet", "UI Design"]
+tech: ["Photoshop", "Graphic Tablet"]
 role: "UI Artist & Designer"
 context: "Standalone Asset Kit"
 scope:
