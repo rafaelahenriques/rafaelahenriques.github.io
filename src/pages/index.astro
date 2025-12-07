@@ -37,7 +37,7 @@ const latestPosts = posts.slice(0, 3);
       {latestProjects.map((p) => {
         const screenshot = p.data.media?.screenshot;
         return (
-          <a href={`/projects/${p.id}/`} class="card">
+          <a href={`/projects/${p.id.replace(/\.md$/, "")}/`} class="card">
             <div class="card__media">
               {screenshot && (
                 <Picture

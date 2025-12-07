@@ -12,14 +12,14 @@ type ProjectEntry = CollectionEntry<"projects">;
 export async function getStaticPaths() {
   const entries = await getCollection("projects");
   return entries.map((entry) => ({
-    params: { slug: entry.id },
+    params: { slug: entry.id.replace(/\.md$/, "") },
   }));
 }
 
 const projects: ProjectEntry[] = await getCollection("projects");
 
 const currentId = Astro.params.slug;
-const project = projects.find((p) => p.id === currentId);
+const project = projects.find((p) => p.id.replace(/\.md$/, "") === currentId);
 if (!project) {
   throw new Error("Project not found");
 }
@@ -33,7 +33,7 @@ const sortedProjects = [...projects].sort((a, b) => {
   return (a.data.title ?? "").localeCompare(b.data.title ?? "");
 });
 
-const currentIndex = sortedProjects.findIndex((p) => p.id === currentId);
+const currentIndex = sortedProjects.findIndex((p) => p.id.replace(/\.md$/, "") === currentId);
 const prev =
   currentIndex > 0 ? sortedProjects[currentIndex - 1] : null;
 const next =
@@ -76,7 +76,7 @@ const roles: string[] = Array.isArray(rawRole)
       <div class="project-nav__side">
         {prev && (
           <a
-            href={`/projects/${prev.id}/`}
+            href={`/projects/${prev.id.replace(/\.md$/, "")}/`}
             class="nav-link nav-prev"
           >
             ← Previous: {prev.data.title}
@@ -86,7 +86,7 @@ const roles: string[] = Array.isArray(rawRole)
       <div class="project-nav__side project-nav__side--right">
         {next && (
           <a
-            href={`/projects/${next.id}/`}
+            href={`/projects/${next.id.replace(/\.md$/, "")}/`}
             class="nav-link nav-next"
           >
             Next: {next.data.title} →
