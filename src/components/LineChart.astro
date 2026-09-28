@@ -1,0 +1,338 @@
+---
+/**
+ * Build-time line chart. Lines are SVG (non-scaling 2px strokes); axes,
+ * labels and the tooltip are HTML so text stays crisp at any width.
+ * Client behaviour (crosshair tooltip, keyboard, focus, annotations) lives
+ * in src/scripts/line-chart.ts.
+ */
+import ChartTable from "./ChartTable.astro";
+
+export interface Series {
+    key: string;
+    label: string;
+    /** CSS color, ideally a custom property: "var(--series-nuclear)" */
+    color: string;
+    values: (number | null)[];
+}
+
+interface Props {
+    id: string;
+    title: string;
+    unit: string;
+    years: number[];
+    series: Series[];
+    yMax: number;
+    yTicks: number[];
+    /** "all": every series is end-labelled; "focus": only focused series are */
+    labels?: "all" | "focus";
+    /** Accessible one-sentence summary of what the chart shows */
+    summary: string;
+    /** Render the table view inside the figure (set false to place it yourself) */
+    table?: boolean;
+}
+
+const { id, title, unit, years, series, yMax, yTicks, labels = "all", summary, table = true } = Astro.props;
+
+const n = years.length;
+const X = (i: number) => (i / (n - 1)) * 1000;
+const Y = (v: number) => 1000 - (v / yMax) * 1000;
+const pct = (v: number) => `${(1 - v / yMax) * 100}%`;
+
+const pathFor = (values: (number | null)[]) =>
+    values
+        .map((v, i) => {
+            if (v === null) return "";
+            const cmd = i === 0 || values[i - 1] === null ? "M" : "L";
+            return `${cmd}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`;
+        })
+        .join("");
+
+// End labels sit at the last value; nudge apart so they never overlap.
+const MIN_GAP = 5; // % of plot height
+const endLabels = series
+    .map((s) => ({ s, value: s.values.at(-1) ?? 0 }))
+    .map((d) => ({ ...d, top: (1 - d.value / yMax) * 100 }))
+    .sort((a, b) => a.top - b.top);
+endLabels.forEach((d, i) => {
+    if (i > 0) d.top = Math.max(d.top, endLabels[i - 1].top + MIN_GAP);
+});
+
+const xTicks = years.filter((y) => y % 5 === 0);
+const format = (v: number | null) => (v === null ? "–" : `${v.toFixed(1)}${unit}`);
+const config = { years, unit, series: series.map(({ key, label, color, values }) => ({ key, label, color, values })) };
+---
+
+<figure class="line-chart" id={id} data-line-chart data-labels={labels} data-config={JSON.stringify(config)}>
+    <figcaption class="line-chart__head">
+        <span class="line-chart__title">{title}</span>
+        <span class="mono muted">{unit === "%" ? "Share of electricity generation, %" : unit}</span>
+    </figcaption>
+
+    <ul class="line-chart__legend mono" aria-label="Legend">
+        {
+            series.map((s) => (
+                <li data-series={s.key}>
+                    <span class="line-key" style={`--c: ${s.color}`} aria-hidden="true" />
+                    {s.label}
+                </li>
+            ))
+        }
+    </ul>
+
+    <div class="line-chart__plot" tabindex="0" role="group" aria-label={`${title}. ${summary} Use the left and right arrow keys to read values by year.`}>
+        <div class="line-chart__area" data-area>
+            {
+                yTicks.map((t) => (
+                    <div class="y-tick mono" style={`top: ${pct(t)}`}>
+                        <span>{t}</span>
+                    </div>
+                ))
+            }
+
+            <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true" data-lines>
+                {
+                    series.map((s) => (
+                        <path
+                            d={pathFor(s.values)}
+                            data-series={s.key}
+                            style={`stroke: ${s.color}`}
+                            vector-effect="non-scaling-stroke"
+                        />
+                    ))
+                }
+            </svg>
+
+            <div class="line-chart__annotation mono" data-annotation hidden>
+                <span data-annotation-text></span>
+            </div>
+
+            <div class="line-chart__crosshair" data-crosshair hidden></div>
+
+            {
+                endLabels.map(({ s, value, top }) => (
+                    <div class="end-label mono" data-series={s.key} style={`top: ${top}%`} aria-hidden="true">
+                        <span class="line-key" style={`--c: ${s.color}`} />
+                        <span class="end-label__value">{format(value)}</span>
+                        <span class="muted">{s.label}</span>
+                    </div>
+                ))
+            }
+
+            {
+                xTicks.map((y) => (
+                    <div
+                        class="x-tick mono"
+                        data-minor={y % 10 !== 0 ? "" : undefined}
+                        style={`left: ${(years.indexOf(y) / (n - 1)) * 100}%`}
+                    >
+                        {y}
+                    </div>
+                ))
+            }
+
+            <div class="line-chart__tooltip" data-tooltip hidden aria-hidden="true"></div>
+        </div>
+        <p class="visually-hidden" aria-live="polite" data-live></p>
+    </div>
+
+    {table && <ChartTable title={title} unit={unit} years={years} series={series} />}
+</figure>
+
+<script>
+    import { initLineCharts } from "../scripts/line-chart";
+    initLineCharts();
+</script>
+
+<style>
+    .line-chart {
+        margin: 0;
+    }
+
+    .line-chart__head {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 4px var(--gutter);
+        align-items: baseline;
+    }
+
+    .line-chart__title {
+        font-size: var(--fs-body);
+    }
+
+    .line-chart__legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 18px;
+        margin: 14px 0 0;
+        padding: 0;
+        list-style: none;
+        color: var(--muted);
+    }
+
+    .line-chart__legend li {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: opacity 0.4s var(--ease);
+    }
+
+    /* :global — the tooltip script creates line keys at runtime */
+    .line-chart :global(.line-key) {
+        display: inline-block;
+        width: 14px;
+        height: 2px;
+        border-radius: 1px;
+        background: var(--c);
+        flex: none;
+    }
+
+    /* Plot: labels live in the padding around the drawing area */
+    .line-chart__plot {
+        position: relative;
+        height: clamp(260px, 46vh, 440px);
+        margin-top: 18px;
+        padding: 8px 7.5rem 28px 2.25rem;
+        outline-offset: 6px;
+    }
+
+    .line-chart__area {
+        position: relative;
+        height: 100%;
+    }
+
+    .y-tick {
+        position: absolute;
+        left: 0;
+        right: 0;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+    }
+
+    .y-tick span {
+        position: absolute;
+        right: calc(100% + 10px);
+        transform: translateY(-50%);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .x-tick {
+        position: absolute;
+        top: calc(100% + 8px);
+        transform: translateX(-50%);
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+    }
+
+    svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+    }
+
+    path {
+        fill: none;
+        stroke-width: 2px;
+        stroke-linejoin: round;
+        stroke-linecap: round;
+        transition: opacity 0.5s var(--ease);
+    }
+
+    .end-label {
+        position: absolute;
+        left: calc(100% + 10px);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+        transform: translateY(-50%);
+        transition: opacity 0.5s var(--ease);
+    }
+
+    .end-label__value {
+        color: var(--text);
+    }
+
+    /* Focus: dim the rest, label only what the story is about */
+    [data-series].is-dim {
+        opacity: 0.14;
+    }
+
+    /* the legend stays readable while its series is dimmed */
+    .line-chart__legend [data-series].is-dim {
+        opacity: 0.45;
+    }
+
+    .line-chart[data-labels="focus"] .end-label:not(.is-labelled) {
+        opacity: 0;
+    }
+
+    .line-chart__annotation {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        border-left: 1px solid var(--text);
+        pointer-events: none;
+    }
+
+    .line-chart__annotation span {
+        position: absolute;
+        top: 0;
+        left: 8px;
+        width: max-content;
+        max-width: 16ch;
+        color: var(--text);
+    }
+
+    .line-chart__annotation.is-flipped span {
+        left: auto;
+        right: 8px;
+        text-align: right;
+    }
+
+    .line-chart__crosshair {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        border-left: 1px solid var(--muted);
+        pointer-events: none;
+    }
+
+    .line-chart__tooltip {
+        position: absolute;
+        top: 0;
+        z-index: 2;
+        min-width: 11rem;
+        padding: 10px 12px;
+        background: var(--bg);
+        border: 1px solid var(--line);
+        box-shadow: var(--media-shadow);
+        font-size: var(--fs-small);
+        pointer-events: none;
+    }
+
+    .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    @media (max-width: 600px) {
+        .line-chart__plot {
+            padding-right: 5.5rem;
+        }
+
+        .end-label .muted {
+            display: none;
+        }
+
+        .x-tick[data-minor] {
+            display: none;
+        }
+    }
+</style>

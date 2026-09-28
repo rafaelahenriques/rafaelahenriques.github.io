@@ -1,0 +1,96 @@
+---
+/** Table-view twin of a LineChart: every value, reachable without hovering. */
+import type { Series } from "./LineChart.astro";
+
+interface Props {
+    title: string;
+    unit: string;
+    years: number[];
+    series: Series[];
+}
+
+const { title, unit, years, series } = Astro.props;
+const format = (v: number | null) => (v === null ? "–" : `${v.toFixed(1)}${unit}`);
+---
+
+<details class="chart-table mono">
+    <summary class="link">Show the data as a table</summary>
+    <div class="chart-table__scroll">
+        <table>
+            <caption class="chart-table__caption">{title}, {unit === "%" ? "percent" : unit} by year</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Year</th>
+                    {series.map((s) => <th scope="col">{s.label}</th>)}
+                </tr>
+            </thead>
+            <tbody>
+                {
+                    years.map((y, i) => (
+                        <tr>
+                            <th scope="row">{y}</th>
+                            {series.map((s) => <td>{format(s.values[i])}</td>)}
+                        </tr>
+                    ))
+                }
+            </tbody>
+        </table>
+    </div>
+</details>
+
+<style>
+    .chart-table {
+        margin-top: 28px;
+    }
+
+    .chart-table summary {
+        width: fit-content;
+        cursor: pointer;
+        list-style: none;
+    }
+
+    .chart-table summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .chart-table__scroll {
+        max-height: 22rem;
+        margin-top: 14px;
+        overflow: auto;
+    }
+
+    .chart-table__caption {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-variant-numeric: tabular-nums;
+    }
+
+    th,
+    td {
+        padding: 6px 12px 6px 0;
+        text-align: right;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+    }
+
+    th:first-child {
+        text-align: left;
+    }
+
+    thead th {
+        position: sticky;
+        top: 0;
+        background: var(--bg);
+        color: var(--muted);
+        font-weight: 500;
+    }
+</style>
