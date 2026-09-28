@@ -1,91 +1,100 @@
 ---
 import Base from "../layouts/BaseLayout.astro";
-import { getCollection, type CollectionEntry } from "astro:content";
-import { Picture } from "astro:assets";
+import ProjectCarousel, { type Slide } from "../components/ProjectCarousel.astro";
+import WorkIndex from "../components/WorkIndex.astro";
+import { getImage } from "astro:assets";
+import { getProjects, getPosts, formatDate, slugOf } from "../lib/content";
 
-type ProjectEntry = CollectionEntry<"projects">;
-type BlogEntry = CollectionEntry<"blog">;
+const projects = await getProjects();
+const latestPosts = (await getPosts()).slice(0, 3);
 
-// Sort helpers
-const sortProjects = (items: ProjectEntry[]) =>
-  [...items].sort((a, b) => (b.data.year ?? "").localeCompare(a.data.year ?? ""));
+// Carousel: gallery images (or the screenshot), taken round-robin across
+// projects so every project shows up and neighbours differ. 10 max.
+const CAROUSEL_SIZE = 10;
+const galleries = projects.map((p) =>
+    (p.data.media?.gallery ?? [p.data.media?.screenshot]).filter((img) => img !== undefined),
+);
+const depth = Math.max(...galleries.map((g) => g.length));
+const sources = Array.from({ length: depth }, (_, round) =>
+    projects.map((p, i) => ({ p, image: galleries[i][round] })),
+)
+    .flat()
+    .filter((s) => s.image !== undefined)
+    .slice(0, CAROUSEL_SIZE);
 
-const sortPosts = (items: BlogEntry[]) =>
-  [...items].sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
-
-const projects = sortProjects(await getCollection("projects") as ProjectEntry[]);
-const latestProjects = projects.slice(0, 3);
-
-const posts = sortPosts(await getCollection("blog") as BlogEntry[]);
-const latestPosts = posts.slice(0, 3);
+const slides: Slide[] = await Promise.all(
+    sources.map(async ({ p, image }) => ({
+        src: (await getImage({ src: image!, width: 800, format: "webp" })).src,
+        title: p.data.title,
+        year: p.data.year,
+        href: `/projects/${slugOf(p)}/`,
+    })),
+);
 ---
 
-<Base title="Home" description="Rafaela — projects and blog.">
-  <section class="section reveal" style="margin-top: 0;">
-    <h1 class="reveal">Web Developer</h1>
-    <p class="lead reveal">
-      I build sleek, interactive web applications with a focus on clean code and great design.
-    </p>
-    <a href="/about/" class="button button--primary reveal">More About Me</a>
-  </section>
+<Base title="Home" description="Rafaela Henriques — web developer. Selected projects and blog.">
+    <ProjectCarousel slides={slides} />
 
-  <section class="section reveal" aria-labelledby="home-projects">
-    <div class="section__label" id="home-projects">Latest Projects</div>
-
-    <!-- 1-column on mobile, 2-column grid from 720px+ -->
-    <div class="grid home-grid home-projects-grid stagger">
-      {latestProjects.map((p) => {
-        const screenshot = p.data.media?.screenshot;
-        return (
-          <a href={`/projects/${p.id.replace(/\.md$/, "")}/`} class="card">
-            <div class="card__media">
-              {screenshot && (
-                <Picture
-                  src={screenshot}
-                  alt={p.data.title}
-                  loading="lazy"
-                  formats={["avif", "webp", "png"]}
-                  widths={[320, 640, 768, 1024, 1400]}
-                  sizes="(max-width: 719px) 100vw, (max-width: 1023px) 50vw, (max-width: 1399px) 33vw, 25vw"
-                />
-              )}
+    <section class="section wrap" aria-labelledby="intro">
+        <div class="row">
+            <h2 id="intro" class="row__label mono muted">Intro</h2>
+            <div class="row__body">
+                <p class="lead intro" data-split>
+                    Web developer with a background in game development,
+                    building interfaces that feel sharp, fast and clear.
+                </p>
+                <a href="/about/" class="intro__more mono link" data-reveal>More about me →</a>
             </div>
-            <h3 class="card__title">{p.data.title}</h3>
-            <p class="card__meta">{p.data.year}</p>
-          </a>
-        );
-      })}
-    </div>
+        </div>
+    </section>
 
-    <p style={`margin-top: var(--gap);`}>
-      <a href="/projects/" class="button">See all projects</a>
-    </p>
-  </section>
+    <section class="section wrap" aria-labelledby="work">
+        <div class="section-head">
+            <h2 id="work" class="mono muted">Index — Projects</h2>
+            <a href="/projects/" class="mono link">All projects ({projects.length})</a>
+        </div>
+        <WorkIndex projects={projects} />
+    </section>
 
-  <section class="section reveal" aria-labelledby="home-blog">
-    <div class="section__label" id="home-blog">Latest Posts</div>
-
-    <!-- 1-column on mobile, 2-column grid from 720px+ -->
-    <div class="grid home-grid home-blog-grid">
-      {latestPosts.map((post) => (
-        <a href={`/blog/${post.id}/`} class="card">
-          <h3 class="card__title">{post.data.title}</h3>
-          <p class="card__meta">
-            {post.data.date.toLocaleDateString("en-GB", { dateStyle: "medium" })}
-          </p>
-          {post.data.tags && post.data.tags.length > 0 && (
-            <div class="card__tags" aria-label="Tags">
-              {post.data.tags.map((tag) => (
-                <span class="tag-pill">{tag}</span>
-              ))}
-            </div>
-          )}
-        </a>
-      ))}
-    </div>
-
-    <p style={`margin-top: var(--gap);`}>
-      <a href="/blog/" class="button">See all posts</a>
-    </p>
-  </section>
+    <section class="section wrap" aria-labelledby="blog">
+        <div class="section-head">
+            <h2 id="blog" class="mono muted">Latest from the blog</h2>
+            <a href="/blog/" class="mono link">All posts</a>
+        </div>
+        <ol class="index index--dated">
+            {
+                latestPosts.map((post) => (
+                    <li class="index__item" data-reveal>
+                        <a href={`/blog/${slugOf(post)}/`} class="index__link">
+                            <span class="index__num mono muted">→</span>
+                            <span class="index__title">{post.data.title}</span>
+                            <span class="index__meta mono muted">{post.data.tags?.join(", ")}</span>
+                            <time class="index__year mono" datetime={post.data.date.toISOString()}>
+                                {formatDate(post.data.date)}
+                            </time>
+                        </a>
+                    </li>
+                ))
+            }
+        </ol>
+    </section>
 </Base>
+
+<style>
+    .intro {
+        max-width: 30ch;
+    }
+
+    .intro__more {
+        display: inline-block;
+        margin-top: 32px;
+    }
+
+    .section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: var(--gutter);
+        margin-bottom: 14px;
+    }
+</style>
