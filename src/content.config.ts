@@ -27,6 +27,8 @@ const projects = defineCollection({
         })
         .optional(),
       tags: z.array(z.string()).optional(),
+      // Projects with their own page in src/pages/projects/ (e.g. data stories)
+      customPage: z.boolean().optional(),
     }),
 });
 

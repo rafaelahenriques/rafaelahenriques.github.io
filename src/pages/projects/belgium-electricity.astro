@@ -1,0 +1,424 @@
+---
+import Base from "../../layouts/BaseLayout.astro";
+import LineChart, { type Series } from "../../components/LineChart.astro";
+import ChartTable from "../../components/ChartTable.astro";
+import { getEntry } from "astro:content";
+import data from "../../data/belgium-electricity.json";
+
+const project = (await getEntry("projects", "belgium-electricity"))!;
+const { title, description, role, tech } = project.data;
+
+const rows = data.belgium;
+const years = data.years;
+const first = rows[0];
+const last = rows.at(-1)!;
+const at = (year: number) => rows.find((r) => r.year === year)!;
+const fmt = (v: number) => `${Math.round(v * 10) / 10}`;
+
+// --- Numbers the story quotes, all derived from the data ---------------
+const lastHalfNuclear = [...rows].reverse().find((r) => r.nuclear >= 50)!;
+const nuclearDips = rows
+    .filter((r, i) => i > 0 && i < rows.length - 1 && r.nuclear < rows[i - 1].nuclear - 8)
+    .map((r) => r.year);
+const coalGone = rows.find((r, i) => r.coal === 0 && rows.slice(i).every((x) => x.coal === 0))!;
+const gasPeak = rows.reduce((a, r) => (r.gas > a.gas ? r : a));
+const renewables = (r: (typeof rows)[number]) => r.wind + r.solar;
+const ws2005 = renewables(at(2005));
+const wsLast = renewables(last);
+const levelWithNuclear = Math.abs(wsLast - last.nuclear) < 1;
+
+const lowCarbon = data.lowCarbon as Record<string, (number | null)[]>;
+const lc = (country: string, i: number) => lowCarbon[country].at(i) ?? 0;
+const franceMin = Math.min(...lowCarbon.France.filter((v): v is number => v !== null));
+
+// --- Chart series: fixed palette order, color follows the source -------
+const mix: Series[] = [
+    { key: "nuclear", label: "Nuclear", color: "var(--series-nuclear)", values: rows.map((r) => r.nuclear) },
+    { key: "gas", label: "Gas", color: "var(--series-gas)", values: rows.map((r) => r.gas) },
+    { key: "wind", label: "Wind", color: "var(--series-wind)", values: rows.map((r) => r.wind) },
+    { key: "solar", label: "Solar", color: "var(--series-solar)", values: rows.map((r) => r.solar) },
+    { key: "coal", label: "Coal", color: "var(--series-coal)", values: rows.map((r) => r.coal) },
+    { key: "other", label: "Other", color: "var(--muted)", values: rows.map((r) => r.other) },
+];
+
+// Emphasis, not hue: Belgium in ink, neighbours in grey, all direct-labelled
+const neighbours: Series[] = ["Belgium", "France", "Germany", "Netherlands"].map((country) => ({
+    key: country.toLowerCase(),
+    label: country,
+    color: country === "Belgium" ? "var(--text)" : "var(--muted)",
+    values: lowCarbon[country],
+}));
+
+const steps = [
+    {
+        focus: null,
+        kicker: `${first.year}`,
+        text: `In ${first.year}, ${fmt(first.nuclear)}% of Belgium's electricity came from nuclear power and ${fmt(first.coal)}% from coal. Wind and solar did not register. ${last.year - first.year} years later, the mix has been rewritten.`,
+    },
+    {
+        focus: ["nuclear"],
+        annotate: nuclearDips.at(-1),
+        note: `${fmt(at(nuclearDips.at(-1)!).nuclear)}% in ${nuclearDips.at(-1)}`,
+        kicker: "Nuclear",
+        text: `Nuclear supplied at least half of all generation until ${lastHalfNuclear.year}. Sharp dips in ${nuclearDips.join(" and ")} are years when several reactors were offline at once. With the phase-out under way — Doel 3 closed in 2022, Tihange 2 in 2023 — its share reached ${fmt(last.nuclear)}% in ${last.year}.`,
+    },
+    {
+        focus: ["coal"],
+        annotate: coalGone.year,
+        note: `0% from ${coalGone.year}`,
+        kicker: "Coal",
+        text: `Coal delivered ${fmt(first.coal)}% in ${first.year}, shrank for two decades and reached zero in ${coalGone.year}. Belgium no longer generates electricity from coal.`,
+    },
+    {
+        focus: ["gas"],
+        annotate: gasPeak.year,
+        note: `Peak: ${fmt(gasPeak.gas)}%`,
+        kicker: "Gas",
+        text: `Gas filled most of the gap, peaking at ${fmt(gasPeak.gas)}% in ${gasPeak.year}. Watch it rise in exactly the years nuclear dips — it is the flexible backup that keeps the lights on. By ${last.year} it was down to ${fmt(last.gas)}%.`,
+    },
+    {
+        focus: ["wind", "solar"],
+        annotate: last.year,
+        note: `${fmt(wsLast)}% combined`,
+        kicker: "Wind & solar",
+        text: `In 2005, wind and solar together produced ${fmt(ws2005)}% of Belgium's electricity. In ${last.year} they produced ${fmt(wsLast)}%${levelWithNuclear ? ` — level with nuclear's ${fmt(last.nuclear)}%` : `, against nuclear's ${fmt(last.nuclear)}%`}.`,
+    },
+];
+---
+
+<Base title={title} description={description}>
+    <article class="story">
+        <header class="page-head wrap">
+            <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
+            <p class="mono muted story__kicker" data-reveal>Data story · {first.year}–{last.year}</p>
+            <h1 class="display story__title" data-split>{title}</h1>
+        </header>
+
+        <section class="wrap">
+            <div class="row">
+                <dl class="row__label facts mono" data-reveal>
+                    <div><dt class="muted">Role</dt><dd>{role}</dd></div>
+                    <div><dt class="muted">Tools</dt><dd>{tech?.join(", ")}</dd></div>
+                    <div>
+                        <dt class="muted">Data</dt>
+                        <dd><a href={data.sourceUrl} class="link" target="_blank" rel="noopener noreferrer">Our World in Data ↗</a></dd>
+                    </div>
+                </dl>
+                <div class="row__body">
+                    <p class="lead" data-split>{description}</p>
+
+                    <dl class="stats" data-reveal>
+                        <div class="stat">
+                            <dt class="mono muted">Nuclear, {first.year} → {last.year}</dt>
+                            <dd>{fmt(first.nuclear)}% → {fmt(last.nuclear)}%</dd>
+                        </div>
+                        <div class="stat">
+                            <dt class="mono muted">Wind + solar, {last.year}</dt>
+                            <dd>{fmt(wsLast)}%</dd>
+                        </div>
+                        <div class="stat">
+                            <dt class="mono muted">Coal, since {coalGone.year}</dt>
+                            <dd>0%</dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCROLLYTELLING: steps scroll past a sticky chart -->
+        <section class="section wrap scrolly" aria-label="Belgium's electricity mix over time">
+            <div class="scrolly__chart">
+                <LineChart
+                    id="mix-chart"
+                    title="Belgium's electricity mix"
+                    unit="%"
+                    years={years}
+                    series={mix}
+                    yMax={70}
+                    yTicks={[0, 20, 40, 60]}
+                    labels="focus"
+                    table={false}
+                    summary={`Nuclear falls from ${fmt(first.nuclear)}% to ${fmt(last.nuclear)}%, coal reaches zero in ${coalGone.year}, and wind plus solar grow to ${fmt(wsLast)}%.`}
+                />
+            </div>
+            <ol class="scrolly__steps">
+                {
+                    steps.map((step) => (
+                        <li
+                            class="step"
+                            data-step
+                            data-focus={step.focus ? step.focus.join(" ") : undefined}
+                            data-annotate={step.annotate}
+                            data-note={step.note}
+                        >
+                            <p class="mono muted">{step.kicker}</p>
+                            <p class="step__text">{step.text}</p>
+                        </li>
+                    ))
+                }
+            </ol>
+            <div class="scrolly__table">
+                <ChartTable title="Belgium's electricity mix" unit="%" years={years} series={mix} />
+            </div>
+        </section>
+
+        <section class="section wrap" aria-labelledby="neighbours">
+            <div class="row">
+                <h2 id="neighbours" class="row__label mono muted">Next to the neighbours</h2>
+                <div class="row__body">
+                    <p class="lead" data-split>
+                        Low-carbon electricity (nuclear plus renewables) went from
+                        {fmt(lc("Belgium", 0))}% to {fmt(lc("Belgium", -1))}% in Belgium.
+                        France, built on nuclear, never dropped below {fmt(franceMin)}%. The Netherlands
+                        started from {fmt(lc("Netherlands", 0))}% and Germany from
+                        {fmt(lc("Germany", 0))}% — both closing the gap with
+                        renewables.
+                    </p>
+                    <div class="neighbours-chart" data-reveal>
+                        <LineChart
+                            id="neighbours-chart"
+                            title="Low-carbon share of electricity"
+                            unit="%"
+                            years={years}
+                            series={neighbours}
+                            yMax={100}
+                            yTicks={[0, 25, 50, 75, 100]}
+                            summary={`Belgium ${fmt(lc("Belgium", -1))}%, France ${fmt(lc("France", -1))}%, Germany ${fmt(lc("Germany", -1))}%, Netherlands ${fmt(lc("Netherlands", -1))}% in ${last.year}.`}
+                        />
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section wrap" aria-labelledby="method">
+            <div class="row">
+                <h2 id="method" class="row__label mono muted">Method</h2>
+                <div class="row__body prose" data-reveal>
+                    <p>
+                        The data is the
+                        <a href={data.sourceUrl} target="_blank" rel="noopener noreferrer">Our World in Data energy dataset</a>
+                        ({data.license}), which compiles Ember and Energy Institute
+                        figures. A small Node script downloads the CSV, keeps
+                        Belgium and its neighbours from {first.year} on, folds oil,
+                        bioenergy and hydro into “Other” and writes a {years.length}-year JSON
+                        file that ships with the site. Retrieved {data.retrieved}.
+                    </p>
+                    <p>
+                        The charts are rendered to SVG at build time, so there is no
+                        charting library in the browser. GSAP ScrollTrigger drives
+                        the story: each paragraph focuses the series it talks about
+                        and marks the year it refers to. Hover or use the arrow keys
+                        on a chart to read every value for a year, and every chart
+                        has a table view. The palette was checked for colour-vision
+                        deficiencies, and each line also carries a direct label.
+                    </p>
+                    <p class="mono muted">Shares are of electricity generated in Belgium, not consumed.</p>
+                </div>
+            </div>
+        </section>
+    </article>
+</Base>
+
+<script>
+    import { gsap } from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+    import { setFocus, annotate } from "../../scripts/line-chart";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    const mixChart = document.querySelector<HTMLElement>("#mix-chart");
+    const steps = [...document.querySelectorAll<HTMLElement>("[data-step]")];
+
+    function activate(step: HTMLElement) {
+        steps.forEach((s) => s.classList.toggle("is-active", s === step));
+        if (!mixChart) return;
+        setFocus(mixChart, step.dataset.focus ? step.dataset.focus.split(" ") : null);
+        annotate(mixChart, step.dataset.annotate ? Number(step.dataset.annotate) : null, step.dataset.note);
+    }
+
+    // Each paragraph takes over the chart while it crosses the middle of the viewport
+    steps.forEach((step) =>
+        ScrollTrigger.create({
+            trigger: step,
+            start: "top 60%",
+            end: "bottom 60%",
+            onToggle: (self) => self.isActive && activate(step),
+        }),
+    );
+    if (steps[0]) activate(steps[0]);
+
+    // Step positions depend on webfont metrics; re-measure once they load.
+    document.fonts.ready.then(() => ScrollTrigger.refresh());
+
+    // Lines draw in left → right the first time each chart is seen
+    gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
+        document.querySelectorAll<SVGElement>(".story [data-lines]").forEach((svg) =>
+            gsap.fromTo(
+                svg,
+                { clipPath: "inset(0% 100% 0% 0%)" },
+                {
+                    clipPath: "inset(0% 0% 0% 0%)",
+                    duration: 2,
+                    ease: "power2.inOut",
+                    clearProps: "clipPath",
+                    scrollTrigger: { trigger: svg, start: "top 75%", once: true },
+                },
+            ),
+        );
+    });
+</script>
+
+<style>
+    /* Validated palette (dataviz): slots 1–5 in fixed order, per theme */
+    .story {
+        --series-nuclear: #2a78d6;
+        --series-gas: #eb6834;
+        --series-wind: #1baf7a;
+        --series-solar: #eda100;
+        --series-coal: #e87ba4;
+    }
+
+    :global(html.dark) .story {
+        --series-nuclear: #3987e5;
+        --series-gas: #d95926;
+        --series-wind: #199e70;
+        --series-solar: #c98500;
+        --series-coal: #d55181;
+    }
+
+    .story__kicker {
+        margin-top: 24px;
+    }
+
+    .story__title {
+        max-width: 12ch;
+        font-size: clamp(2.75rem, 1rem + 7vw, 8.5rem);
+    }
+
+    .facts {
+        display: grid;
+        gap: 14px;
+        align-content: start;
+    }
+
+    .facts dd {
+        margin: 2px 0 0;
+    }
+
+    /* --- STATS --- */
+
+    .stats {
+        display: grid;
+        gap: 24px var(--gutter);
+        margin: clamp(40px, 5vw, 72px) 0 0;
+    }
+
+    .stat dd {
+        margin: 6px 0 0;
+        font-size: var(--fs-h2);
+        line-height: 1;
+        letter-spacing: -0.04em;
+    }
+
+    @media (min-width: 720px) {
+        .stats {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    /* --- SCROLLY --- */
+
+    .scrolly {
+        display: grid;
+        gap: var(--gutter);
+    }
+
+    .scrolly__chart {
+        position: sticky;
+        top: var(--header-h);
+        z-index: 1;
+        padding-block: 12px;
+        background: var(--bg);
+    }
+
+    .scrolly__steps {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .step {
+        min-height: 70vh;
+        padding: 24px 0;
+        border-top: 1px solid var(--line);
+        opacity: 0.3;
+        transition: opacity 0.5s var(--ease);
+    }
+
+    .step.is-active {
+        opacity: 1;
+    }
+
+    .step__text {
+        margin: 12px 0 0;
+        max-width: 34ch;
+        font-size: var(--fs-lead);
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+    }
+
+    .step:last-child {
+        min-height: 60vh;
+    }
+
+    /* Desktop: steps on the left, chart sticky on the right */
+    @media (min-width: 1000px) {
+        .scrolly {
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+            align-items: start;
+        }
+
+        .scrolly__steps {
+            grid-column: 1 / span 4;
+            grid-row: 1;
+            padding-top: 20vh;
+        }
+
+        .scrolly__chart {
+            grid-column: 5 / -1;
+            grid-row: 1;
+            top: calc(var(--header-h) + 5vh);
+            padding-block: 0;
+        }
+
+        .step {
+            min-height: 80vh;
+        }
+
+        .step__text {
+            font-size: clamp(1.25rem, 1rem + 0.8vw, 1.75rem);
+        }
+    }
+
+    /* Phone: the sticky chart shares the screen with the step text */
+    @media (max-width: 999px) {
+        .scrolly__chart :global(.line-chart__plot) {
+            height: clamp(200px, 32vh, 300px);
+        }
+
+        .step {
+            position: relative;
+            z-index: 0;
+        }
+    }
+
+    @media (min-width: 1000px) {
+        .scrolly__table {
+            grid-column: 5 / -1;
+        }
+    }
+
+    .neighbours-chart {
+        margin-top: clamp(40px, 5vw, 72px);
+    }
+</style>

@@ -6,14 +6,17 @@ import { getProjects, slugOf, type ProjectEntry } from "../../lib/content";
 
 export async function getStaticPaths() {
     const projects = await getProjects();
-    return projects.map((project, i) => ({
-        params: { slug: slugOf(project) },
-        props: {
-            project,
-            prev: projects[i - 1] ?? null,
-            next: projects[i + 1] ?? null,
-        },
-    }));
+    return projects
+        .map((project, i) => ({
+            params: { slug: slugOf(project) },
+            props: {
+                project,
+                prev: projects[i - 1] ?? null,
+                next: projects[i + 1] ?? null,
+            },
+        }))
+        // custom pages (e.g. data stories) render their own route
+        .filter(({ props }) => !props.project.data.customPage);
 }
 
 interface Props {
