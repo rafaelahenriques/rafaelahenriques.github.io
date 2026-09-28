@@ -80,6 +80,8 @@ const pad = (n: number) => String(n).padStart(2, "0");
         min-height: 520px;
         overflow: hidden;
         display: grid;
+        /* minmax(0, …) so the 200vw mobile track can't widen the column */
+        grid-template-columns: minmax(0, 1fr);
         grid-template-rows: auto 1fr auto;
         padding: 12px var(--gutter) clamp(16px, 3vw, 32px);
         /* horizontal drags belong to the carousel, vertical ones to the page */
