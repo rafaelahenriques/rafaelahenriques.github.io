@@ -1,5 +1,6 @@
 ---
 import Base from "../layouts/BaseLayout.astro";
+import ContactLinks from "../components/ContactLinks.astro";
 import { getCollection } from "astro:content";
 
 // Skill groups from the content collection, by `order` then name
@@ -9,7 +10,6 @@ const skills = (await getCollection("skills")).sort((a, b) => {
 });
 
 const traits = ["Adaptable", "Hard-working", "Friendly", "Curious", "Observant", "Proactive"];
-const email = "rafaela.henriques@student.howest.be";
 ---
 
 <Base title="About" description="About Rafaela Henriques, web developer.">
@@ -75,7 +75,9 @@ const email = "rafaela.henriques@student.howest.be";
                     Open for front-end focused roles, collaboration, and projects
                     where design and development actually talk to each other.
                 </p>
-                <a href={`mailto:${email}`} class="about__mail mono link" data-reveal>Email me →</a>
+                <div data-reveal>
+                    <ContactLinks class="about__links mono" />
+                </div>
             </div>
         </div>
     </section>
@@ -121,8 +123,7 @@ const email = "rafaela.henriques@student.howest.be";
         margin: 0;
     }
 
-    .about__mail {
-        display: inline-block;
+    :global(.about__links) {
         margin-top: 32px;
     }
 </style>

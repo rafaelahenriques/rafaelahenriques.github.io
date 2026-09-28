@@ -1,5 +1,6 @@
 ---
 import ThemeToggle from "./ThemeIcon.astro";
+import { site } from "../lib/site";
 
 const links = [
     { href: "/projects/", label: "Projects" },
@@ -18,7 +19,10 @@ const isCurrent = (href: string) => path.startsWith(href);
         Rafaela Henriques
     </a>
 
-    <span class="site-header__role muted">Web Developer</span>
+    <p class="site-header__role muted">
+        Web Developer · {site.location}
+        <time class="site-header__clock" data-clock data-time-zone={site.timeZone}></time>
+    </p>
 
     <nav aria-label="Primary" class="site-header__nav">
         <ul>
@@ -83,12 +87,8 @@ const isCurrent = (href: string) => path.startsWith(href);
         background-size: 100% 1px;
     }
 
-    @media (max-width: 480px) {
-        .site-header__brand {
-            max-width: 9ch;
-            white-space: normal;
-            line-height: 1.1;
-        }
+    .site-header__clock {
+        font-variant-numeric: tabular-nums;
     }
 
     @media (min-width: 900px) {
@@ -103,6 +103,7 @@ const isCurrent = (href: string) => path.startsWith(href);
 
         .site-header__role {
             display: block;
+            margin: 0;
             grid-column: 4 / span 3;
         }
 
@@ -117,3 +118,22 @@ const isCurrent = (href: string) => path.startsWith(href);
         }
     }
 </style>
+
+<script>
+    // Local time where I'm based, e.g. "14:32"; ticks every 15s.
+    const clock = document.querySelector<HTMLTimeElement>("[data-clock]");
+    if (clock) {
+        const format = new Intl.DateTimeFormat("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+            timeZone: clock.dataset.timeZone,
+        });
+        const tick = () => {
+            const now = new Date();
+            clock.textContent = format.format(now);
+            clock.dateTime = now.toISOString();
+        };
+        tick();
+        setInterval(tick, 15_000);
+    }
+</script>
