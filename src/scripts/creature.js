@@ -1,5 +1,5 @@
-import { gsap } from "/node_modules/gsap/index.js";
-import { Draggable } from "/node_modules/gsap/Draggable.js";
+import { gsap } from "gsap";
+import { Draggable } from "gsap/Draggable";
 
 gsap.registerPlugin(Draggable);
 
