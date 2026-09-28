@@ -1,0 +1,146 @@
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
+
+gsap.registerPlugin(ScrollTrigger, SplitText);
+
+const MOTION = "(prefers-reduced-motion: no-preference)";
+const FINE_POINTER = "(hover: hover) and (pointer: fine)";
+
+/** Fade in the header items on load. */
+function introHeader() {
+    gsap.from("[data-header] > *", {
+        autoAlpha: 0,
+        y: -12,
+        duration: 1,
+        ease: "expo.out",
+        stagger: 0.06,
+    });
+}
+
+/**
+ * [data-split]: masked line-by-line reveal. Add data-split-delay="0.4" to
+ * stagger elements that are visible on load.
+ */
+function splitReveals() {
+    document.querySelectorAll<HTMLElement>("[data-split]").forEach((el) => {
+        SplitText.create(el, {
+            type: "lines",
+            mask: "lines",
+            autoSplit: true,
+            onSplit(self) {
+                gsap.set(el, { visibility: "visible" });
+                return gsap.from(self.lines, {
+                    yPercent: 110,
+                    duration: 1.2,
+                    ease: "expo.out",
+                    stagger: 0.08,
+                    delay: Number(el.dataset.splitDelay ?? 0),
+                    scrollTrigger: { trigger: el, start: "top 90%", once: true },
+                });
+            },
+        });
+    });
+}
+
+/** [data-reveal]: fade up in batches as they scroll into view. */
+function fadeReveals() {
+    gsap.set("[data-reveal]", { autoAlpha: 0, y: 32 });
+    ScrollTrigger.batch("[data-reveal]", {
+        start: "top 92%",
+        once: true,
+        onEnter: (els) =>
+            gsap.to(els, {
+                autoAlpha: 1,
+                y: 0,
+                duration: 1.1,
+                ease: "expo.out",
+                stagger: 0.08,
+            }),
+    });
+}
+
+/** [data-reveal-img]: wipe the frame open and settle the image inside it. */
+function imageReveals() {
+    document.querySelectorAll<HTMLElement>("[data-reveal-img]").forEach((el) => {
+        const img = el.querySelector("img");
+        const tl = gsap.timeline({
+            scrollTrigger: { trigger: el, start: "top 88%", once: true },
+        });
+        tl.fromTo(
+            el,
+            { clipPath: "inset(100% 0% 0% 0%)" },
+            {
+                clipPath: "inset(0% 0% 0% 0%)",
+                duration: 1.3,
+                ease: "expo.inOut",
+                clearProps: "clipPath",
+            },
+        );
+        if (img) {
+            // clearProps hands the transform back to CSS hover styles afterwards
+            tl.from(
+                img,
+                { scale: 1.25, duration: 1.6, ease: "expo.out", clearProps: "transform" },
+                0.2,
+            );
+        }
+    });
+}
+
+/** [data-preview-list] [data-preview-src]: image that follows the cursor. */
+function indexPreview() {
+    const links = document.querySelectorAll<HTMLElement>(
+        "[data-preview-list] [data-preview-src]",
+    );
+    if (!links.length) return;
+
+    const box = document.createElement("div");
+    box.className = "cursor-preview";
+    box.setAttribute("aria-hidden", "true");
+    const img = document.createElement("img");
+    img.alt = "";
+    box.append(img);
+    document.body.append(box);
+
+    gsap.set(box, { xPercent: -50, yPercent: -50, autoAlpha: 0, scale: 0.85 });
+    const xTo = gsap.quickTo(box, "x", { duration: 0.6, ease: "power3" });
+    const yTo = gsap.quickTo(box, "y", { duration: 0.6, ease: "power3" });
+    const onMove = (e: PointerEvent) => {
+        xTo(e.clientX);
+        yTo(e.clientY);
+    };
+    window.addEventListener("pointermove", onMove);
+
+    const show = (src: string) => {
+        img.src = src;
+        gsap.to(box, { autoAlpha: 1, scale: 1, duration: 0.5, ease: "power3" });
+    };
+    const hide = () =>
+        gsap.to(box, { autoAlpha: 0, scale: 0.85, duration: 0.35, ease: "power2" });
+
+    links.forEach((link) => {
+        link.addEventListener("pointerenter", () => show(link.dataset.previewSrc!));
+        link.addEventListener("pointerleave", hide);
+    });
+
+    return () => {
+        window.removeEventListener("pointermove", onMove);
+        box.remove();
+    };
+}
+
+export function initAnimations() {
+    const mm = gsap.matchMedia();
+
+    mm.add(MOTION, (ctx) => {
+        introHeader();
+        fadeReveals();
+        imageReveals();
+        // Split after webfonts load so line breaks are measured correctly;
+        // ctx.add keeps it inside this matchMedia context for cleanup.
+        document.fonts.ready.then(ctx.add(splitReveals));
+    });
+
+    mm.add(`${MOTION} and ${FINE_POINTER}`, indexPreview);
+}
