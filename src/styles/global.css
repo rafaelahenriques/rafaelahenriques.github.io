@@ -302,14 +302,6 @@ main {
         grid-column: 12 / span 1;
         text-align: right;
     }
-
-    .index--dated .index__meta {
-        grid-column: 8 / span 3;
-    }
-
-    .index--dated .index__year {
-        grid-column: 11 / span 2;
-    }
 }
 
 .index__year {
