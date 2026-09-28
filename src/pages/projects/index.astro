@@ -1,204 +1,195 @@
 ---
 import Base from "../../layouts/BaseLayout.astro";
-import {
-  getCollection,
-  type CollectionEntry,
-} from "astro:content";
 import { Picture } from "astro:assets";
-
-type ProjectEntry = CollectionEntry<"projects">;
-
-const sortProjects = (items: ProjectEntry[]): ProjectEntry[] =>
-  [...items].sort((a, b) => {
-    const yearA = a.data.year ?? "";
-    const yearB = b.data.year ?? "";
-    if (yearA !== yearB) return yearB.localeCompare(yearA);
-    return (a.data.title ?? "").localeCompare(b.data.title ?? "");
-  });
+import { getProjects, pad, slugOf, type ProjectEntry } from "../../lib/content";
 
 // Map tags -> one or more category slugs
 const getCategories = (project: ProjectEntry): string[] => {
-  const tags: string[] = project.data.tags ?? [];
-  const categories: string[] = [];
+    const tags: string[] = project.data.tags ?? [];
+    const categories: string[] = [];
 
-  if (tags.includes("Game Dev")) categories.push("game");
-  if (tags.includes("Web Dev")) categories.push("web");
-  if (tags.includes("Design")) categories.push("design");
+    if (tags.includes("Game Dev")) categories.push("game");
+    if (tags.includes("Web Dev")) categories.push("web");
+    if (tags.includes("Design")) categories.push("design");
 
-  return categories.length > 0 ? categories : ["other"];
+    return categories.length > 0 ? categories : ["other"];
 };
 
-const allProjects = (await getCollection("projects")) as ProjectEntry[];
-const projects = sortProjects(allProjects);
+const filters = [
+    { value: "all", label: "All" },
+    { value: "game", label: "Game Dev" },
+    { value: "web", label: "Web Dev" },
+    { value: "design", label: "Design" },
+];
+
+const projects = await getProjects();
 ---
 
-<Base title="Projects" description="Rafaela — projects.">
-  <section class="section projects-section">
-    <h1 class="page-title">Projects</h1>
-    <p class="lead">
-      Selected work from my time at university and personal side projects. I use these projects to test new tools, refine my workflow, and bridge the gap between strict logic and fluid design.
-    </p>
+<Base title="Projects" description="Rafaela Henriques — selected projects.">
+    <header class="page-head wrap">
+        <p class="mono muted" data-reveal>Projects ({pad(projects.length)})</p>
+        <h1 class="display" data-split>Selected work</h1>
+        <p class="lead page-lead" data-split data-split-delay="0.2">
+            Work from university and personal side projects, where I test new
+            tools and bridge strict logic with fluid design.
+        </p>
+    </header>
 
-    <!-- FILTER BAR -->
-    <nav
-      class="project-filters"
-      aria-label="Filter projects by category"
-      data-project-filter-root
-      data-active-filter="all"
-    >
-      <button
-        type="button"
-        class="project-filters__button"
-        data-filter="all"
-        aria-pressed="true"
-      >
-        All
-      </button>
-      <button
-        type="button"
-        class="project-filters__button"
-        data-filter="game"
-        aria-pressed="false"
-      >
-        Game Dev
-      </button>
-      <button
-        type="button"
-        class="project-filters__button"
-        data-filter="web"
-        aria-pressed="false"
-      >
-        Web Dev
-      </button>
-      <button
-        type="button"
-        class="project-filters__button"
-        data-filter="design"
-        aria-pressed="false"
-      >
-        Design
-      </button>
-    </nav>
+    <section class="wrap" aria-label="Projects">
+        <div class="projects-toolbar row" data-reveal>
+            <p class="row__label mono muted">Filter</p>
+            <nav class="row__body filters mono" aria-label="Filter projects by category" data-project-filter-root>
+                {
+                    filters.map((f) => (
+                        <button
+                            type="button"
+                            class="text-button link"
+                            data-filter={f.value}
+                            aria-pressed={f.value === "all" ? "true" : "false"}
+                        >
+                            {f.label}
+                        </button>
+                    ))
+                }
+            </nav>
+        </div>
 
-    <div
-      class="projects-list stagger"
-      style={`margin-top: calc(var(--gap) * 2)`}
-    >
-      {projects.map((project) => {
-        const categories = getCategories(project);
-        const screenshot = project.data.media?.screenshot;
-        return (
-          <a
-            href={`/projects/${project.id.replace(/\.md$/, "")}/`}
-            class="card"
-            data-project-category={categories.join(" ")}
-          >
-            <div class="card__media">
-              {screenshot && (
-                <Picture
-                  src={screenshot}
-                  alt={project.data.title}
-                  loading="lazy"
-                  formats={["avif", "webp", "png"]}
-                  widths={[320, 640, 768, 1024, 1400]}
-                  sizes="(max-width: 719px) 100vw, (max-width: 1023px) 50vw, (max-width: 1399px) 33vw, 25vw"
-                />
-              )}
-            </div>
-            <h3 class="card__title">{project.data.title}</h3>
-            <p class="card__meta">{project.data.year}</p>
-          </a>
+        <ul class="work-grid">
+            {
+                projects.map((p, i) => {
+                    const screenshot = p.data.media?.screenshot;
+                    return (
+                        <li
+                            class="work-grid__item"
+                            data-project-category={getCategories(p).join(" ")}
+                            data-col={i % 3}
+                        >
+                            <a href={`/projects/${slugOf(p)}/`} class="work-card">
+                                {screenshot && (
+                                    <div class="work-card__media" data-reveal-img>
+                                        <Picture
+                                            src={screenshot}
+                                            alt=""
+                                            formats={["avif", "webp"]}
+                                            widths={[480, 800, 1200]}
+                                            sizes="(min-width: 900px) 33vw, 100vw"
+                                            loading={i < 3 ? "eager" : "lazy"}
+                                        />
+                                    </div>
+                                )}
+                                <div class="work-card__caption mono" data-reveal>
+                                    <span class="muted">{pad(i + 1)}</span>
+                                    <span class="work-card__title">{p.data.title}</span>
+                                    <span class="muted">{p.data.year}</span>
+                                </div>
+                            </a>
+                        </li>
+                    );
+                })
+            }
+        </ul>
+    </section>
+</Base>
+
+<script>
+    const root = document.querySelector<HTMLElement>("[data-project-filter-root]");
+    const buttons = root?.querySelectorAll<HTMLButtonElement>("[data-filter]") ?? [];
+    const items = [...document.querySelectorAll<HTMLElement>("[data-project-category]")];
+
+    const applyFilter = (filter: string) => {
+        buttons.forEach((button) =>
+            button.setAttribute("aria-pressed", String(button.dataset.filter === filter)),
         );
-      })}
-    </div>
-  </section>
 
-  <script is:inline>
-    const setupProjectFilters = () => {
-      const root = document.querySelector("[data-project-filter-root]");
-      if (!root) return;
-
-      const buttons = root.querySelectorAll("[data-filter]");
-      const cards = document.querySelectorAll("[data-project-category]");
-
-      const applyFilter = (filter) => {
-        root.dataset.activeFilter = filter;
-
-        buttons.forEach((button) => {
-          const buttonFilter = button.dataset.filter;
-          const isActive = buttonFilter === filter;
-          button.setAttribute("aria-pressed", isActive ? "true" : "false");
+        // data-col drives the staggered offsets, so renumber visible items
+        let col = 0;
+        items.forEach((item) => {
+            const categories = (item.dataset.projectCategory ?? "other").split(" ");
+            const show = filter === "all" || categories.includes(filter);
+            item.hidden = !show;
+            if (show) item.dataset.col = String(col++ % 3);
         });
-
-        cards.forEach((card) => {
-          const raw = card.dataset.projectCategory || "other";
-          const categories = raw.split(" ").filter(Boolean);
-          const show = filter === "all" || categories.includes(filter);
-          card.style.display = show ? "" : "none";
-        });
-      };
-
-      buttons.forEach((button) => {
-        button.addEventListener("click", () => {
-          const filter = button.dataset.filter;
-          if (!filter) return;
-          applyFilter(filter);
-        });
-      });
-
-      applyFilter(root.dataset.activeFilter || "all");
     };
 
-    if (typeof window !== "undefined") {
-      window.addEventListener("DOMContentLoaded", setupProjectFilters);
-    }
-  </script>
+    buttons.forEach((button) =>
+        button.addEventListener("click", () => applyFilter(button.dataset.filter ?? "all")),
+    );
+</script>
 
-  <style>
-    .projects-section {
-      display: flex;
-      flex-direction: column;
-      gap: var(--gap);
-    }
-
-    .project-filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: var(--gap);
+<style>
+    .page-lead {
+        margin-top: clamp(24px, 3vw, 40px);
+        max-width: 32ch;
     }
 
-    .project-filters__button {
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: color-mix(in oklab, var(--surface) 92%, transparent);
-      padding: 6px 14px;
-      font-size: var(--step--1);
-      cursor: pointer;
-      color: var(--muted);
-      transition:
-        background 0.18s ease,
-        border-color 0.18s ease,
-        color 0.18s ease,
-        transform 0.12s ease;
+    .projects-toolbar {
+        margin-bottom: clamp(40px, 6vw, 80px);
     }
 
-    .project-filters__button[aria-pressed="true"] {
-      color: var(--text);
-      border-color: color-mix(in oklab, var(--accent) 60%, var(--border));
-      background: color-mix(in oklab, var(--accent) 20%, var(--surface));
-      transform: translateY(-1px);
+    .work-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: clamp(40px, 6vw, 96px) var(--gutter);
+        list-style: none;
+        margin: 0;
+        padding: 0;
     }
 
-    .project-filters__button:hover {
-      color: var(--text);
-      background: color-mix(in oklab, var(--accent) 10%, var(--surface));
+    .work-grid__item[hidden] {
+        display: none;
     }
 
-    @media (min-width: 720px) {
-      .project-filters {
-        justify-content: flex-start;
-      }
+    .work-card {
+        display: block;
     }
-  </style>
-</Base>
+
+    .work-card__media {
+        aspect-ratio: 4 / 5;
+        overflow: hidden;
+        background: var(--line);
+    }
+
+    /* <Picture> renders outside this component's scope, hence :global */
+    .work-card__media :global(img) {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 1.2s var(--ease);
+    }
+
+    .work-card:hover .work-card__media :global(img) {
+        transform: scale(1.04);
+    }
+
+    .work-card__caption {
+        display: grid;
+        grid-template-columns: 2.5rem 1fr auto;
+        gap: var(--gutter);
+        margin-top: 12px;
+    }
+
+    .work-card:hover .work-card__title {
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+    }
+
+    /* Staggered editorial grid: 3 columns, middle/right columns dropped */
+    @media (min-width: 900px) {
+        .work-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            align-items: start;
+        }
+
+        .work-grid__item[data-col="1"] {
+            margin-top: 22vh;
+        }
+
+        .work-grid__item[data-col="2"] {
+            margin-top: 8vh;
+        }
+
+        .work-grid__item[data-col="1"] .work-card__media {
+            aspect-ratio: 3 / 4;
+        }
+    }
+</style>
