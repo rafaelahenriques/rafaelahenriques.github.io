@@ -140,7 +140,13 @@ export function initAnimations() {
         imageReveals();
         // Split after webfonts load so line breaks are measured correctly;
         // ctx.add keeps it inside this matchMedia context for cleanup.
-        document.fonts.ready.then(ctx.add(splitReveals));
+        document.fonts.ready.then(
+            ctx.add(() => {
+                splitReveals();
+                // fonts and split lines change heights; re-measure every trigger
+                ScrollTrigger.refresh();
+            }),
+        );
     });
 
     mm.add(`${MOTION} and ${FINE_POINTER}`, indexPreview);
