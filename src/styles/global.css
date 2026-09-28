@@ -432,6 +432,12 @@ main {
     }
 }
 
+/* SplitText line masks: extra room so tight display type keeps descenders */
+.split-line-mask {
+    padding-bottom: 0.14em;
+    margin-bottom: -0.14em;
+}
+
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
