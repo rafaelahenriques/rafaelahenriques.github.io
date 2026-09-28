@@ -1,28 +1,53 @@
 ---
 import Base from "../../layouts/BaseLayout.astro";
-import { Picture } from "astro:assets";
+import { Picture, getImage } from "astro:assets";
 import { getProjects, pad, slugOf, type ProjectEntry } from "../../lib/content";
+
+const TYPES = [
+    { value: "game", label: "Game Dev", tag: "Game Dev" },
+    { value: "web", label: "Web Dev", tag: "Web Dev" },
+    { value: "design", label: "Design", tag: "Design" },
+];
 
 // Map tags -> one or more category slugs
 const getCategories = (project: ProjectEntry): string[] => {
     const tags: string[] = project.data.tags ?? [];
-    const categories: string[] = [];
-
-    if (tags.includes("Game Dev")) categories.push("game");
-    if (tags.includes("Web Dev")) categories.push("web");
-    if (tags.includes("Design")) categories.push("design");
-
+    const categories = TYPES.filter((t) => tags.includes(t.tag)).map((t) => t.value);
     return categories.length > 0 ? categories : ["other"];
 };
 
-const filters = [
-    { value: "all", label: "All" },
-    { value: "game", label: "Game Dev" },
-    { value: "web", label: "Web Dev" },
-    { value: "design", label: "Design" },
-];
+const typeLabel = (value: string) => TYPES.find((t) => t.value === value)?.label ?? "Other";
 
 const projects = await getProjects();
+
+const rows = await Promise.all(
+    projects.map(async (p, i) => {
+        const screenshot = p.data.media?.screenshot;
+        return {
+            p,
+            i,
+            href: `/projects/${slugOf(p)}/`,
+            categories: getCategories(p),
+            tech: p.data.tech ?? [],
+            preview: screenshot
+                ? (await getImage({ src: screenshot, width: 720, format: "webp" })).src
+                : undefined,
+        };
+    }),
+);
+
+// Stack facet: every technology with how many projects use it, most used first
+const techCounts = new Map<string, number>();
+rows.forEach((r) => r.tech.forEach((t) => techCounts.set(t, (techCounts.get(t) ?? 0) + 1)));
+const stack = [...techCounts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+
+const columns = [
+    { key: "index", label: "No." },
+    { key: "title", label: "Project" },
+    { key: "type", label: "Type" },
+    { key: "stack", label: "Stack" },
+    { key: "year", label: "Year" },
+];
 ---
 
 <Base title="Projects" description="Rafaela Henriques — selected projects.">
@@ -35,36 +60,59 @@ const projects = await getProjects();
         </p>
     </header>
 
-    <section class="wrap" aria-label="Projects">
-        <div class="projects-toolbar row" data-reveal>
-            <p class="row__label mono muted">Filter</p>
-            <nav class="row__body filters mono" aria-label="Filter projects by category" data-project-filter-root>
-                {
-                    filters.map((f) => (
-                        <button
-                            type="button"
-                            class="text-button link"
-                            data-filter={f.value}
-                            aria-pressed={f.value === "all" ? "true" : "false"}
-                        >
-                            {f.label}
-                        </button>
-                    ))
-                }
-            </nav>
+    <section class="wrap" aria-label="Projects" data-projects>
+        <div class="toolbar" data-reveal>
+            <div class="row">
+                <p class="row__label mono muted">Type</p>
+                <div class="row__body toolbar__line mono">
+                    <div class="filters" role="group" aria-label="Filter by type">
+                        <button type="button" class="text-button link" data-type="all" aria-pressed="true">All</button>
+                        {
+                            TYPES.map((t) => (
+                                <button type="button" class="text-button link" data-type={t.value} aria-pressed="false">
+                                    {t.label}
+                                </button>
+                            ))
+                        }
+                    </div>
+                    <div class="filters" role="group" aria-label="View">
+                        <button type="button" class="text-button link" data-view="grid" aria-pressed="true">Grid</button>
+                        <button type="button" class="text-button link" data-view="table" aria-pressed="false">Table</button>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <p class="row__label mono muted">Stack</p>
+                <div class="row__body filters mono" role="group" aria-label="Filter by technology">
+                    <button type="button" class="text-button link" data-tech="all" aria-pressed="true">Any</button>
+                    {
+                        stack.map(([tech, count]) => (
+                            <button type="button" class="text-button link" data-tech={tech} aria-pressed="false">
+                                {tech}<sup class="toolbar__count">{count}</sup>
+                            </button>
+                        ))
+                    }
+                </div>
+            </div>
+            <p class="toolbar__summary mono muted" aria-live="polite" data-summary>
+                Showing {projects.length} of {projects.length}
+            </p>
         </div>
 
-        <ul class="work-grid">
+        <!-- GRID VIEW -->
+        <ul class="work-grid" data-view-panel="grid">
             {
-                projects.map((p, i) => {
+                rows.map(({ p, i, href, categories, tech }) => {
                     const screenshot = p.data.media?.screenshot;
                     return (
                         <li
                             class="work-grid__item"
-                            data-project-category={getCategories(p).join(" ")}
+                            data-item
+                            data-categories={categories.join(" ")}
+                            data-tech-list={JSON.stringify(tech)}
                             data-col={i % 3}
                         >
-                            <a href={`/projects/${slugOf(p)}/`} class="work-card">
+                            <a href={href} class="work-card">
                                 {screenshot && (
                                     <div class="work-card__media" data-reveal-img>
                                         <Picture
@@ -88,32 +136,196 @@ const projects = await getProjects();
                 })
             }
         </ul>
+
+        <!-- TABLE VIEW -->
+        <div class="work-table" data-view-panel="table" hidden>
+            <table data-preview-list>
+                <caption class="visually-hidden">Projects, sortable by column</caption>
+                <thead class="mono">
+                    <tr>
+                        {
+                            columns.map((c) => (
+                                <th scope="col" class={`col-${c.key}`} aria-sort={c.key === "index" ? "ascending" : "none"}>
+                                    <button type="button" class="text-button" data-sort={c.key}>
+                                        {c.label}
+                                        <span class="sort-arrow" aria-hidden="true" />
+                                    </button>
+                                </th>
+                            ))
+                        }
+                    </tr>
+                </thead>
+                <tbody data-rows>
+                    {
+                        rows.map(({ p, i, href, categories, tech, preview }) => (
+                            <tr
+                                data-item
+                                data-categories={categories.join(" ")}
+                                data-tech-list={JSON.stringify(tech)}
+                                data-sort-index={i}
+                                data-sort-title={p.data.title}
+                                data-sort-type={categories.map(typeLabel).join(", ")}
+                                data-sort-stack={tech.join(", ")}
+                                data-sort-year={p.data.year ?? ""}
+                                data-preview-src={preview}
+                            >
+                                <td class="col-index mono muted">{pad(i + 1)}</td>
+                                <td class="col-title">
+                                    <a href={href} class="work-table__link">{p.data.title}</a>
+                                    <span class="work-table__role mono muted">{p.data.role}</span>
+                                </td>
+                                <td class="col-type mono">{categories.map(typeLabel).join(", ")}</td>
+                                <td class="col-stack mono">
+                                    <ul class="work-table__stack">
+                                        {tech.map((t) => (
+                                            <li>
+                                                <button type="button" class="text-button link" data-tech-chip={t}>
+                                                    {t}
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </td>
+                                <td class="col-year mono">{p.data.year}</td>
+                            </tr>
+                        ))
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <p class="work-empty mono muted" data-empty hidden>No projects match these filters.</p>
     </section>
 </Base>
 
 <script>
-    const root = document.querySelector<HTMLElement>("[data-project-filter-root]");
-    const buttons = root?.querySelectorAll<HTMLButtonElement>("[data-filter]") ?? [];
-    const items = [...document.querySelectorAll<HTMLElement>("[data-project-category]")];
+    import { gsap } from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-    const applyFilter = (filter: string) => {
-        buttons.forEach((button) =>
-            button.setAttribute("aria-pressed", String(button.dataset.filter === filter)),
-        );
+    gsap.registerPlugin(ScrollTrigger);
 
-        // data-col drives the staggered offsets, so renumber visible items
-        let col = 0;
-        items.forEach((item) => {
-            const categories = (item.dataset.projectCategory ?? "other").split(" ");
-            const show = filter === "all" || categories.includes(filter);
-            item.hidden = !show;
-            if (show) item.dataset.col = String(col++ % 3);
-        });
+    type View = "grid" | "table";
+    type SortKey = "index" | "title" | "type" | "stack" | "year";
+
+    const root = document.querySelector<HTMLElement>("[data-projects]")!;
+    const panels = root.querySelectorAll<HTMLElement>("[data-view-panel]");
+    const gridItems = [...root.querySelectorAll<HTMLElement>(".work-grid [data-item]")];
+    const tbody = root.querySelector<HTMLElement>("[data-rows]")!;
+    const tableRows = [...tbody.querySelectorAll<HTMLTableRowElement>("[data-item]")];
+    const summary = root.querySelector<HTMLElement>("[data-summary]")!;
+    const empty = root.querySelector<HTMLElement>("[data-empty]")!;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    const state = {
+        type: "all",
+        tech: "all",
+        view: "grid" as View,
+        sort: "index" as SortKey,
+        dir: 1,
     };
 
-    buttons.forEach((button) =>
-        button.addEventListener("click", () => applyFilter(button.dataset.filter ?? "all")),
-    );
+    const press = (selector: string, active: string) =>
+        root.querySelectorAll<HTMLButtonElement>(`[${selector}]`).forEach((b) =>
+            b.setAttribute("aria-pressed", String(b.getAttribute(selector) === active)),
+        );
+
+    const matches = (item: HTMLElement) => {
+        const categories = (item.dataset.categories ?? "other").split(" ");
+        const tech: string[] = JSON.parse(item.dataset.techList ?? "[]");
+        return (
+            (state.type === "all" || categories.includes(state.type)) &&
+            (state.tech === "all" || tech.includes(state.tech))
+        );
+    };
+
+    function applyFilters() {
+        press("data-type", state.type);
+        press("data-tech", state.tech);
+
+        // data-col drives the grid's staggered offsets, so renumber visible items
+        let col = 0;
+        gridItems.forEach((item) => {
+            item.hidden = !matches(item);
+            if (!item.hidden) item.dataset.col = String(col++ % 3);
+        });
+        tableRows.forEach((row) => (row.hidden = !matches(row)));
+
+        const shown = gridItems.filter((i) => !i.hidden).length;
+        const filter = state.tech !== "all" ? ` · built with ${state.tech}` : "";
+        summary.textContent = `Showing ${shown} of ${gridItems.length}${filter}`;
+        empty.hidden = shown > 0;
+        ScrollTrigger.refresh();
+    }
+
+    function applySort() {
+        const attr = `sort${state.sort[0].toUpperCase()}${state.sort.slice(1)}`;
+        const value = (row: HTMLElement) => row.dataset[attr] ?? "";
+        const numeric = state.sort === "index" || state.sort === "year";
+        tableRows
+            .sort((a, b) => {
+                const cmp = numeric
+                    ? Number(value(a)) - Number(value(b))
+                    : value(a).localeCompare(value(b));
+                // tie-break on original order so sorting is stable
+                return cmp * state.dir || Number(a.dataset.sortIndex) - Number(b.dataset.sortIndex);
+            })
+            .forEach((row) => tbody.append(row));
+
+        root.querySelectorAll<HTMLElement>("th").forEach((th) => {
+            const key = th.querySelector<HTMLElement>("[data-sort]")?.dataset.sort;
+            th.setAttribute(
+                "aria-sort",
+                key === state.sort ? (state.dir === 1 ? "ascending" : "descending") : "none",
+            );
+        });
+    }
+
+    function applyView(view: View, animate = true) {
+        state.view = view;
+        press("data-view", view);
+        panels.forEach((p) => (p.hidden = p.dataset.viewPanel !== view));
+        try {
+            localStorage.setItem("projects-view", view);
+        } catch {}
+        ScrollTrigger.refresh();
+
+        if (animate && view === "table" && !reduceMotion.matches) {
+            gsap.from(tableRows.filter((r) => !r.hidden), {
+                autoAlpha: 0,
+                y: 16,
+                duration: 0.7,
+                ease: "expo.out",
+                stagger: 0.05,
+                clearProps: "all",
+            });
+        }
+    }
+
+    root.addEventListener("click", (e) => {
+        const target = (e.target as HTMLElement).closest<HTMLButtonElement>("button");
+        if (!target) return;
+        const { type, tech, techChip, view, sort } = target.dataset;
+
+        if (type) state.type = type;
+        if (tech) state.tech = tech;
+        // clicking a stack cell toggles that technology as the filter
+        if (techChip) state.tech = state.tech === techChip ? "all" : techChip;
+        if (type || tech || techChip) applyFilters();
+
+        if (view) applyView(view as View);
+
+        if (sort) {
+            state.dir = state.sort === sort ? -state.dir : 1;
+            state.sort = sort as SortKey;
+            applySort();
+        }
+    });
+
+    let saved: string | null = null;
+    try {
+        saved = localStorage.getItem("projects-view");
+    } catch {}
+    if (saved === "table") applyView("table", false);
 </script>
 
 <style>
@@ -122,9 +334,51 @@ const projects = await getProjects();
         max-width: 32ch;
     }
 
-    .projects-toolbar {
+    .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    /* --- TOOLBAR --- */
+
+    .toolbar {
         margin-bottom: clamp(40px, 6vw, 80px);
     }
+
+    .toolbar__line {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 12px var(--gutter);
+    }
+
+    .toolbar__count {
+        margin-left: 2px;
+        font-size: 0.75em;
+        vertical-align: super;
+        line-height: 0;
+    }
+
+    .toolbar__summary {
+        margin: 0;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+    }
+
+    .work-empty {
+        padding-block: 40px;
+    }
+
+    [data-item][hidden],
+    [data-view-panel][hidden] {
+        display: none;
+    }
+
+    /* --- GRID VIEW --- */
 
     .work-grid {
         display: grid;
@@ -133,10 +387,6 @@ const projects = await getProjects();
         list-style: none;
         margin: 0;
         padding: 0;
-    }
-
-    .work-grid__item[hidden] {
-        display: none;
     }
 
     .work-card {
@@ -190,6 +440,121 @@ const projects = await getProjects();
 
         .work-grid__item[data-col="1"] .work-card__media {
             aspect-ratio: 3 / 4;
+        }
+    }
+
+    /* --- TABLE VIEW --- */
+
+    .work-table table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .work-table th {
+        padding: 0 12px 12px 0;
+        text-align: left;
+        font-weight: 500;
+        color: var(--muted);
+        border-bottom: 1px solid var(--line);
+    }
+
+    .work-table th button:hover,
+    .work-table th[aria-sort="ascending"],
+    .work-table th[aria-sort="descending"] {
+        color: var(--text);
+    }
+
+    .sort-arrow::after {
+        margin-left: 4px;
+    }
+
+    th[aria-sort="ascending"] .sort-arrow::after {
+        content: "↑";
+    }
+
+    th[aria-sort="descending"] .sort-arrow::after {
+        content: "↓";
+    }
+
+    .work-table td {
+        padding: 18px 12px 18px 0;
+        vertical-align: baseline;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .work-table tbody tr {
+        transition: opacity 0.3s var(--ease);
+    }
+
+    .work-table tbody:hover tr {
+        opacity: 0.4;
+    }
+
+    .work-table tbody tr:hover,
+    .work-table tbody tr:focus-within {
+        opacity: 1;
+    }
+
+    .work-table__link {
+        display: block;
+        font-size: var(--fs-lead);
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+    }
+
+    /* whole row is clickable through the title link */
+    .work-table tbody tr {
+        position: relative;
+    }
+
+    .work-table__link::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+    }
+
+    .work-table__role {
+        display: block;
+        margin-top: 6px;
+    }
+
+    .work-table__stack {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 12px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    /* chips sit above the row link so they stay clickable */
+    .work-table__stack button {
+        position: relative;
+        z-index: 1;
+    }
+
+    .col-index {
+        width: 3.5rem;
+    }
+
+    .col-year {
+        width: 4rem;
+        text-align: right;
+    }
+
+    .work-table th.col-year {
+        text-align: right;
+        padding-right: 0;
+    }
+
+    .work-table td.col-year {
+        padding-right: 0;
+    }
+
+    @media (max-width: 719px) {
+        .col-type,
+        .col-stack {
+            display: none;
         }
     }
 </style>
