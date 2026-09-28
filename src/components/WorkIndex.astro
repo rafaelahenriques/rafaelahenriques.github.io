@@ -1,0 +1,39 @@
+---
+/**
+ * Editorial project list. Each row carries a small preview image that
+ * animations.ts shows next to the cursor on hover (fine pointers only).
+ */
+import { getImage } from "astro:assets";
+import { pad, slugOf, type ProjectEntry } from "../lib/content";
+
+interface Props {
+    projects: ProjectEntry[];
+}
+
+const { projects } = Astro.props;
+
+const rows = await Promise.all(
+    projects.map(async (p) => {
+        const screenshot = p.data.media?.screenshot;
+        const preview = screenshot
+            ? (await getImage({ src: screenshot, width: 720, format: "webp" })).src
+            : undefined;
+        return { p, preview };
+    }),
+);
+---
+
+<ol class="index" data-preview-list>
+    {
+        rows.map(({ p, preview }, i) => (
+            <li class="index__item" data-reveal>
+                <a href={`/projects/${slugOf(p)}/`} class="index__link" data-preview-src={preview}>
+                    <span class="index__num mono muted">{pad(i + 1)}</span>
+                    <span class="index__title">{p.data.title}</span>
+                    <span class="index__meta mono muted">{p.data.role}</span>
+                    <span class="index__year mono">{p.data.year}</span>
+                </a>
+            </li>
+        ))
+    }
+</ol>
