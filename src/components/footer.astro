@@ -1,5 +1,7 @@
 ---
-const email = "rafaela.henriques@student.howest.be";
+import ContactLinks from "./ContactLinks.astro";
+import { site } from "../lib/site";
+
 const year = new Date().getFullYear();
 ---
 
@@ -7,10 +9,12 @@ const year = new Date().getFullYear();
     <div class="row">
         <p class="row__label mono muted">Contact</p>
         <div class="row__body">
-            <a href={`mailto:${email}`} class="site-footer__cta display" data-split>
+            <p class="site-footer__status mono muted">{site.availability}</p>
+            <a href={`mailto:${site.email}`} class="site-footer__cta display" data-split>
                 Let's talk
             </a>
-            <a href={`mailto:${email}`} class="site-footer__email link">{email}</a>
+            <a href={`mailto:${site.email}`} class="site-footer__email link">{site.email}</a>
+            <ContactLinks class="site-footer__links mono" />
         </div>
     </div>
 
@@ -32,9 +36,6 @@ const year = new Date().getFullYear();
         </div>
 
         <span>© {year} Rafaela Henriques</span>
-        <nav aria-label="Social">
-            <a href="https://github.com/rafaelahenriques" class="link">GitHub</a>
-        </nav>
         <a href="#top" class="link">Back to top ↑</a>
     </div>
 
@@ -53,11 +54,30 @@ const year = new Date().getFullYear();
         width: fit-content;
     }
 
+    .site-footer__status {
+        margin: 0 0 16px;
+    }
+
+    .site-footer__status::before {
+        content: "";
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        margin-right: 8px;
+        border-radius: 50%;
+        background: currentColor;
+        vertical-align: 1px;
+    }
+
     .site-footer__email {
         display: inline-block;
         margin-top: 20px;
         font-size: var(--fs-body);
         overflow-wrap: anywhere;
+    }
+
+    .site-footer :global(.site-footer__links) {
+        margin-top: 32px;
     }
 
     .site-footer__bar {
