@@ -3,10 +3,9 @@ import Base from "../layouts/BaseLayout.astro";
 import ProjectCarousel, { type Slide } from "../components/ProjectCarousel.astro";
 import WorkIndex from "../components/WorkIndex.astro";
 import { getImage } from "astro:assets";
-import { getProjects, getPosts, formatDate, slugOf } from "../lib/content";
+import { getProjects, slugOf } from "../lib/content";
 
 const projects = await getProjects();
-const latestPosts = (await getPosts()).slice(0, 3);
 
 // Carousel: gallery images (or the screenshot), taken round-robin across
 // projects so every project shows up and neighbours differ. 10 max.
@@ -32,7 +31,7 @@ const slides: Slide[] = await Promise.all(
 );
 ---
 
-<Base title="Home" description="Rafaela Henriques — web developer. Selected projects and blog.">
+<Base title="Home" description="Rafaela Henriques — web developer. Selected projects.">
     <ProjectCarousel slides={slides} />
 
     <section class="section wrap" aria-labelledby="intro">
@@ -54,29 +53,6 @@ const slides: Slide[] = await Promise.all(
             <a href="/projects/" class="mono link">All projects ({projects.length})</a>
         </div>
         <WorkIndex projects={projects} />
-    </section>
-
-    <section class="section wrap" aria-labelledby="blog">
-        <div class="section-head">
-            <h2 id="blog" class="mono muted">Latest from the blog</h2>
-            <a href="/blog/" class="mono link">All posts</a>
-        </div>
-        <ol class="index index--dated">
-            {
-                latestPosts.map((post) => (
-                    <li class="index__item" data-reveal>
-                        <a href={`/blog/${slugOf(post)}/`} class="index__link">
-                            <span class="index__num mono muted">→</span>
-                            <span class="index__title">{post.data.title}</span>
-                            <span class="index__meta mono muted">{post.data.tags?.join(", ")}</span>
-                            <time class="index__year mono" datetime={post.data.date.toISOString()}>
-                                {formatDate(post.data.date)}
-                            </time>
-                        </a>
-                    </li>
-                ))
-            }
-        </ol>
     </section>
 </Base>
 
