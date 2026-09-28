@@ -1,259 +1,128 @@
 ---
 import Base from "../layouts/BaseLayout.astro";
-import { getCollection, type CollectionEntry } from "astro:content";
+import { getCollection } from "astro:content";
 
-type SkillEntry = CollectionEntry<"skills">;
-
-// Load skills groups from content collection
-let skills = (await getCollection("skills")) as SkillEntry[];
-
-// Sort by `order`, then by category name
-skills = skills.sort((a, b) => {
-  const orderA = a.data.order ?? 999;
-  const orderB = b.data.order ?? 999;
-  if (orderA !== orderB) return orderA - orderB;
-  return a.data.category.localeCompare(b.data.category);
+// Skill groups from the content collection, by `order` then name
+const skills = (await getCollection("skills")).sort((a, b) => {
+    const byOrder = (a.data.order ?? 999) - (b.data.order ?? 999);
+    return byOrder || a.data.category.localeCompare(b.data.category);
 });
+
+const traits = ["Adaptable", "Hard-working", "Friendly", "Curious", "Observant", "Proactive"];
+const email = "rafaela.henriques@student.howest.be";
 ---
 
-<Base title="About" description="About Rafaela Henriques">
-  <section class="section about">
-    <!-- HEADER / INTRO -->
-    <header class="about__header">
-      <h1 class="page-title">About Me</h1>
-
-      <!-- TRAIT PILLS -->
-      <div class="about__traits" aria-label="Personal traits">
-        {["Adaptable", "Hard-working", "Friendly", "Curious", "Observant", "Proactive"].map(
-          (trait) => (
-            <span class="about__trait-pill">{trait}</span>
-          ),
-        )}
-      </div>
-
-      <p class="lead">
-        I’m a web developer with a background in game development. Right now I’m
-        studying Digital Design &amp; Development (Devine) at Howest, where I
-        focus on building interfaces that feel sharp, fast, and clear.
-      </p>
-
-      <p>
-        I’m Angolan and Portuguese, and that mix shows up in how I think about
-        products: practical, direct, but still open to experimentation when it
-        actually improves the experience.
-      </p>
-
-      <p>
-        I like working close to the front end: design tokens, responsive
-        layouts, and interactions that feel intentional instead of noisy.
-      </p>
+<Base title="About" description="About Rafaela Henriques, web developer.">
+    <header class="page-head wrap">
+        <p class="mono muted" data-reveal>About</p>
+        <h1 class="display" data-split>Rafaela Henriques</h1>
     </header>
 
-    <!-- WHAT I WORK WITH (from content collection) -->
-    <section class="about__skills" aria-labelledby="about-skills-heading">
-      <h2 id="about-skills-heading" class="about__skills-title">
-        What I work with
-      </h2>
-
-      <div class="about__skills-grid">
-        {skills.map((group) => (
-          <article class="about__card">
-            <h3 class="about__card-title">
-              {group.data.category}
-            </h3>
-
-            <div class="about__pill-row">
-              {group.data.items.map((item) => (
-                <span class="about__pill">{item}</span>
-              ))}
+    <section class="wrap" aria-label="Profile">
+        <div class="row">
+            <p class="row__label mono muted">Profile</p>
+            <div class="row__body">
+                <p class="lead" data-split>
+                    I’m a web developer with a background in game development,
+                    studying Digital Design &amp; Development (Devine) at Howest.
+                    I build interfaces that feel sharp, fast and clear.
+                </p>
+                <div class="about__columns" data-reveal>
+                    <p>
+                        I’m Angolan and Portuguese, and that mix shows up in how
+                        I think about products: practical, direct, but still open
+                        to experimentation when it actually improves the
+                        experience.
+                    </p>
+                    <p>
+                        I like working close to the front end: design tokens,
+                        responsive layouts, and interactions that feel
+                        intentional instead of noisy.
+                    </p>
+                </div>
             </div>
-          </article>
-        ))}
-      </div>
+        </div>
     </section>
 
-    <!-- CONTACT BLOCK (SEPARATE & CENTERED) -->
-    <section class="about__contact" aria-labelledby="about-contact-heading">
-      <h2 id="about-contact-heading" class="about__contact-title">
-        Contact
-      </h2>
-      <p class="about__contact-text">
-        Open for front-end focused roles, collaboration, and projects where
-        design and development actually talk to each other.
-      </p>
-      <a
-        href="mailto:rafaela.henriques@student.howest.be"
-        class="button button--primary"
-        aria-label="Email Rafaela"
-      >
-        Email me
-      </a>
+    <section class="section wrap" aria-labelledby="traits">
+        <div class="row">
+            <h2 id="traits" class="row__label mono muted">Traits</h2>
+            <p class="row__body traits h2" data-split>{traits.join(" / ")}</p>
+        </div>
     </section>
-  </section>
 
-  <style>
-    .about {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-s);
-    }
+    <section class="section wrap" aria-labelledby="skills">
+        <div class="row">
+            <h2 id="skills" class="row__label mono muted">What I work with</h2>
+            <dl class="row__body skills">
+                {
+                    skills.map((group) => (
+                        <div class="skills__group" data-reveal>
+                            <dt class="mono muted">{group.data.category}</dt>
+                            <dd>{group.data.items.join(", ")}</dd>
+                        </div>
+                    ))
+                }
+            </dl>
+        </div>
+    </section>
 
-    .about__header {
-      display: flex;
-      flex-direction: column;
-      gap: var(--gap);
-    }
-
-    .about .page-title {
-      margin-bottom: calc(var(--gap) * 1.5);
-    }
-
-    .about__traits {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 6px;
-    }
-
-    .about__trait-pill {
-      padding: 6px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: color-mix(in oklab, var(--surface) 95%, transparent);
-      font-size: var(--step--1);
-      color: var(--text);
-      white-space: nowrap;
-    }
-
-    .about__skills {
-      display: flex;
-      flex-direction: column;
-      gap: var(--gap);
-    }
-
-    .about__skills-title {
-      font-size: var(--step-2);
-      margin-bottom: 4px;
-    }
-
-    .about__skills-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: var(--gap);
-    }
-
-    .about__card {
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      background: linear-gradient(
-        145deg,
-        color-mix(in oklab, var(--surface) 96%, transparent),
-        color-mix(in oklab, var(--surface) 90%, transparent)
-      );
-      padding: clamp(14px, 2vw, 20px);
-      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 10px;
-      position: relative;
-      overflow: hidden;
-      isolation: isolate;
-      transition:
-        transform 0.18s ease,
-        box-shadow 0.2s ease,
-        border-color 0.18s ease,
-        background 0.18s ease;
-    }
-
-    .about__card::before {
-      content: "";
-      position: absolute;
-      inset: -40%;
-      opacity: 0;
-      background: radial-gradient(
-        circle at 0 0,
-        color-mix(in oklab, var(--accent) 35%, transparent),
-        transparent 60%
-      );
-      z-index: -1;
-      transition: opacity 0.25s ease, transform 0.25s ease;
-      transform: translate3d(-10px, -10px, 0);
-    }
-
-    .about__card:hover,
-    .about__card:focus-within {
-      transform: translateY(-4px);
-      border-color: color-mix(in oklab, var(--accent) 55%, white);
-      background: color-mix(in oklab, var(--accent) 8%, var(--surface));
-      box-shadow: 0 20px 52px rgba(0, 0, 0, 0.2);
-    }
-
-    .about__card:hover::before,
-    .about__card:focus-within::before {
-      opacity: 1;
-      transform: translate3d(0, 0, 0);
-    }
-
-    .about__card-title {
-      font-size: var(--step-1);
-      margin: 0;
-    }
-
-    .about__pill-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      justify-content: center;
-    }
-
-    .about__pill {
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: var(--step--1);
-      background: color-mix(in oklab, var(--bg) 70%, var(--accent) 15%);
-      border: 1px solid color-mix(in oklab, var(--accent) 45%, transparent);
-      color: var(--text);
-      white-space: nowrap;
-    }
-
-    .about__contact {
-      margin-top: calc(var(--gap) * 1);
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .about__contact-title {
-      font-size: var(--step-2);
-    }
-
-    .about__contact-text {
-      margin: 0 auto;
-      max-width: 40rem;
-    }
-
-    @media (min-width: 720px) {
-      .about {
-        gap: calc(var(--gap) * 2.5);
-      }
-
-      .about__skills-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (min-width: 1024px) {
-      .about {
-        gap: calc(var(--gap) * 3.5);
-      }
-
-      .about__skills-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-    }
-  </style>
+    <section class="section wrap" aria-labelledby="availability">
+        <div class="row">
+            <h2 id="availability" class="row__label mono muted">Availability</h2>
+            <div class="row__body">
+                <p class="lead" data-split>
+                    Open for front-end focused roles, collaboration, and projects
+                    where design and development actually talk to each other.
+                </p>
+                <a href={`mailto:${email}`} class="about__mail mono link" data-reveal>Email me →</a>
+            </div>
+        </div>
+    </section>
 </Base>
+
+<style>
+    .about__columns {
+        display: grid;
+        gap: 1em var(--gutter);
+        margin-top: clamp(32px, 4vw, 56px);
+        max-width: 60rem;
+        color: var(--muted);
+    }
+
+    @media (min-width: 900px) {
+        .about__columns {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    .traits {
+        max-width: 22ch;
+    }
+
+    .skills {
+        display: grid;
+        margin: 0;
+    }
+
+    .skills__group {
+        display: grid;
+        grid-template-columns: minmax(8rem, 1fr) 2fr;
+        gap: var(--gutter);
+        padding-block: 14px;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .skills__group:first-child {
+        padding-top: 0;
+    }
+
+    .skills__group dd {
+        margin: 0;
+    }
+
+    .about__mail {
+        display: inline-block;
+        margin-top: 32px;
+    }
+</style>
