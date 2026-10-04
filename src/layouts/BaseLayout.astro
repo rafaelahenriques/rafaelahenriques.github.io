@@ -8,6 +8,7 @@ import "../styles/global.css";
 
 import Header from "../components/header.astro";
 import Footer from "../components/footer.astro";
+import Loader from "../components/Loader.astro";
 ---
 
 <html lang="en">
@@ -40,10 +41,22 @@ import Footer from "../components/footer.astro";
                 }
                 root.classList.add(theme);
                 root.style.colorScheme = theme;
+
+                // Loading screen: first page of a visit only, never for reduced motion
+                let seen = false;
+                try {
+                    seen = sessionStorage.getItem("loader-seen") === "1";
+                } catch {}
+                if (!seen && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+                    root.classList.add("is-loading");
+                    // safety net: never leave the page locked if the loader script fails
+                    setTimeout(() => root.classList.remove("is-loading"), 6000);
+                }
             })();
         </script>
     </head>
     <body id="top">
+        <Loader />
         <Header />
         <main id="main">
             <slot />
