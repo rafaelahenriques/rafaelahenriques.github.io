@@ -8,9 +8,9 @@ import { join } from "node:path";
 export const site = {
     email: "rafaela.henriques@student.howest.be",
     github: "https://github.com/rafaelahenriques",
-    linkedin: "", // e.g. "https://www.linkedin.com/in/your-handle/"
+    linkedin: "https://www.linkedin.com/in/rafaela-henriques-1464a22b5/",
     cv: "/cv.pdf", // drop the file in public/cv.pdf
-    location: "Belgium",
+    location: "Kortrijk, BE",
     timeZone: "Europe/Brussels",
     availability: "Open to front-end roles & collaborations",
 };
