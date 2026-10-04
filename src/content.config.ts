@@ -38,6 +38,8 @@ const projects = defineCollection({
       // Optional system overview: pipeline stages and the metrics it reports
       architecture: z.array(labelled).optional(),
       metrics: z.array(labelled).optional(),
+      // Projects with their own page in src/pages/projects/ (e.g. case studies)
+      customPage: z.boolean().optional(),
     }),
 });
 
