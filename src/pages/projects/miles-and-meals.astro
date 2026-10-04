@@ -25,6 +25,8 @@ import bbPattern from "../../content/projects/miles-and-meals/brandboard-9.png";
 import bbIcons from "../../content/projects/miles-and-meals/brandboard-10.png";
 import bbStreetMade from "../../content/projects/miles-and-meals/brandboard-11.png";
 import bbPhoto from "../../content/projects/miles-and-meals/brandboard-12.png";
+import moodboard from "../../content/projects/miles-and-meals/moodboard.png";
+import mockupPhone from "../../content/projects/miles-and-meals/mockup_phone.png";
 import appSplash from "../../content/projects/miles-and-meals/logo_app.png";
 import appMain from "../../content/projects/miles-and-meals/app-main.png";
 import appExplore from "../../content/projects/miles-and-meals/app-explore.png";
@@ -51,13 +53,12 @@ const links = {
 const full = async (img: ImageMetadata) =>
     (await getImage({ src: img, width: Math.min(img.width, 2400), format: "webp", quality: 90 })).src;
 
-const slides = await Promise.all(
+// Header rail: a vertical column of images drifting upward
+const rail = await Promise.all(
     [
-        { img: bbBox, alt: "Local Legend box" },
+        { img: moodboard, alt: "Look and feel moodboard" },
+        { img: mockupPhone, alt: "The Miles & Meals app on a phone" },
         { img: bbTote, alt: "Tote bag and food mockups" },
-        { img: bbLogoColours, alt: "The logo on every brand colour" },
-        { img: bbPhoto, alt: "Photography direction" },
-        { img: bbLook, alt: "Look and feel moodboard" },
     ].map(async (s) => ({ ...s, full: await full(s.img) })),
 );
 
@@ -123,30 +124,30 @@ const values = [
                     <h1 class="display mm-title" data-split>{title}</h1>
                 </div>
 
-                <div class="mm-slides" data-mm-slides aria-roledescription="carousel" aria-label="Project images">
-                    <div class="mm-slides__stage">
-                        {
-                            slides.map((s, i) => (
-                                <button
-                                    type="button"
-                                    class="mm-slide mm-zoom"
-                                    data-mm-slide
-                                    data-zoom={s.full}
-                                    data-caption={s.alt}
-                                    aria-label={`View larger: ${s.alt}`}
-                                    aria-hidden={i === 0 ? undefined : "true"}
-                                    tabindex={i === 0 ? undefined : "-1"}
-                                >
-                                    <Image quality={90} src={s.img} alt={s.alt} widths={[700, 1200, 1800]} sizes="(min-width: 900px) 42vw, 100vw" loading="eager" />
-                                </button>
-                            ))
-                        }
+                <div class="mm-rail" data-mm-rail aria-label="Project images">
+                    <div class="mm-rail__window">
+                        <div class="mm-rail__track" data-mm-rail-track>
+                            {
+                                [0, 1].map((copy) =>
+                                    rail.map((r) => (
+                                        <button
+                                            type="button"
+                                            class="mm-rail__item mm-zoom"
+                                            data-mm-rail-item
+                                            data-zoom={r.full}
+                                            data-caption={r.alt}
+                                            aria-label={`View larger: ${r.alt}`}
+                                            aria-hidden={copy ? "true" : undefined}
+                                            tabindex={copy ? "-1" : undefined}
+                                        >
+                                            <Image quality={90} src={r.img} alt={copy ? "" : r.alt} widths={[400, 700, 1000]} sizes="(min-width: 900px) 22vw, 60vw" loading="eager" />
+                                        </button>
+                                    )),
+                                )
+                            }
+                        </div>
                     </div>
-                    <div class="mm-slides__bar mono">
-                        <span data-mm-slides-count>01 / {pad(slides.length)}</span>
-                        <span class="mm-slides__progress"><span data-mm-slides-progress></span></span>
-                        <button type="button" class="text-button link" data-mm-slides-toggle aria-pressed="false">Pause</button>
-                    </div>
+                    <button type="button" class="text-button link mono mm-rail__toggle" data-mm-rail-toggle aria-pressed="false">Pause</button>
                 </div>
             </div>
 
@@ -421,76 +422,26 @@ const values = [
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const mm = gsap.matchMedia();
 
-    /* ---------------- HEADER SLIDESHOW ---------------- */
-    const slideshow = document.querySelector<HTMLElement>("[data-mm-slides]");
-    if (slideshow) {
-        const slides = [...slideshow.querySelectorAll<HTMLElement>("[data-mm-slide]")];
-        const count = slideshow.querySelector<HTMLElement>("[data-mm-slides-count]")!;
-        const bar = slideshow.querySelector<HTMLElement>("[data-mm-slides-progress]")!;
-        const toggle = slideshow.querySelector<HTMLButtonElement>("[data-mm-slides-toggle]")!;
-        const DURATION = 4;
-        let current = 0;
+    /* ---------------- HEADER RAIL ---------------- */
+    // The track holds the images twice; moving it up by half loops seamlessly.
+    const railEl = document.querySelector<HTMLElement>("[data-mm-rail]");
+    if (railEl) {
+        const track = railEl.querySelector<HTMLElement>("[data-mm-rail-track]")!;
+        const toggle = railEl.querySelector<HTMLButtonElement>("[data-mm-rail-toggle]")!;
         let paused = reduceMotion.matches;
-        let timer: gsap.core.Tween | null = null;
+        const loop = gsap.to(track, { yPercent: -50, duration: 28, ease: "none", repeat: -1, paused });
 
-        gsap.set(slides, { autoAlpha: 0 });
-        gsap.set(slides[0], { autoAlpha: 1 });
-
-        const show = (nextIndex: number) => {
-            const prev = slides[current];
-            current = (nextIndex + slides.length) % slides.length;
-            const next = slides[current];
-            slides.forEach((s) => {
-                const active = s === next;
-                s.setAttribute("aria-hidden", String(!active));
-                s.tabIndex = active ? 0 : -1;
-            });
-            count.textContent = `${String(current + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
-            if (reduceMotion.matches) {
-                gsap.set(prev, { autoAlpha: 0 });
-                gsap.set(next, { autoAlpha: 1 });
-                return;
-            }
-            // crossfade, the incoming image settles from a slight zoom
-            gsap.to(prev, { autoAlpha: 0, duration: 0.9, ease: "power2.inOut" });
-            gsap.fromTo(next, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.9, ease: "power2.inOut" });
-            gsap.fromTo(next.querySelector("img"), { scale: 1.08 }, { scale: 1, duration: DURATION + 1, ease: "power1.out" });
-        };
-
-        const run = () => {
-            timer?.kill();
-            if (paused) return;
-            timer = gsap.fromTo(
-                bar,
-                { scaleX: 0 },
-                {
-                    scaleX: 1,
-                    duration: DURATION,
-                    ease: "none",
-                    onComplete: () => {
-                        show(current + 1);
-                        run();
-                    },
-                },
-            );
-        };
-
-        toggle.addEventListener("click", () => {
-            paused = !paused;
+        const setPaused = (value: boolean) => {
+            paused = value;
             toggle.textContent = paused ? "Play" : "Pause";
             toggle.setAttribute("aria-pressed", String(paused));
-            if (paused) timer?.pause();
-            else run();
-        });
-        // stop while hovering or focusing an image, so it can be clicked calmly
-        slideshow.addEventListener("pointerenter", () => timer?.pause());
-        slideshow.addEventListener("pointerleave", () => !paused && timer?.resume());
-
-        if (paused) {
-            toggle.textContent = "Play";
-            toggle.setAttribute("aria-pressed", "true");
-        }
-        run();
+            paused ? loop.pause() : loop.play();
+        };
+        setPaused(paused);
+        toggle.addEventListener("click", () => setPaused(!paused));
+        // slow down to a stop under the pointer so an image can be picked
+        railEl.addEventListener("pointerenter", () => !paused && gsap.to(loop, { timeScale: 0, duration: 0.6 }));
+        railEl.addEventListener("pointerleave", () => !paused && gsap.to(loop, { timeScale: 1, duration: 0.6 }));
     }
 
     /* ---------------- SCROLL MOTION ---------------- */
@@ -548,8 +499,8 @@ const values = [
         if (pattern) {
             gsap.fromTo(
                 pattern.querySelector("img"),
-                { yPercent: -12 },
-                { yPercent: 12, ease: "none", scrollTrigger: { trigger: pattern, start: "top bottom", end: "bottom top", scrub: true } },
+                { yPercent: -6 },
+                { yPercent: 6, ease: "none", scrollTrigger: { trigger: pattern, start: "top bottom", end: "bottom top", scrub: true } },
             );
         }
 
@@ -618,9 +569,9 @@ const values = [
         const img = dialog.querySelector<HTMLImageElement>("[data-mm-lightbox-img]")!;
         const caption = dialog.querySelector<HTMLElement>("[data-mm-lightbox-caption]")!;
         const counter = dialog.querySelector<HTMLElement>("[data-mm-lightbox-count]")!;
-        // the header slideshow has its own images; the gallery is the page's figures
+        // the header rail opens single images; the gallery is the page's figures
         const items = [...document.querySelectorAll<HTMLElement>(".mm-zoom")].filter(
-            (el) => !el.hasAttribute("data-mm-slide"),
+            (el) => !el.hasAttribute("data-mm-rail-item"),
         );
         let index = 0;
         let opener: HTMLElement | null = null;
@@ -640,7 +591,7 @@ const values = [
 
         const open = (el: HTMLElement) => {
             opener = el;
-            if (el.hasAttribute("data-mm-slide")) {
+            if (el.hasAttribute("data-mm-rail-item")) {
                 render(el.dataset.zoom!, el.dataset.caption ?? "", "");
                 dialog.classList.add("is-single");
             } else {
@@ -721,55 +672,70 @@ const values = [
         margin: 0 0 18px;
     }
 
-    .mm-slides__stage {
-        position: relative;
-        aspect-ratio: 3024 / 1964;
+    /* Header rail: narrow column of images, cropped top and bottom */
+    .mm-rail {
+        display: grid;
+        gap: 10px;
+    }
+
+    .mm-rail__window {
+        height: clamp(360px, 62vh, 640px);
         overflow: hidden;
-        background: var(--mm-board);
+        mask-image: linear-gradient(transparent, #000 8%, #000 92%, transparent);
     }
 
-    .mm-slide {
-        position: absolute;
-        inset: 0;
-        height: 100%;
+    .mm-rail__track {
+        display: grid;
+        gap: 14px;
     }
 
-    /* until the script takes over, show the first slide */
-    .mm-slide:not(:first-child) {
-        opacity: 0;
+    .mm-rail__item {
+        aspect-ratio: 4 / 5;
+        overflow: hidden;
     }
 
-    .mm-slide :global(img) {
+    .mm-rail__item :global(img) {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: transform 0.8s var(--ease);
     }
 
-    .mm-slides__bar {
-        display: grid;
-        grid-template-columns: auto 1fr auto;
-        align-items: center;
-        gap: 14px;
-        margin-top: 12px;
+    .mm-rail__item:hover :global(img) {
+        transform: scale(1.05);
     }
 
-    .mm-slides__progress {
-        height: 1px;
-        background: var(--line);
-    }
-
-    .mm-slides__progress span {
-        display: block;
-        height: 100%;
-        background: var(--text);
-        transform: scaleX(0);
-        transform-origin: left;
+    .mm-rail__toggle {
+        justify-self: end;
     }
 
     @media (min-width: 900px) {
         .mm-top {
-            grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-            align-items: end;
+            grid-template-columns: minmax(0, 1fr) clamp(200px, 22vw, 320px);
+            align-items: start;
+        }
+
+        .mm-top__title {
+            align-self: end;
+        }
+    }
+
+    @media (max-width: 899px) {
+        /* on phones the rail becomes a short strip of three */
+        .mm-rail__window {
+            height: auto;
+            mask-image: none;
+        }
+
+        .mm-rail__track {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            transform: none !important;
+        }
+
+        .mm-rail__item[aria-hidden="true"],
+        .mm-rail__toggle {
+            display: none;
         }
     }
 
@@ -1036,6 +1002,11 @@ const values = [
         margin: 0;
     }
 
+    /* the wide track must never widen the page (clip keeps pinning intact) */
+    .mm-identity {
+        overflow-x: clip;
+    }
+
     /* Default: native swipe with snap. JS pins and drives it on desktop. */
     .mm-identity__viewport {
         overflow-x: auto;
@@ -1130,15 +1101,15 @@ const values = [
     /* --- PATTERN STRIP: one image, full width, cropped --- */
 
     .mm-pattern {
-        height: clamp(200px, 26vw, 400px);
+        height: clamp(260px, 40vw, 600px);
         overflow: hidden;
         background: var(--mm-red);
     }
 
     .mm-pattern :global(img) {
         width: 100%;
-        height: 124%;
-        margin-top: -12%;
+        height: 116%;
+        margin-top: -8%;
         object-fit: cover;
     }
 
