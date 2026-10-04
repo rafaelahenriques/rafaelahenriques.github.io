@@ -3,9 +3,11 @@ import Base from "../layouts/BaseLayout.astro";
 import ProjectCarousel, { type Slide } from "../components/ProjectCarousel.astro";
 import WorkIndex from "../components/WorkIndex.astro";
 import { getImage } from "astro:assets";
-import { getProjects, slugOf } from "../lib/content";
+import { getProjects, getFeatured, getOtherWork, slugOf } from "../lib/content";
 
 const projects = await getProjects();
+const featured = await getFeatured();
+const otherWork = await getOtherWork();
 
 // Carousel: gallery images (or the screenshot), taken round-robin across
 // projects so every project shows up and neighbours differ. 10 max.
@@ -39,8 +41,8 @@ const slides: Slide[] = await Promise.all(
             <h2 id="intro" class="row__label mono muted">Intro</h2>
             <div class="row__body">
                 <p class="lead intro" data-split>
-                    Web developer with a background in game development,
-                    building interfaces that feel sharp, fast and clear.
+                    Web developer working across full-stack, mobile and data —
+                    with a background in game development and design.
                 </p>
                 <a href="/about/" class="intro__more mono link" data-reveal>More about me →</a>
             </div>
@@ -49,10 +51,21 @@ const slides: Slide[] = await Promise.all(
 
     <section class="section wrap" aria-labelledby="work">
         <div class="section-head">
-            <h2 id="work" class="mono muted">Index — Projects</h2>
-            <a href="/projects/" class="mono link">All projects ({projects.length})</a>
+            <h2 id="work" class="mono muted">Selected projects</h2>
+            <a href="/projects/" class="mono link">All projects</a>
         </div>
-        <WorkIndex projects={projects} />
+        <WorkIndex projects={featured} />
+        <p class="other-line mono muted" data-reveal>
+            Other work —
+            {
+                otherWork.map((p, i) => (
+                    <>
+                        <a href={`/projects/${slugOf(p)}/`} class="link">{p.data.title}</a>
+                        {i < otherWork.length - 1 && " · "}
+                    </>
+                ))
+            }
+        </p>
     </section>
 </Base>
 
@@ -64,6 +77,10 @@ const slides: Slide[] = await Promise.all(
     .intro__more {
         display: inline-block;
         margin-top: 32px;
+    }
+
+    .other-line {
+        margin-top: 18px;
     }
 
     .section-head {
