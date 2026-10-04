@@ -1,7 +1,10 @@
 ---
 import Base from "../layouts/BaseLayout.astro";
 import ContactLinks from "../components/ContactLinks.astro";
+import { Image } from "astro:assets";
 import { getCollection } from "astro:content";
+import { pad } from "../lib/content";
+import portrait from "../assets/me/rafaela.jpg";
 
 // Skill groups from the content collection, by `order` then name
 const skills = (await getCollection("skills")).sort((a, b) => {
@@ -13,9 +16,29 @@ const traits = ["Adaptable", "Hard-working", "Friendly", "Curious", "Observant",
 ---
 
 <Base title="About" description="About Rafaela Henriques, web developer.">
-    <header class="page-head wrap">
-        <p class="mono muted" data-reveal>About</p>
-        <h1 class="display" data-split>Rafaela Henriques</h1>
+    <!-- HEADER: name on the left, portrait on the right -->
+    <header class="page-head wrap about-head">
+        <div class="about-head__title">
+            <p class="mono muted" data-reveal>About</p>
+            <h1 class="display about-name" data-split>Rafaela Henriques</h1>
+            <p class="mono muted about-head__fig" data-reveal>
+                Fig. 02 — Rafaela, today. <a href="/" class="link">Fig. 01 is on the homepage ↗</a>
+            </p>
+        </div>
+        <figure class="about-portrait" data-about-portrait>
+            <div class="about-portrait__frame" data-reveal-img>
+                <div class="about-portrait__inner" data-about-parallax>
+                <Image
+                    src={portrait}
+                    alt="Rafaela sitting on a stone quay by the water in the evening sun"
+                    widths={[500, 900, 1400, 1800]}
+                    sizes="(min-width: 900px) 34vw, 100vw"
+                    loading="eager"
+                    quality={88}
+                />
+                </div>
+            </div>
+        </figure>
     </header>
 
     <section class="wrap" aria-label="Profile">
@@ -44,30 +67,40 @@ const traits = ["Adaptable", "Hard-working", "Friendly", "Curious", "Observant",
         </div>
     </section>
 
-    <section class="section wrap" aria-labelledby="traits">
-        <div class="row">
-            <h2 id="traits" class="row__label mono muted">Traits</h2>
-            <p class="row__body traits h2" data-split>{traits.join(" / ")}</p>
-        </div>
+    <!-- TRAITS: one big centred statement -->
+    <section class="section wrap about-traits" aria-labelledby="traits">
+        <h2 id="traits" class="mono muted about-center-label">Traits</h2>
+        <p class="caps about-traits__text" data-split>
+            {
+                traits.map((t, i) => (
+                    <>
+                        {t}
+                        {i < traits.length - 1 && <span class="about-traits__slash"> / </span>}
+                    </>
+                ))
+            }
+        </p>
     </section>
 
+    <!-- SKILLS: numbered like a playbook -->
     <section class="section wrap" aria-labelledby="skills">
-        <div class="row">
-            <h2 id="skills" class="row__label mono muted">What I work with</h2>
-            <dl class="row__body skills">
-                {
-                    skills.map((group) => (
-                        <div class="skills__group" data-reveal>
-                            <dt class="mono muted">{group.data.category}</dt>
-                            <dd>{group.data.items.join(", ")}</dd>
-                        </div>
-                    ))
-                }
-            </dl>
-        </div>
+        <h2 id="skills" class="mono muted about-skills__label">What I work with</h2>
+        <ol class="playbook">
+            {
+                skills.map((group, i) => (
+                    <li class="playbook__item" data-reveal>
+                        <span class="playbook__num">{pad(i + 1)}</span>
+                        <h3 class="playbook__name">{group.data.category}</h3>
+                        <p class="playbook__items mono">
+                            <span aria-hidden="true">→</span> {group.data.items.join(", ")}
+                        </p>
+                    </li>
+                ))
+            }
+        </ol>
     </section>
 
-    <section class="section wrap" aria-labelledby="availability">
+    <section class="section wrap about-last" aria-labelledby="availability">
         <div class="row">
             <h2 id="availability" class="row__label mono muted">Availability</h2>
             <div class="row__body">
@@ -83,7 +116,85 @@ const traits = ["Adaptable", "Hard-working", "Friendly", "Curious", "Observant",
     </section>
 </Base>
 
+<script>
+    import { gsap } from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    // the portrait drifts slower than the page, like it's further away
+    gsap.matchMedia().add("(prefers-reduced-motion: no-preference) and (min-width: 900px)", () => {
+        const portrait = document.querySelector<HTMLElement>("[data-about-portrait]");
+        if (!portrait) return;
+        gsap.fromTo(
+            portrait.querySelector("[data-about-parallax]"),
+            { yPercent: -5 },
+            {
+                yPercent: 5,
+                ease: "none",
+                scrollTrigger: { trigger: portrait, start: "top bottom", end: "bottom top", scrub: true },
+            },
+        );
+    });
+</script>
+
 <style>
+    /* --- HEADER --- */
+
+    .about-head {
+        display: grid;
+        gap: clamp(32px, 5vw, 64px) var(--gutter);
+    }
+
+    .about-name {
+        margin-top: 18px;
+        max-width: 8ch;
+    }
+
+    .about-head__fig {
+        margin: 24px 0 0;
+    }
+
+    .about-portrait {
+        margin: 0;
+    }
+
+    .about-portrait__frame {
+        aspect-ratio: 3 / 4;
+        overflow: hidden;
+    }
+
+    /* taller than the frame so the parallax never shows an edge */
+    .about-portrait__inner {
+        height: 112%;
+        margin-top: -6%;
+    }
+
+    .about-portrait__frame :global(img) {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 50% 60%;
+    }
+
+    @media (min-width: 900px) {
+        .about-head {
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+            align-items: end;
+        }
+
+        .about-head__title {
+            grid-column: 1 / span 7;
+        }
+
+        .about-portrait {
+            grid-column: 9 / span 4;
+        }
+    }
+
+    /* --- PROFILE --- */
+
     .about__columns {
         display: grid;
         gap: 1em var(--gutter);
@@ -98,29 +209,78 @@ const traits = ["Adaptable", "Hard-working", "Friendly", "Curious", "Observant",
         }
     }
 
-    .traits {
+    /* --- TRAITS --- */
+
+    .about-center-label {
+        margin: 0 0 clamp(20px, 3vw, 32px);
+        text-align: center;
+    }
+
+    .about-traits__text {
         max-width: 22ch;
+        font-size: clamp(2rem, 1rem + 4.4vw, 5.5rem);
     }
 
-    .skills {
-        display: grid;
+    .about-traits__slash {
+        color: var(--muted);
+        font-weight: 500;
+    }
+
+    /* --- SKILLS PLAYBOOK --- */
+
+    .about-skills__label {
+        margin: 0 0 14px;
+    }
+
+    .playbook {
         margin: 0;
-    }
-
-    .skills__group {
-        display: grid;
-        grid-template-columns: minmax(8rem, 1fr) 2fr;
-        gap: var(--gutter);
-        padding-block: 14px;
+        padding: 0;
+        list-style: none;
         border-bottom: 1px solid var(--line);
     }
 
-    .skills__group:first-child {
-        padding-top: 0;
+    .playbook__item {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 6px var(--gutter);
+        align-items: baseline;
+        padding-block: clamp(16px, 2vw, 28px);
+        border-top: 1px solid var(--line);
     }
 
-    .skills__group dd {
+    .playbook__num,
+    .playbook__name {
+        font-size: clamp(2rem, 1rem + 3.6vw, 4.5rem);
+        font-weight: 800;
+        line-height: 0.95;
+        letter-spacing: -0.04em;
+        text-transform: uppercase;
+    }
+
+    .playbook__name {
         margin: 0;
+    }
+
+    .playbook__items {
+        grid-column: 2;
+        margin: 0;
+        color: var(--muted);
+    }
+
+    @media (min-width: 900px) {
+        .playbook__item {
+            grid-template-columns: 8rem minmax(0, 1fr) minmax(0, 1fr);
+        }
+
+        .playbook__items {
+            grid-column: 3;
+            align-self: end;
+            padding-bottom: 0.6em;
+        }
+    }
+
+    .about-last {
+        padding-bottom: var(--section);
     }
 
     :global(.about__links) {
