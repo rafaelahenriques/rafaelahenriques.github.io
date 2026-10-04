@@ -1,0 +1,550 @@
+---
+/**
+ * UI Game Assets case study (customPage in the content entry):
+ * style analysis → the screens it produced → how they were built.
+ */
+import Base from "../../layouts/BaseLayout.astro";
+import { Image } from "astro:assets";
+import { getEntry } from "astro:content";
+import { pad } from "../../lib/content";
+import { fullSize } from "../../lib/images";
+import Lightbox from "../../components/Lightbox.astro";
+import NextProject from "../../components/NextProject.astro";
+
+import startMenu from "../../content/projects/ui-game/mainUi.png";
+import settings from "../../content/projects/ui-game/pause.png";
+import components from "../../content/projects/ui-game/ColourVariation.png";
+import styleGuide from "../../content/projects/ui-game/Styleguide.png";
+import snakeTail from "../../content/projects/ui-game/snake-tail.png";
+
+const project = (await getEntry("projects", "ui-game"))!;
+const { title, description, role, year, category, tech, context } = project.data;
+
+const principles = [
+    { name: "Shapes", text: "Simple shapes with high contrast and size variation — mainly circles, curves and a few triangles." },
+    { name: "Colour", text: "A split-complementary palette: black and white with saturated orange and green, high contrast for readability." },
+    { name: "Shading", text: "Barely any: the style lives on silhouettes, with shadow only under hair, mouth, eyes and flowers." },
+    { name: "Lines", text: "Mostly vertical, plus dotted and curved lines that give the composition flow and rhythm." },
+];
+
+const screens = await Promise.all(
+    [
+        {
+            img: startMenu,
+            title: "Start menu",
+            text: "The character and the snake frame the menu; one strong orange button makes Start the obvious first move, with Options and Quit stepping back.",
+        },
+        {
+            img: settings,
+            title: "Settings",
+            text: "The same circle carries difficulty, volume and brightness. Sliders and radio buttons reuse the eye, flower and dotted-line motifs from the art.",
+        },
+        {
+            img: components,
+            title: "Components & themes",
+            text: "The full kit on a lighter theme: buttons, toggles, sliders, inputs, icons and type (Montserrat), so any screen can be assembled from parts.",
+        },
+    ].map(async (s) => ({ ...s, full: await fullSize(s.img) })),
+);
+
+const zoom = {
+    hero: await fullSize(startMenu),
+    styleGuide: await fullSize(styleGuide),
+};
+
+const decisions = [
+    { name: "Hierarchy", text: "Size, contrast and spacing put the primary action first — Play, Resume, Save — so nobody hunts for it." },
+    { name: "Affordance", text: "Buttons look pressable and panels sit clearly apart from the art, with hover, pressed and disabled states." },
+    { name: "Consistency", text: "One palette and one shape language — circles, dotted lines, thin borders — tie every screen together." },
+];
+
+const workflow = [
+    "Hand-drawn with a graphic tablet in Photoshop, built from vector shapes and smart objects so it scales from 1080p to 4K.",
+    "Layers grouped and named the way a developer would structure them in CSS or a Unity canvas, for a clean hand-off.",
+    "Colour themes made with adjustment layers, so a new mood or game mode is a quick variation rather than a redraw.",
+];
+---
+
+<Base title={title} description={description}>
+    <article class="ui">
+        <!-- INTRO with the snake tail on the right -->
+        <header class="page-head wrap ui-head">
+            <div class="ui-snake" aria-hidden="true" data-ui-snake>
+                <Image src={snakeTail} alt="" widths={[400, 812]} sizes="(min-width: 900px) 40vw, 60vw" loading="eager" />
+            </div>
+
+            <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
+            <p class="ui-kicker mono muted" data-reveal>Other work — {category}</p>
+            <h1 class="display ui-title" data-split>{title}</h1>
+
+            <div class="row ui-intro">
+                <dl class="row__label ui-facts mono" data-reveal>
+                    <div><dt class="muted">Role</dt><dd>{role}</dd></div>
+                    <div><dt class="muted">Year</dt><dd>{year}</dd></div>
+                    <div><dt class="muted">Tools</dt><dd>{tech?.join(", ")}</dd></div>
+                    <div><dt class="muted">Context</dt><dd>{context}</dd></div>
+                </dl>
+                <p class="row__body lead" data-split>{description}</p>
+            </div>
+        </header>
+
+        <!-- HERO -->
+        <section class="wrap ui-hero" aria-label="Start menu">
+            <figure data-reveal-img>
+                <button type="button" class="zoom-btn" data-zoom={zoom.hero} data-caption="Start menu" aria-label="View larger: start menu">
+                    <Image quality={90} src={startMenu} alt="Start menu with the character, the snake and an orange Start button" widths={[1000, 1600, 1920]} sizes="100vw" loading="eager" />
+                </button>
+            </figure>
+        </section>
+
+        <!-- BRIEF -->
+        <section class="section wrap" aria-labelledby="ui-brief">
+            <div class="row">
+                <h2 id="ui-brief" class="row__label mono muted">The brief</h2>
+                <div class="row__body">
+                    <p class="ui-statement" data-split>Learn a style first. Then design the interface it would have.</p>
+                    <p class="ui-copy" data-reveal>
+                        A UI kit for a hypothetical game: start menu, settings and
+                        every component in between. Instead of starting from
+                        screens, I started from the illustration style — taking it
+                        apart in a style guide, then using those findings as the
+                        rules for the interface.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- STYLE GUIDE -->
+        <section class="section wrap" aria-labelledby="ui-style">
+            <div class="row">
+                <h2 id="ui-style" class="row__label mono muted">Style guide</h2>
+                <p class="row__body ui-statement ui-statement--small" data-split>
+                    Four things make the style: its shapes, colour, shading and lines.
+                </p>
+            </div>
+            <figure class="ui-guide" data-reveal-img>
+                <button type="button" class="zoom-btn" data-zoom={zoom.styleGuide} data-caption="Style guide — shapes, colour, shading and lines" aria-label="View larger: style guide">
+                    <Image quality={90} src={styleGuide} alt="Style guide analysing shapes, colour, shading and lines" widths={[1000, 1600, 1920]} sizes="100vw" />
+                </button>
+            </figure>
+            <ol class="ui-principles">
+                {
+                    principles.map((p, i) => (
+                        <li class="ui-principle" data-reveal>
+                            <span class="ui-principle__num">{pad(i + 1)}</span>
+                            <h3>{p.name}</h3>
+                            <p>{p.text}</p>
+                        </li>
+                    ))
+                }
+            </ol>
+        </section>
+
+        <!-- SCREENS -->
+        <section class="section wrap" aria-labelledby="ui-screens">
+            <div class="row">
+                <h2 id="ui-screens" class="row__label mono muted">The screens</h2>
+                <p class="row__body ui-statement ui-statement--small" data-split>
+                    Every screen built from the same few shapes, colours and lines.
+                </p>
+            </div>
+            <ol class="ui-screens">
+                {
+                    screens.map((s, i) => (
+                        <li class="ui-screen">
+                            <figure data-reveal-img>
+                                <button type="button" class="zoom-btn" data-zoom={s.full} data-caption={s.title} aria-label={`View larger: ${s.title}`}>
+                                    <Image quality={90} src={s.img} alt={s.title} widths={[900, 1400, 1920]} sizes="(min-width: 900px) 66vw, 100vw" />
+                                </button>
+                            </figure>
+                            <div class="ui-screen__text" data-reveal>
+                                <span class="mono muted">{pad(i + 1)} / {pad(screens.length)}</span>
+                                <h3>{s.title}</h3>
+                                <p>{s.text}</p>
+                            </div>
+                        </li>
+                    ))
+                }
+            </ol>
+        </section>
+
+        <!-- DECISIONS -->
+        <section class="section wrap" aria-labelledby="ui-decisions">
+            <div class="row">
+                <h2 id="ui-decisions" class="row__label mono muted">Design decisions</h2>
+                <ol class="row__body ui-list">
+                    {
+                        decisions.map((d, i) => (
+                            <li class="ui-list__item" data-reveal>
+                                <span class="mono muted">{pad(i + 1)}</span>
+                                <strong>{d.name}</strong>
+                                <span class="muted">{d.text}</span>
+                            </li>
+                        ))
+                    }
+                </ol>
+            </div>
+        </section>
+
+        <!-- WORKFLOW + TAKEAWAY -->
+        <section class="section wrap ui-last" aria-labelledby="ui-workflow">
+            <div class="row">
+                <h2 id="ui-workflow" class="row__label mono muted">How it's built</h2>
+                <div class="row__body">
+                    <ul class="ui-workflow">
+                        {workflow.map((w) => <li data-reveal>{w}</li>)}
+                    </ul>
+                    <p class="ui-takeaway" data-reveal>
+                        <span class="mono muted">Why it matters</span>
+                        Making the assets myself taught me how UI is drawn, sliced and
+                        handed over — so I can talk to artists, and structure CSS or a
+                        Unity canvas to match how the design is built.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </article>
+
+    <NextProject current="ui-game" />
+    <Lightbox />
+</Base>
+
+<script>
+    import { gsap } from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
+        const snake = document.querySelector<HTMLElement>("[data-ui-snake]");
+        if (snake) {
+            const img = snake.querySelector("img");
+            // slithers in from the right edge, then keeps a slow sway
+            gsap.from(snake, { xPercent: 60, autoAlpha: 0, duration: 1.6, ease: "expo.out", delay: 0.2 });
+            gsap.to(img, { rotate: 4, duration: 3.2, ease: "sine.inOut", yoyo: true, repeat: -1 });
+            // and drifts up a little as the page scrolls away
+            gsap.to(snake, {
+                yPercent: -18,
+                ease: "none",
+                scrollTrigger: { trigger: snake, start: "top top", end: "bottom top", scrub: true },
+            });
+        }
+
+        // principle numbers count in, cards lift one after another
+        gsap.from(".ui-principle", {
+            y: 40,
+            autoAlpha: 0,
+            duration: 1,
+            ease: "expo.out",
+            stagger: 0.1,
+            scrollTrigger: { trigger: ".ui-principles", start: "top 85%", once: true },
+        });
+
+        // each screen's image drifts against its text
+        gsap.utils.toArray<HTMLElement>(".ui-screen figure").forEach((fig, i) => {
+            gsap.fromTo(
+                fig,
+                { yPercent: i % 2 ? 6 : -6 },
+                {
+                    yPercent: i % 2 ? -6 : 6,
+                    ease: "none",
+                    scrollTrigger: { trigger: fig, start: "top bottom", end: "bottom top", scrub: true },
+                },
+            );
+        });
+    });
+
+    document.fonts.ready.then(() => ScrollTrigger.refresh());
+</script>
+
+<style>
+    .ui {
+        --ui-orange: #ff6030;
+        overflow-x: clip;
+    }
+
+    /* --- HEADER --- */
+
+    .ui-head {
+        position: relative;
+    }
+
+    /* the tail enters from the right edge of the page */
+    .ui-snake {
+        position: absolute;
+        top: clamp(8px, 2vw, 32px);
+        right: 0;
+        width: clamp(220px, 38vw, 560px);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .ui-snake :global(img) {
+        width: 100%;
+        height: auto;
+        transform-origin: 100% 60%;
+    }
+
+    /* the art is black on transparent: flip it for the dark theme */
+    :global(html.dark) .ui-snake :global(img) {
+        filter: invert(1);
+    }
+
+    .ui-head > :not(.ui-snake) {
+        position: relative;
+        z-index: 1;
+    }
+
+    .ui-kicker {
+        margin: 24px 0 0;
+    }
+
+    .ui-title {
+        max-width: 8ch;
+        font-size: clamp(3rem, 1rem + 8vw, 9.5rem);
+    }
+
+    .ui-intro {
+        margin-top: clamp(32px, 5vw, 64px);
+    }
+
+    .ui-facts {
+        display: grid;
+        gap: 14px;
+        align-content: start;
+        margin: 0;
+    }
+
+    .ui-facts dd {
+        margin: 2px 0 0;
+    }
+
+    @media (max-width: 719px) {
+        .ui-snake {
+            opacity: 0.35;
+        }
+    }
+
+    /* --- IMAGES --- */
+
+    .ui-hero figure,
+    .ui-guide,
+    .ui-screen figure {
+        margin: 0;
+        overflow: hidden;
+    }
+
+    .ui-hero :global(img),
+    .ui-guide :global(img),
+    .ui-screen :global(img) {
+        width: 100%;
+        height: auto;
+    }
+
+    /* --- STATEMENTS --- */
+
+    .ui-statement {
+        margin: 0;
+        font-size: clamp(2rem, 1rem + 4vw, 5rem);
+        line-height: 0.95;
+        letter-spacing: -0.045em;
+        max-width: 15ch;
+    }
+
+    .ui-statement--small {
+        font-size: clamp(1.6rem, 1rem + 2.4vw, 3.25rem);
+        max-width: 22ch;
+        line-height: 1.02;
+    }
+
+    .ui-copy {
+        margin: clamp(24px, 3vw, 40px) 0 0;
+        max-width: 54ch;
+    }
+
+    /* --- STYLE GUIDE --- */
+
+    .ui-guide {
+        margin-top: clamp(40px, 6vw, 96px);
+    }
+
+    .ui-principles {
+        display: grid;
+        gap: var(--gutter);
+        margin: clamp(32px, 4vw, 56px) 0 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .ui-principle {
+        display: grid;
+        gap: 10px;
+        align-content: start;
+        padding-top: 14px;
+        border-top: 1px solid var(--text);
+    }
+
+    .ui-principle__num {
+        font-size: var(--fs-h2);
+        line-height: 1;
+        letter-spacing: -0.04em;
+        color: var(--ui-orange);
+    }
+
+    .ui-principle h3 {
+        margin: 0;
+        font-size: var(--fs-lead);
+        font-weight: 500;
+        letter-spacing: -0.03em;
+    }
+
+    .ui-principle p {
+        margin: 0;
+        color: var(--muted);
+    }
+
+    @media (min-width: 720px) {
+        .ui-principles {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (min-width: 1100px) {
+        .ui-principles {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+    }
+
+    /* --- SCREENS: image and text alternate sides --- */
+
+    .ui-screens {
+        display: grid;
+        gap: clamp(64px, 9vw, 140px);
+        margin: clamp(48px, 6vw, 96px) 0 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .ui-screen {
+        display: grid;
+        gap: 20px var(--gutter);
+        align-items: center;
+    }
+
+    .ui-screen__text {
+        display: grid;
+        gap: 10px;
+        max-width: 36ch;
+    }
+
+    .ui-screen__text h3 {
+        margin: 0;
+        font-size: var(--fs-h2);
+        font-weight: 500;
+        line-height: 1;
+        letter-spacing: -0.04em;
+    }
+
+    .ui-screen__text p {
+        margin: 0;
+        color: var(--muted);
+    }
+
+    @media (min-width: 900px) {
+        .ui-screen {
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+        }
+
+        .ui-screen figure {
+            grid-column: 1 / span 8;
+        }
+
+        .ui-screen__text {
+            grid-column: 9 / span 4;
+        }
+
+        .ui-screen:nth-child(even) figure {
+            grid-column: 5 / span 8;
+            grid-row: 1;
+        }
+
+        .ui-screen:nth-child(even) .ui-screen__text {
+            grid-column: 1 / span 4;
+            grid-row: 1;
+        }
+    }
+
+    /* --- DECISIONS / WORKFLOW --- */
+
+    .ui-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .ui-list__item {
+        display: grid;
+        grid-template-columns: 3rem 1fr;
+        gap: 4px var(--gutter);
+        padding-block: 18px;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .ui-list__item:first-child {
+        padding-top: 0;
+    }
+
+    .ui-list__item strong {
+        font-size: var(--fs-lead);
+        font-weight: 500;
+        letter-spacing: -0.03em;
+    }
+
+    .ui-list__item span:last-child {
+        grid-column: 2;
+    }
+
+    @media (min-width: 900px) {
+        .ui-list__item {
+            grid-template-columns: 3rem minmax(0, 1fr) minmax(0, 1.4fr);
+            align-items: baseline;
+        }
+
+        .ui-list__item span:last-child {
+            grid-column: 3;
+        }
+    }
+
+    .ui-workflow {
+        display: grid;
+        gap: 14px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        max-width: 60ch;
+    }
+
+    .ui-workflow li {
+        padding-left: 1.4em;
+        text-indent: -1.4em;
+    }
+
+    .ui-workflow li::before {
+        content: "— ";
+        color: var(--ui-orange);
+    }
+
+    .ui-takeaway {
+        display: grid;
+        gap: 10px;
+        margin: clamp(40px, 5vw, 64px) 0 0;
+        max-width: 30ch;
+        font-size: var(--fs-lead);
+        line-height: 1.15;
+        letter-spacing: -0.02em;
+    }
+
+    .ui-last {
+        padding-bottom: var(--section);
+    }
+</style>
