@@ -6,7 +6,7 @@ import { join } from "node:path";
  * Leave a value empty to hide its link.
  */
 export const site = {
-    email: "rafaela.henriques@student.howest.be",
+    email: "Rafaela.Henriques.work@gmail.com",
     github: "https://github.com/rafaelahenriques",
     linkedin: "https://www.linkedin.com/in/rafaela-henriques-1464a22b5/",
     cv: "/cv.pdf", // drop the file in public/cv.pdf
