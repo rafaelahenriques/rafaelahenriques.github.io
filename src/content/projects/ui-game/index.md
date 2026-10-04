@@ -11,7 +11,7 @@ scope:
   - Style analysis
   - Start menu, settings and components
   - Button states and colour themes
-description: "A game UI kit drawn from an illustration style: I analysed the style's shapes, colour, shading and lines, then designed a start menu, settings screen and component set that belong to it — built in Photoshop, ready to slice for a game engine."
+description: "A game UI kit built from the style of another artist's illustration: I analysed its shapes, colour, shading and lines, then designed a start menu, settings screen and component set that belong to it — built in Photoshop, ready to slice for a game engine."
 media:
   screenshot: "./mainUi.png"
 tags: ["UI", "Design", "Photoshop", "Game Dev"]
