@@ -21,9 +21,9 @@ const traits = ["Adaptable", "Hard-working", "Friendly", "Curious", "Observant",
         <div class="about-head__title">
             <p class="mono muted" data-reveal>About</p>
             <h1 class="display about-name" data-split>Rafaela Henriques</h1>
-            <p class="mono muted about-head__fig" data-reveal>
-                Fig. 02 — Rafaela, today. <a href="/" class="link">Fig. 01 is on the homepage ↗</a>
-            </p>
+            <div class="about-head__links" data-reveal>
+                <ContactLinks class="mono" />
+            </div>
         </div>
         <figure class="about-portrait" data-about-portrait>
             <div class="about-portrait__frame" data-reveal-img>
@@ -151,8 +151,8 @@ const traits = ["Adaptable", "Hard-working", "Friendly", "Curious", "Observant",
         max-width: 8ch;
     }
 
-    .about-head__fig {
-        margin: 24px 0 0;
+    .about-head__links {
+        margin-top: clamp(20px, 3vw, 32px);
     }
 
     .about-portrait {
