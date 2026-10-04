@@ -36,10 +36,8 @@ const slides: Slide[] = await Promise.all(
 ---
 
 <Base title="Home" description="Rafaela Henriques — web developer. Selected projects.">
-    <ProjectCarousel slides={slides} />
-
     <!-- HELLO: my name spread across the page, with me in 2006 in the middle -->
-    <section class="section hello" aria-labelledby="intro">
+    <section class="hello" aria-labelledby="intro">
         <h2 id="intro" class="visually-hidden">Intro</h2>
         <SpreadName
             word="Rafaela"
@@ -48,8 +46,6 @@ const slides: Slide[] = await Promise.all(
             alt="Rafaela as a little girl in a party hat, getting a kiss on the cheek"
             focus="46% 42%"
             figLeft="Fig. 01 — Rafaela, 2006"
-            figRight="Fig. 02 — today →"
-            figRightHref="/about/"
         />
         <div class="wrap hello__text">
             <p class="caps" data-split>
@@ -65,6 +61,8 @@ const slides: Slide[] = await Promise.all(
             </p>
         </div>
     </section>
+
+    <ProjectCarousel slides={slides} />
 
     <section class="section wrap" aria-labelledby="work">
         <div class="section-head">
@@ -87,6 +85,11 @@ const slides: Slide[] = await Promise.all(
 </Base>
 
 <style>
+    /* first thing on the page: sits right under the header */
+    .hello {
+        padding-block: clamp(40px, 7vw, 96px) clamp(64px, 9vw, 140px);
+    }
+
     .hello__text {
         margin-top: clamp(48px, 7vw, 96px);
     }
