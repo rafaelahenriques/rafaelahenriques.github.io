@@ -1,5 +1,8 @@
 ---
-title: "UI Game Menu Mock Assets"
+section: other
+order: 3
+category: "Game & Visual"
+title: "UI Game Assets"
 year: "2024"
 tech: ["Photoshop", "Graphic Tablet"]
 role: "UI Artist & Designer"
