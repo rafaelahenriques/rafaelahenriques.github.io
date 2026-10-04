@@ -22,7 +22,7 @@ const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, 
 const covers = [
     {
         slug: "mongmo",
-        kicker: "02 — Mobile · In progress",
+        kicker: "02 — Mobile",
         title: ["Mongmo"],
         stack: "React Native · TypeScript · Expo · Supabase",
         // a phone outline, the only motif

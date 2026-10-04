@@ -3,6 +3,7 @@ title: "Miles & Meals"
 section: other
 order: 1
 category: "UX & Branding"
+year: "2026"
 tech: ["UX", "Product", "Branding"]
 description: "UX, product and brand identity work for Miles & Meals."
 media:
