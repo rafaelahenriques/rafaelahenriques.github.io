@@ -333,12 +333,61 @@ main {
  * -------------------
  */
 
-.prose {
+/* Text keeps a reading measure; images, phone rows and video use the full column */
+.prose > :where(p, ul, ol, h2, h3, blockquote, pre) {
     max-width: 62ch;
 }
 
 .prose > * + * {
     margin-top: 1em;
+}
+
+.prose img {
+    width: 100%;
+    height: auto;
+}
+
+.prose > p:has(> img:only-child),
+.prose > .phones,
+.prose > .video {
+    max-width: none;
+    margin-top: clamp(24px, 3vw, 40px);
+}
+
+.prose > p:has(> img:only-child) + p:has(> img:only-child) {
+    margin-top: var(--gutter);
+}
+
+/* App screens side by side */
+.prose .phones {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--gutter);
+}
+
+.prose .phones p {
+    margin: 0;
+}
+
+@media (min-width: 720px) {
+    .prose .phones {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+/* Responsive embed (Vimeo) */
+.prose .video {
+    position: relative;
+    aspect-ratio: 16 / 10.4;
+    background: var(--line);
+}
+
+.prose .video iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
 }
 
 .prose h2 {
