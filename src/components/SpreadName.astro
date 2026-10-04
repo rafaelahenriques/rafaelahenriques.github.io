@@ -1,0 +1,144 @@
+---
+/**
+ * A word spread across the full width, letter by letter, with a photo set
+ * in an oval between two of its letters. On scroll the letters glide apart
+ * from the photo and the photo opens up. Annotations sit above like figure
+ * labels in a book.
+ */
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+
+interface Props {
+    word: string;
+    image: ImageMetadata;
+    alt: string;
+    /** the photo goes before the letter at this index */
+    insertAt: number;
+    /** focal point for the oval crop, e.g. "46% 45%" */
+    focus?: string;
+    figLeft?: string;
+    figRight?: string;
+    figRightHref?: string;
+}
+
+const { word, image, alt, insertAt, focus = "50% 50%", figLeft, figRight, figRightHref } = Astro.props;
+const letters = [...word];
+---
+
+<div class="spread" data-spread>
+    {
+        (figLeft || figRight) && (
+            <div class="spread__figs mono wrap">
+                <span>{figLeft}</span>
+                {figRight && (figRightHref ? <a href={figRightHref} class="link">{figRight}</a> : <span>{figRight}</span>)}
+            </div>
+        )
+    }
+    <p class="spread__word wrap" aria-label={word}>
+        {
+            letters.map((letter, i) => (
+                <>
+                    {i === insertAt && (
+                        <span class="spread__photo" data-spread-photo>
+                            <Image
+                                src={image}
+                                alt={alt}
+                                widths={[300, 600, 900]}
+                                sizes="(min-width: 900px) 16vw, 28vw"
+                                style={`object-position: ${focus}`}
+                            />
+                        </span>
+                    )}
+                    <span class="spread__letter" data-spread-letter data-side={i < insertAt ? "left" : "right"} aria-hidden="true">
+                        {letter}
+                    </span>
+                </>
+            ))
+        }
+    </p>
+</div>
+
+<script>
+    import { gsap } from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
+        document.querySelectorAll<HTMLElement>("[data-spread]").forEach((spread) => {
+            const word = spread.querySelector<HTMLElement>(".spread__word")!;
+            const photo = spread.querySelector<HTMLElement>("[data-spread-photo]")!;
+            const letters = [...spread.querySelectorAll<HTMLElement>("[data-spread-letter]")];
+
+            // letters start bunched against the photo and spread to the edges
+            const tl = gsap.timeline({
+                scrollTrigger: { trigger: word, start: "top 85%", end: "center 45%", scrub: 0.6 },
+            });
+            const photoBox = () => photo.getBoundingClientRect();
+            letters.forEach((letter) => {
+                tl.from(
+                    letter,
+                    {
+                        x: () => {
+                            const l = letter.getBoundingClientRect();
+                            const p = photoBox();
+                            // move each letter toward the photo by 70% of the gap
+                            return letter.dataset.side === "left"
+                                ? (p.left - l.right) * 0.7
+                                : (p.right - l.left) * 0.7;
+                        },
+                        autoAlpha: 0.15,
+                        ease: "power2.out",
+                    },
+                    0,
+                );
+            });
+            tl.from(photo, { scale: 0.5, ease: "power2.out" }, 0);
+            tl.from(photo.querySelector("img"), { scale: 1.4, ease: "power2.out" }, 0);
+        });
+    });
+</script>
+
+<style>
+    .spread__figs {
+        display: flex;
+        justify-content: space-between;
+        gap: var(--gutter);
+        margin-bottom: clamp(12px, 2vw, 24px);
+        font-size: var(--fs-mono);
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+
+    .spread__word {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 0;
+        font-size: clamp(2.75rem, 1rem + 11vw, 13rem);
+        font-weight: 800;
+        line-height: 0.8;
+        letter-spacing: -0.04em;
+        text-transform: uppercase;
+    }
+
+    .spread__letter {
+        display: inline-block;
+    }
+
+    .spread__photo {
+        display: block;
+        flex: none;
+        width: clamp(72px, 14vw, 240px);
+        aspect-ratio: 3 / 4;
+        overflow: hidden;
+        border-radius: 50%;
+    }
+
+    .spread__photo :global(img) {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+</style>
