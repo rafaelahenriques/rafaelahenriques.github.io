@@ -36,6 +36,14 @@ const all = await getProjects();
 const index = all.findIndex((p) => slugOf(p) === "miles-and-meals");
 const next = all[(index + 1) % all.length];
 
+const links = {
+    brandBoard: "https://www.figma.com/design/icN4oVbYhw1gKWb5aECHgS/Miles-and-Meals---Rafaela-Henriques?node-id=59105-12675",
+    appDesign: "https://www.figma.com/design/icN4oVbYhw1gKWb5aECHgS/Miles-and-Meals---Rafaela-Henriques?node-id=6817-1887",
+    prototype:
+        "https://www.figma.com/proto/icN4oVbYhw1gKWb5aECHgS/Miles-and-Meals---Rafaela-Henriques?node-id=58769-5168&viewport=-1707%2C638%2C0.17&scaling=scale-down&content-scaling=fixed&starting-point-node-id=58769%3A5168&show-proto-sidebar=1&page-id=6817%3A1887",
+    pdf: "/files/miles-and-meals-brandboard.pdf",
+};
+
 const facts = [
     { value: "3", label: "box themes" },
     { value: "4", label: "recipes per box" },
@@ -85,6 +93,18 @@ const values = [
                     <div><dt class="muted">Role</dt><dd>{role}</dd></div>
                     <div><dt class="muted">Year</dt><dd>{year}</dd></div>
                     <div><dt class="muted">Scope</dt><dd>{tech?.join(", ")}</dd></div>
+                    <div>
+                        <dt class="muted">Figma</dt>
+                        <dd class="mm-links">
+                            <a href={links.brandBoard} class="link" target="_blank" rel="noopener noreferrer">Brand board ↗</a>
+                            <a href={links.appDesign} class="link" target="_blank" rel="noopener noreferrer">App design ↗</a>
+                            <a href={links.prototype} class="link" target="_blank" rel="noopener noreferrer">Prototype ↗</a>
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="muted">Download</dt>
+                        <dd><a href={links.pdf} class="link" download>Brand board PDF ↓</a></dd>
+                    </div>
                 </dl>
                 <p class="row__body lead" data-split>{description}</p>
             </div>
@@ -93,7 +113,7 @@ const values = [
         <!-- HERO: full-bleed photo that opens up as you scroll -->
         <figure class="mm-hero" data-mm-hero>
             <div class="mm-hero__frame">
-                <Image src={hero} alt="Friends laughing over pizza and pasta, with the Miles & Meals logo" widths={[800, 1400, 2000]} sizes="100vw" loading="eager" />
+                <Image quality={90} src={hero} alt="Friends laughing over pizza and pasta, with the Miles & Meals logo" widths={[1000, 1600, 2400, 3024]} sizes="100vw" loading="eager" />
             </div>
         </figure>
 
@@ -164,10 +184,10 @@ const values = [
             </div>
             <div class="mm-pair">
                 <figure class="mm-pair__a" data-speed="-6" data-reveal-img>
-                    <Image src={bbVision} alt="Brand vision, tone of voice and personality" widths={[600, 1000]} sizes="(min-width: 900px) 38vw, 100vw" />
+                    <Image quality={90} src={bbVision} alt="Brand vision, tone of voice and personality" widths={[700, 1200, 1800]} sizes="(min-width: 900px) 38vw, 100vw" />
                 </figure>
                 <figure class="mm-pair__b" data-speed="8" data-reveal-img>
-                    <Image src={bbLook} alt="Look and feel moodboard" widths={[800, 1400]} sizes="(min-width: 900px) 55vw, 100vw" />
+                    <Image quality={90} src={bbLook} alt="Look and feel moodboard" widths={[900, 1500, 2200]} sizes="(min-width: 900px) 55vw, 100vw" />
                 </figure>
             </div>
         </section>
@@ -176,7 +196,10 @@ const values = [
         <section class="mm-band mm-band--ink mm-identity" aria-labelledby="mm-identity" data-mm-identity>
             <div class="wrap mm-identity__head">
                 <h2 id="mm-identity" class="mono mm-band__label">The identity</h2>
-                <p class="mono mm-identity__hint" aria-hidden="true">Scroll →</p>
+                <p class="mono mm-identity__links">
+                    <a href={links.brandBoard} class="link" target="_blank" rel="noopener noreferrer">Full brand board in Figma ↗</a>
+                    <a href={links.pdf} class="link" download>PDF ↓</a>
+                </p>
             </div>
             <div class="mm-identity__viewport" data-mm-viewport>
                 <ol class="mm-identity__track" data-mm-track>
@@ -184,7 +207,7 @@ const values = [
                         identity.map((panel, i) => (
                             <li class="mm-panel">
                                 <figure>
-                                    <Image src={panel.img} alt={panel.title} widths={[700, 1200, 1600]} sizes="(min-width: 900px) 60vw, 85vw" />
+                                    <Image quality={90} src={panel.img} alt={panel.title} widths={[800, 1400, 2000]} sizes="(min-width: 900px) 60rem, 85vw" />
                                     <figcaption>
                                         <span class="mono">{pad(i + 1)} / {pad(identity.length)}</span>
                                         <strong>{panel.title}</strong>
@@ -202,9 +225,9 @@ const values = [
         <!-- PATTERN: the logo pattern drifts with the scroll -->
         <div class="mm-pattern" aria-hidden="true" data-mm-pattern>
             <div class="mm-pattern__track" data-mm-pattern-track>
-                <Image src={bbPattern} alt="" widths={[1400]} sizes="100vw" />
-                <Image src={bbPattern} alt="" widths={[1400]} sizes="100vw" />
-                <Image src={bbPattern} alt="" widths={[1400]} sizes="100vw" />
+                <Image quality={90} src={bbPattern} alt="" widths={[1600, 3024]} sizes="100vw" />
+                <Image quality={90} src={bbPattern} alt="" widths={[1600, 3024]} sizes="100vw" />
+                <Image quality={90} src={bbPattern} alt="" widths={[1600, 3024]} sizes="100vw" />
             </div>
         </div>
 
@@ -218,13 +241,13 @@ const values = [
             </div>
             <div class="mm-collage">
                 <figure class="mm-collage__box" data-speed="-10" data-reveal-img>
-                    <Image src={bbBox} alt="Local Legend box" widths={[800, 1400]} sizes="(min-width: 900px) 58vw, 100vw" />
+                    <Image quality={90} src={bbBox} alt="Local Legend box" widths={[900, 1500, 2200]} sizes="(min-width: 900px) 58vw, 100vw" />
                 </figure>
                 <figure class="mm-collage__tote" data-speed="12" data-reveal-img>
-                    <Image src={bbTote} alt="Tote bag and food mockups" widths={[600, 1000]} sizes="(min-width: 900px) 40vw, 100vw" />
+                    <Image quality={90} src={bbTote} alt="Tote bag and food mockups" widths={[700, 1200, 1800]} sizes="(min-width: 900px) 40vw, 100vw" />
                 </figure>
                 <figure class="mm-collage__street" data-speed="-4" data-reveal-img>
-                    <Image src={bbStreetMade} alt="Street Made box and poster" widths={[800, 1400]} sizes="(min-width: 900px) 70vw, 100vw" />
+                    <Image quality={90} src={bbStreetMade} alt="Street Made box and poster" widths={[900, 1500, 2400]} sizes="(min-width: 900px) 70vw, 100vw" />
                 </figure>
             </div>
         </section>
@@ -242,7 +265,7 @@ const values = [
                     {
                         phones.map((p) => (
                             <li class="mm-phone">
-                                <Image src={p.img} alt={p.alt} widths={[340, 680]} sizes="(min-width: 900px) 20vw, 45vw" />
+                                <Image quality={90} src={p.img} alt={p.alt} widths={[340, 680]} sizes="(min-width: 900px) 20vw, 45vw" />
                             </li>
                         ))
                     }
@@ -255,7 +278,11 @@ const values = [
                         allow="autoplay; fullscreen; picture-in-picture"
                         referrerpolicy="strict-origin-when-cross-origin"></iframe>
                 </div>
-                <p class="mono mm-video__caption">Full app walkthrough</p>
+                <div class="mm-app__links mono">
+                    <span class="mm-video__caption">Full app walkthrough</span>
+                    <a href={links.prototype} class="mm-cta" target="_blank" rel="noopener noreferrer">Try the prototype ↗</a>
+                    <a href={links.appDesign} class="mm-cta mm-cta--ghost" target="_blank" rel="noopener noreferrer">App design in Figma ↗</a>
+                </div>
             </div>
         </section>
 
@@ -660,8 +687,17 @@ const values = [
         align-items: baseline;
     }
 
-    .mm-identity__hint {
-        opacity: 0.6;
+    .mm-identity__links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 20px;
+        margin: 0;
+    }
+
+    .mm-links {
+        display: grid;
+        gap: 2px;
+        justify-items: start;
     }
 
     /* Default: native swipe with snap. JS pins and drives it on desktop. */
@@ -839,9 +875,38 @@ const values = [
         border: 0;
     }
 
+    .mm-app__links {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px 16px;
+        margin-top: 16px;
+    }
+
     .mm-video__caption {
-        margin: 12px 0 0;
+        margin-right: auto;
         opacity: 0.75;
+    }
+
+    .mm-cta {
+        padding: 12px 18px;
+        border: 1px solid var(--mm-ink);
+        border-radius: 999px;
+        background: var(--mm-ink);
+        color: var(--mm-cream);
+        transition:
+            background-color 0.3s var(--ease),
+            color 0.3s var(--ease);
+    }
+
+    .mm-cta--ghost {
+        background: transparent;
+        color: var(--mm-ink);
+    }
+
+    .mm-cta:hover {
+        background: var(--mm-cream);
+        color: var(--mm-ink);
     }
 
     /* --- WHY IT WORKS --- */
