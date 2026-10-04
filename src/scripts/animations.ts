@@ -132,6 +132,22 @@ function indexPreview() {
 }
 
 export function initAnimations() {
+    // While the loading screen is up, wait for it so the intro plays on a visible page
+    let started = false;
+    const go = () => {
+        if (started) return;
+        started = true;
+        start();
+    };
+    if (document.documentElement.classList.contains("is-loading")) {
+        window.addEventListener("loader:done", go, { once: true });
+        setTimeout(go, 5500); // in case the loader never reports back
+    } else {
+        go();
+    }
+}
+
+function start() {
     const mm = gsap.matchMedia();
 
     mm.add(MOTION, (ctx) => {
@@ -144,4 +160,7 @@ export function initAnimations() {
     });
 
     mm.add(`${MOTION} and ${FINE_POINTER}`, indexPreview);
+
+    // the page may have reflowed under the loader; re-measure every trigger
+    ScrollTrigger.refresh();
 }
