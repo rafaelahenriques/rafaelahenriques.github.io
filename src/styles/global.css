@@ -142,6 +142,29 @@ a {
     letter-spacing: -0.04em;
 }
 
+/* bold uppercase statement, centred (borrowed from poster-style studios) */
+.caps {
+    margin: 0 auto;
+    max-width: 30ch;
+    font-size: clamp(1.5rem, 0.9rem + 2.6vw, 3.4rem);
+    font-weight: 800;
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    text-align: center;
+    text-transform: uppercase;
+    text-wrap: balance;
+}
+
+/* small "e.g." line that follows a statement */
+.caps-eg {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin: clamp(20px, 3vw, 32px) auto 0;
+    max-width: 52ch;
+    text-align: left;
+}
+
 /* underline that draws in on hover */
 .link {
     background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;

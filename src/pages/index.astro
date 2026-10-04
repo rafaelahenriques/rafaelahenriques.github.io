@@ -2,6 +2,8 @@
 import Base from "../layouts/BaseLayout.astro";
 import ProjectCarousel, { type Slide } from "../components/ProjectCarousel.astro";
 import WorkIndex from "../components/WorkIndex.astro";
+import SpreadName from "../components/SpreadName.astro";
+import babyPhoto from "../assets/me/rafaela-2006.jpg";
 import { getImage } from "astro:assets";
 import { getProjects, getFeatured, getOtherWork, slugOf } from "../lib/content";
 
@@ -36,16 +38,31 @@ const slides: Slide[] = await Promise.all(
 <Base title="Home" description="Rafaela Henriques — web developer. Selected projects.">
     <ProjectCarousel slides={slides} />
 
-    <section class="section wrap" aria-labelledby="intro">
-        <div class="row">
-            <h2 id="intro" class="row__label mono muted">Intro</h2>
-            <div class="row__body">
-                <p class="lead intro" data-split>
-                    Web developer working across full-stack, mobile and data —
-                    with a background in game development and design.
-                </p>
-                <a href="/about/" class="intro__more mono link" data-reveal>More about me →</a>
-            </div>
+    <!-- HELLO: my name spread across the page, with me in 2006 in the middle -->
+    <section class="section hello" aria-labelledby="intro">
+        <h2 id="intro" class="visually-hidden">Intro</h2>
+        <SpreadName
+            word="Rafaela"
+            insertAt={3}
+            image={babyPhoto}
+            alt="Rafaela as a little girl in a party hat, getting a kiss on the cheek"
+            focus="46% 42%"
+            figLeft="Fig. 01 — Rafaela, 2006"
+            figRight="Fig. 02 — today →"
+            figRightHref="/about/"
+        />
+        <div class="wrap hello__text">
+            <p class="caps" data-split>
+                Web developer working across full-stack, mobile and data — with a
+                background in game development and design.
+            </p>
+            <p class="caps-eg mono" data-reveal>
+                <span aria-hidden="true">→</span>
+                <span>E.g. Python, React Native, Supabase, GSAP and Figma</span>
+            </p>
+            <p class="hello__more" data-reveal>
+                <a href="/about/" class="mono link">More about me →</a>
+            </p>
         </div>
     </section>
 
@@ -70,13 +87,22 @@ const slides: Slide[] = await Promise.all(
 </Base>
 
 <style>
-    .intro {
-        max-width: 30ch;
+    .hello__text {
+        margin-top: clamp(48px, 7vw, 96px);
     }
 
-    .intro__more {
-        display: inline-block;
-        margin-top: 32px;
+    .hello__more {
+        margin: clamp(28px, 4vw, 48px) 0 0;
+        text-align: center;
+    }
+
+    .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
     }
 
     .other-line {
