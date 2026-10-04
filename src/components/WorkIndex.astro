@@ -28,9 +28,11 @@ const rows = await Promise.all(
         rows.map(({ p, preview }, i) => (
             <li class="index__item" data-reveal>
                 <a href={`/projects/${slugOf(p)}/`} class="index__link" data-preview-src={preview}>
-                    <span class="index__num mono muted">{pad(i + 1)}</span>
+                    <span class="index__num mono muted">{pad(p.data.order ?? i + 1)}</span>
                     <span class="index__title">{p.data.title}</span>
-                    <span class="index__meta mono muted">{p.data.role}</span>
+                    <span class="index__meta mono muted">
+                        {p.data.category}{p.data.status === "in-progress" && " · In progress"}
+                    </span>
                     <span class="index__year mono">{p.data.year}</span>
                 </a>
             </li>

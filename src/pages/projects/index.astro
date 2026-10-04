@@ -1,39 +1,33 @@
 ---
 import Base from "../../layouts/BaseLayout.astro";
 import { Picture, getImage } from "astro:assets";
-import { getProjects, pad, slugOf, type ProjectEntry } from "../../lib/content";
+import type { ImageMetadata } from "astro";
+import { getFeatured, getOtherWork, pad, slugOf } from "../../lib/content";
 
-const TYPES = [
-    { value: "game", label: "Game Dev", tag: "Game Dev" },
-    { value: "web", label: "Web Dev", tag: "Web Dev" },
-    { value: "design", label: "Design", tag: "Design" },
-];
+const projects = await getFeatured();
+const otherWork = await getOtherWork();
 
-// Map tags -> one or more category slugs
-const getCategories = (project: ProjectEntry): string[] => {
-    const tags: string[] = project.data.tags ?? [];
-    const categories = TYPES.filter((t) => tags.includes(t.tag)).map((t) => t.value);
-    return categories.length > 0 ? categories : ["other"];
-};
-
-const typeLabel = (value: string) => TYPES.find((t) => t.value === value)?.label ?? "Other";
-
-const projects = await getProjects();
+const previewOf = async (screenshot?: ImageMetadata) =>
+    screenshot ? (await getImage({ src: screenshot, width: 720, format: "webp" })).src : undefined;
 
 const rows = await Promise.all(
-    projects.map(async (p, i) => {
-        const screenshot = p.data.media?.screenshot;
-        return {
-            p,
-            i,
-            href: `/projects/${slugOf(p)}/`,
-            categories: getCategories(p),
-            tech: p.data.tech ?? [],
-            preview: screenshot
-                ? (await getImage({ src: screenshot, width: 720, format: "webp" })).src
-                : undefined,
-        };
-    }),
+    projects.map(async (p, i) => ({
+        p,
+        i,
+        num: pad(p.data.order ?? i + 1),
+        href: `/projects/${slugOf(p)}/`,
+        inProgress: p.data.status === "in-progress",
+        tech: p.data.tech ?? [],
+        preview: await previewOf(p.data.media?.screenshot),
+    })),
+);
+
+const others = await Promise.all(
+    otherWork.map(async (p) => ({
+        p,
+        href: `/projects/${slugOf(p)}/`,
+        preview: await previewOf(p.data.media?.screenshot),
+    })),
 );
 
 // Stack facet: every technology with how many projects use it, most used first
@@ -44,7 +38,7 @@ const stack = [...techCounts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b
 const columns = [
     { key: "index", label: "No." },
     { key: "title", label: "Project" },
-    { key: "type", label: "Type" },
+    { key: "type", label: "Category" },
     { key: "stack", label: "Stack" },
     { key: "year", label: "Year" },
 ];
@@ -52,33 +46,21 @@ const columns = [
 
 <Base title="Projects" description="Rafaela Henriques — selected projects.">
     <header class="page-head wrap">
-        <p class="mono muted" data-reveal>Projects ({pad(projects.length)})</p>
+        <p class="mono muted" data-reveal>Featured ({pad(projects.length)}) · Other work ({pad(otherWork.length)})</p>
         <h1 class="display" data-split>Selected work</h1>
         <p class="lead page-lead" data-split data-split-delay="0.2">
-            Work from university and personal side projects, where I test new
-            tools and bridge strict logic with fluid design.
+            Four projects across full-stack, mobile, backend &amp; data and
+            creative development — plus smaller experiments.
         </p>
     </header>
 
     <section class="wrap" aria-label="Projects" data-projects>
         <div class="toolbar" data-reveal>
             <div class="row">
-                <p class="row__label mono muted">Type</p>
-                <div class="row__body toolbar__line mono">
-                    <div class="filters" role="group" aria-label="Filter by type">
-                        <button type="button" class="text-button link" data-type="all" aria-pressed="true">All</button>
-                        {
-                            TYPES.map((t) => (
-                                <button type="button" class="text-button link" data-type={t.value} aria-pressed="false">
-                                    {t.label}
-                                </button>
-                            ))
-                        }
-                    </div>
-                    <div class="filters" role="group" aria-label="View">
-                        <button type="button" class="text-button link" data-view="grid" aria-pressed="true">Grid</button>
-                        <button type="button" class="text-button link" data-view="table" aria-pressed="false">Table</button>
-                    </div>
+                <p class="row__label mono muted">View</p>
+                <div class="row__body filters mono" role="group" aria-label="View">
+                    <button type="button" class="text-button link" data-view="grid" aria-pressed="true">Grid</button>
+                    <button type="button" class="text-button link" data-view="table" aria-pressed="false">Table</button>
                 </div>
             </div>
             <div class="row">
@@ -102,13 +84,12 @@ const columns = [
         <!-- GRID VIEW -->
         <ul class="work-grid" data-view-panel="grid">
             {
-                rows.map(({ p, i, href, categories, tech }) => {
+                rows.map(({ p, i, num, href, inProgress, tech }) => {
                     const screenshot = p.data.media?.screenshot;
                     return (
                         <li
                             class="work-grid__item"
                             data-item
-                            data-categories={categories.join(" ")}
                             data-tech-list={JSON.stringify(tech)}
                             data-col={i % 3}
                         >
@@ -126,8 +107,14 @@ const columns = [
                                     </div>
                                 )}
                                 <div class="work-card__caption mono" data-reveal>
-                                    <span class="muted">{pad(i + 1)}</span>
-                                    <span class="work-card__title">{p.data.title}</span>
+                                    <span class="muted">{num}</span>
+                                    <span>
+                                        <span class="work-card__title">{p.data.title}</span>
+                                        <span class="work-card__meta muted">
+                                            {p.data.category}
+                                            {inProgress && <span class="status">In progress</span>}
+                                        </span>
+                                    </span>
                                     <span class="muted">{p.data.year}</span>
                                 </div>
                             </a>
@@ -157,24 +144,25 @@ const columns = [
                 </thead>
                 <tbody data-rows>
                     {
-                        rows.map(({ p, i, href, categories, tech, preview }) => (
+                        rows.map(({ p, i, num, href, inProgress, tech, preview }) => (
                             <tr
                                 data-item
-                                data-categories={categories.join(" ")}
                                 data-tech-list={JSON.stringify(tech)}
                                 data-sort-index={i}
                                 data-sort-title={p.data.title}
-                                data-sort-type={categories.map(typeLabel).join(", ")}
+                                data-sort-type={p.data.category ?? ""}
                                 data-sort-stack={tech.join(", ")}
                                 data-sort-year={p.data.year ?? ""}
                                 data-preview-src={preview}
                             >
-                                <td class="col-index mono muted">{pad(i + 1)}</td>
+                                <td class="col-index mono muted">{num}</td>
                                 <td class="col-title">
                                     <a href={href} class="work-table__link">{p.data.title}</a>
-                                    <span class="work-table__role mono muted">{p.data.role}</span>
+                                    <span class="work-table__role mono muted">
+                                        {inProgress ? <span class="status">In progress</span> : p.data.role}
+                                    </span>
                                 </td>
-                                <td class="col-type mono">{categories.map(typeLabel).join(", ")}</td>
+                                <td class="col-type mono">{p.data.category}</td>
                                 <td class="col-stack mono">
                                     <ul class="work-table__stack">
                                         {tech.map((t) => (
@@ -195,6 +183,25 @@ const columns = [
         </div>
 
         <p class="work-empty mono muted" data-empty hidden>No projects match these filters.</p>
+    </section>
+
+    <section class="section wrap" aria-labelledby="other-work">
+        <div class="row">
+            <h2 id="other-work" class="row__label mono muted">Other work / Experiments</h2>
+            <ul class="row__body other-list" data-preview-list>
+                {
+                    others.map(({ p, href, preview }) => (
+                        <li data-reveal>
+                            <a href={href} class="other-list__link" data-preview-src={preview}>
+                                <span class="other-list__title">{p.data.title}</span>
+                                <span class="mono muted">{p.data.category}</span>
+                                <span class="mono muted other-list__year">{p.data.year}</span>
+                            </a>
+                        </li>
+                    ))
+                }
+            </ul>
+        </div>
     </section>
 </Base>
 
@@ -217,7 +224,6 @@ const columns = [
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     const state = {
-        type: "all",
         tech: "all",
         view: "grid" as View,
         sort: "index" as SortKey,
@@ -230,16 +236,11 @@ const columns = [
         );
 
     const matches = (item: HTMLElement) => {
-        const categories = (item.dataset.categories ?? "other").split(" ");
         const tech: string[] = JSON.parse(item.dataset.techList ?? "[]");
-        return (
-            (state.type === "all" || categories.includes(state.type)) &&
-            (state.tech === "all" || tech.includes(state.tech))
-        );
+        return state.tech === "all" || tech.includes(state.tech);
     };
 
     function applyFilters() {
-        press("data-type", state.type);
         press("data-tech", state.tech);
 
         // data-col drives the grid's staggered offsets, so renumber visible items
@@ -304,13 +305,12 @@ const columns = [
     root.addEventListener("click", (e) => {
         const target = (e.target as HTMLElement).closest<HTMLButtonElement>("button");
         if (!target) return;
-        const { type, tech, techChip, view, sort } = target.dataset;
+        const { tech, techChip, view, sort } = target.dataset;
 
-        if (type) state.type = type;
         if (tech) state.tech = tech;
         // clicking a stack cell toggles that technology as the filter
         if (techChip) state.tech = state.tech === techChip ? "all" : techChip;
-        if (type || tech || techChip) applyFilters();
+        if (tech || techChip) applyFilters();
 
         if (view) applyView(view as View);
 
@@ -416,6 +416,65 @@ const columns = [
         grid-template-columns: 2.5rem 1fr auto;
         gap: var(--gutter);
         margin-top: 12px;
+    }
+
+    .work-card__meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 10px;
+        margin-top: 4px;
+    }
+
+    .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--text);
+    }
+
+    .status::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border: 1px solid currentColor;
+        border-radius: 50%;
+    }
+
+    /* --- OTHER WORK --- */
+
+    .other-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .other-list li + li {
+        border-top: 1px solid var(--line);
+    }
+
+    .other-list__link {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 4px var(--gutter);
+        padding-block: 14px;
+        transition: padding 0.5s var(--ease);
+    }
+
+    .other-list li:first-child .other-list__link {
+        padding-top: 0;
+    }
+
+    .other-list__link:hover {
+        padding-left: 12px;
+    }
+
+    .other-list__title {
+        grid-column: 1 / -1;
+        font-size: var(--fs-body);
+    }
+
+    .other-list__year {
+        text-align: right;
     }
 
     .work-card:hover .work-card__title {

@@ -2,7 +2,7 @@
 import Base from "../../layouts/BaseLayout.astro";
 import { render } from "astro:content";
 import { Picture } from "astro:assets";
-import { getProjects, slugOf, type ProjectEntry } from "../../lib/content";
+import { getProjects, pad, slugOf, type ProjectEntry } from "../../lib/content";
 
 export async function getStaticPaths() {
     const projects = await getProjects();
@@ -24,9 +24,13 @@ interface Props {
 
 const { project, prev, next } = Astro.props;
 const { Content } = await render(project);
-const { title, description, year, role, context, tech, scope, media } = project.data;
+const { title, description, year, role, context, tech, scope, media, section, order, status, category, architecture, metrics } =
+    project.data;
 
-const gallery = media?.gallery ?? (media?.screenshot ? [media.screenshot] : []);
+// Only explicit galleries: generated covers shouldn't repeat on the project page
+const gallery = media?.gallery ?? [];
+const inProgress = status === "in-progress";
+const kicker = [section === "featured" && order ? pad(order) : "Other work", category].filter(Boolean).join(" — ");
 
 const facts = [
     { label: "Year", value: year },
@@ -39,6 +43,10 @@ const facts = [
 <Base title={title} description={description}>
     <header class="page-head wrap">
         <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
+        <p class="project-kicker mono muted" data-reveal>
+            {kicker}
+            {inProgress && <span class="status">In progress</span>}
+        </p>
         <h1 class="display project-title" data-split>{title}</h1>
     </header>
 
@@ -96,6 +104,43 @@ const facts = [
         )
     }
 
+    {
+        architecture && (
+            <section class="section wrap" aria-labelledby="architecture">
+                <div class="row">
+                    <h2 id="architecture" class="row__label mono muted">Architecture</h2>
+                    <ol class="row__body pipeline">
+                        {architecture.map((stage, i) => (
+                            <li class="pipeline__stage" data-reveal>
+                                <span class="pipeline__num mono muted">{pad(i + 1)}</span>
+                                <span class="pipeline__label h2">{stage.label}</span>
+                                {stage.detail && <span class="pipeline__detail muted">{stage.detail}</span>}
+                            </li>
+                        ))}
+                    </ol>
+                </div>
+            </section>
+        )
+    }
+
+    {
+        metrics && (
+            <section class="section wrap" aria-labelledby="metrics">
+                <div class="row">
+                    <h2 id="metrics" class="row__label mono muted">What it measures</h2>
+                    <dl class="row__body metrics">
+                        {metrics.map((m) => (
+                            <div class="metrics__item" data-reveal>
+                                <dt>{m.label}</dt>
+                                {m.detail && <dd class="muted">{m.detail}</dd>}
+                            </div>
+                        ))}
+                    </dl>
+                </div>
+            </section>
+        )
+    }
+
     <section class="section wrap">
         <div class="row">
             <p class="row__label mono muted">Notes</p>
@@ -129,6 +174,99 @@ const facts = [
     .project-title {
         max-width: 14ch;
         font-size: clamp(2.75rem, 1rem + 7vw, 8.5rem);
+    }
+
+    .project-kicker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 16px;
+        margin-top: 24px;
+    }
+
+    .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--text);
+    }
+
+    .status::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border: 1px solid currentColor;
+        border-radius: 50%;
+    }
+
+    /* --- ARCHITECTURE: a vertical flow, each stage feeding the next --- */
+
+    .pipeline {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .pipeline__stage {
+        position: relative;
+        display: grid;
+        grid-template-columns: 3rem 1fr;
+        gap: 4px var(--gutter);
+        padding-bottom: 40px;
+    }
+
+    /* connector line + arrow head down to the next stage */
+    .pipeline__stage:not(:last-child)::after {
+        content: "↓";
+        position: absolute;
+        left: 0;
+        bottom: 8px;
+        font-family: var(--mono);
+        color: var(--muted);
+    }
+
+    .pipeline__label {
+        grid-column: 2;
+    }
+
+    .pipeline__detail {
+        grid-column: 2;
+    }
+
+    /* --- METRICS --- */
+
+    .metrics {
+        display: grid;
+        gap: 0 var(--gutter);
+        margin: 0;
+    }
+
+    .metrics__item {
+        padding-block: 16px;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .metrics__item:first-child {
+        padding-top: 0;
+    }
+
+    .metrics__item dt {
+        font-size: var(--fs-lead);
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+    }
+
+    .metrics__item dd {
+        margin: 6px 0 0;
+    }
+
+    @media (min-width: 720px) {
+        .metrics {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .metrics__item:nth-child(2) {
+            padding-top: 0;
+        }
     }
 
     .facts {
