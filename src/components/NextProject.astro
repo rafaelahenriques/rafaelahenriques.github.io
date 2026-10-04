@@ -1,0 +1,58 @@
+---
+/** Inverted full-width band linking to the next project in site order. */
+import { getProjects, slugOf } from "../lib/content";
+
+interface Props {
+    /** slug of the current project */
+    current: string;
+}
+
+const { current } = Astro.props;
+const all = await getProjects();
+const index = all.findIndex((p) => slugOf(p) === current);
+const next = all[(index + 1) % all.length];
+---
+
+<nav class="next-project" aria-label="Next project">
+    <a href={`/projects/${slugOf(next)}/`} class="next-project__link wrap">
+        <span class="mono next-project__label">Next project</span>
+        <span class="next-project__title">{next.data.title}</span>
+        <span class="next-project__arrow" aria-hidden="true">→</span>
+    </a>
+</nav>
+
+<style>
+    .next-project {
+        background: var(--text);
+        color: var(--bg);
+    }
+
+    .next-project__link {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: end;
+        gap: 12px var(--gutter);
+        padding-block: clamp(56px, 8vw, 120px);
+    }
+
+    .next-project__label {
+        grid-column: 1 / -1;
+        opacity: 0.6;
+    }
+
+    .next-project__title,
+    .next-project__arrow {
+        font-size: clamp(2.25rem, 1rem + 5vw, 6rem);
+        line-height: 0.95;
+        letter-spacing: -0.045em;
+    }
+
+    .next-project__arrow {
+        transition: transform 0.6s var(--ease);
+    }
+
+    .next-project__link:hover .next-project__arrow,
+    .next-project__link:focus-visible .next-project__arrow {
+        transform: translateX(16px);
+    }
+</style>

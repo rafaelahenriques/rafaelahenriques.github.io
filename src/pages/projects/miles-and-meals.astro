@@ -7,10 +7,12 @@
  * walkthrough. Every image opens in a lightbox.
  */
 import Base from "../../layouts/BaseLayout.astro";
-import { Image, getImage } from "astro:assets";
-import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
 import { getEntry } from "astro:content";
-import { getProjects, slugOf, pad } from "../../lib/content";
+import { pad } from "../../lib/content";
+import { fullSize as full } from "../../lib/images";
+import Lightbox from "../../components/Lightbox.astro";
+import NextProject from "../../components/NextProject.astro";
 
 import hero from "../../content/projects/miles-and-meals/main.jpg";
 import bbVision from "../../content/projects/miles-and-meals/brandboard-1.png";
@@ -36,11 +38,6 @@ import appRecipe from "../../content/projects/miles-and-meals/app-recipe-detail.
 const project = (await getEntry("projects", "miles-and-meals"))!;
 const { title, description, role, year, category, tech } = project.data;
 
-// Next project in site order, for the band at the end
-const all = await getProjects();
-const index = all.findIndex((p) => slugOf(p) === "miles-and-meals");
-const next = all[(index + 1) % all.length];
-
 const links = {
     brandBoard: "https://www.figma.com/design/icN4oVbYhw1gKWb5aECHgS/Miles-and-Meals---Rafaela-Henriques?node-id=59105-12675",
     appDesign: "https://www.figma.com/design/icN4oVbYhw1gKWb5aECHgS/Miles-and-Meals---Rafaela-Henriques?node-id=6817-1887",
@@ -48,10 +45,6 @@ const links = {
         "https://www.figma.com/proto/icN4oVbYhw1gKWb5aECHgS/Miles-and-Meals---Rafaela-Henriques?node-id=58769-5168&viewport=-1707%2C638%2C0.17&scaling=scale-down&content-scaling=fixed&starting-point-node-id=58769%3A5168&show-proto-sidebar=1&page-id=6817%3A1887",
     pdf: "/files/miles-and-meals-brandboard.pdf",
 };
-
-/** Large version for the lightbox (never wider than the source). */
-const full = async (img: ImageMetadata) =>
-    (await getImage({ src: img, width: Math.min(img.width, 2400), format: "webp", quality: 90 })).src;
 
 // Header rail: a vertical column of images drifting upward
 const rail = await Promise.all(
@@ -132,8 +125,9 @@ const values = [
                                     rail.map((r) => (
                                         <button
                                             type="button"
-                                            class="mm-rail__item mm-zoom"
+                                            class="mm-rail__item zoom-btn"
                                             data-mm-rail-item
+                                            data-zoom-single
                                             data-zoom={r.full}
                                             data-caption={r.alt}
                                             aria-label={`View larger: ${r.alt}`}
@@ -175,7 +169,7 @@ const values = [
 
         <!-- HERO: full-bleed photo that opens up as you scroll -->
         <figure class="mm-hero" data-mm-hero>
-            <button type="button" class="mm-hero__frame mm-zoom" data-zoom={zoom.hero} data-caption="Miles & Meals" aria-label="View larger: Miles & Meals hero image">
+            <button type="button" class="mm-hero__frame zoom-btn" data-zoom={zoom.hero} data-caption="Miles & Meals" aria-label="View larger: Miles & Meals hero image">
                 <Image quality={90} src={hero} alt="Friends laughing over pizza and pasta, with the Miles & Meals logo" widths={[1000, 1600, 2400, 3024]} sizes="100vw" loading="eager" />
             </button>
         </figure>
@@ -228,7 +222,7 @@ const values = [
         <!-- STREET MADE: one big image between the boxes and the art direction -->
         <section class="wrap mm-feature" aria-label="Street Made box and poster">
             <figure data-reveal-img>
-                <button type="button" class="mm-zoom" data-zoom={zoom.streetMade} data-caption="Street Made box and poster" aria-label="View larger: Street Made box and poster">
+                <button type="button" class="zoom-btn" data-zoom={zoom.streetMade} data-caption="Street Made box and poster" aria-label="View larger: Street Made box and poster">
                     <Image quality={90} src={bbStreetMade} alt="Street Made box and poster" widths={[1000, 1600, 2400]} sizes="100vw" />
                 </button>
             </figure>
@@ -256,12 +250,12 @@ const values = [
             </div>
             <div class="mm-pair">
                 <figure class="mm-pair__a" data-speed="-6" data-reveal-img>
-                    <button type="button" class="mm-zoom" data-zoom={zoom.vision} data-caption="Brand vision, tone of voice and personality" aria-label="View larger: brand vision">
+                    <button type="button" class="zoom-btn" data-zoom={zoom.vision} data-caption="Brand vision, tone of voice and personality" aria-label="View larger: brand vision">
                         <Image quality={90} src={bbVision} alt="Brand vision, tone of voice and personality" widths={[700, 1200, 1800]} sizes="(min-width: 900px) 38vw, 100vw" />
                     </button>
                 </figure>
                 <figure class="mm-pair__b" data-speed="8" data-reveal-img>
-                    <button type="button" class="mm-zoom" data-zoom={zoom.look} data-caption="Look and feel moodboard" aria-label="View larger: look and feel">
+                    <button type="button" class="zoom-btn" data-zoom={zoom.look} data-caption="Look and feel moodboard" aria-label="View larger: look and feel">
                         <Image quality={90} src={bbLook} alt="Look and feel moodboard" widths={[900, 1500, 2200]} sizes="(min-width: 900px) 55vw, 100vw" />
                     </button>
                 </figure>
@@ -283,7 +277,7 @@ const values = [
                         identity.map((panel, i) => (
                             <li class="mm-panel">
                                 <figure>
-                                    <button type="button" class="mm-zoom" data-zoom={panel.full} data-caption={`${panel.title} — ${panel.text}`} aria-label={`View larger: ${panel.title}`}>
+                                    <button type="button" class="zoom-btn" data-zoom={panel.full} data-caption={`${panel.title} — ${panel.text}`} aria-label={`View larger: ${panel.title}`}>
                                         <Image quality={90} src={panel.img} alt={panel.title} widths={[1000, 1600, 2400]} sizes="(min-width: 900px) 80vw, 88vw" />
                                     </button>
                                     <figcaption>
@@ -315,12 +309,12 @@ const values = [
             </div>
             <div class="mm-collage">
                 <figure class="mm-collage__box" data-speed="-10" data-reveal-img>
-                    <button type="button" class="mm-zoom" data-zoom={zoom.box} data-caption="Local Legend box" aria-label="View larger: Local Legend box">
+                    <button type="button" class="zoom-btn" data-zoom={zoom.box} data-caption="Local Legend box" aria-label="View larger: Local Legend box">
                         <Image quality={90} src={bbBox} alt="Local Legend box" widths={[900, 1500, 2200]} sizes="(min-width: 900px) 58vw, 100vw" />
                     </button>
                 </figure>
                 <figure class="mm-collage__tote" data-speed="12" data-reveal-img>
-                    <button type="button" class="mm-zoom" data-zoom={zoom.tote} data-caption="Tote bag and food mockups" aria-label="View larger: tote bag">
+                    <button type="button" class="zoom-btn" data-zoom={zoom.tote} data-caption="Tote bag and food mockups" aria-label="View larger: tote bag">
                         <Image quality={90} src={bbTote} alt="Tote bag and food mockups" widths={[700, 1200, 1800]} sizes="(min-width: 900px) 40vw, 100vw" />
                     </button>
                 </figure>
@@ -340,7 +334,7 @@ const values = [
                     {
                         phones.map((p) => (
                             <li class="mm-phone">
-                                <button type="button" class="mm-zoom" data-zoom={p.full} data-caption={p.alt} aria-label={`View larger: ${p.alt}`}>
+                                <button type="button" class="zoom-btn" data-zoom={p.full} data-caption={p.alt} aria-label={`View larger: ${p.alt}`}>
                                     <Image quality={90} src={p.img} alt={p.alt} widths={[400, 700, 1016]} sizes="(min-width: 900px) 18vw, 45vw" />
                                 </button>
                             </li>
@@ -389,27 +383,11 @@ const values = [
             </div>
         </section>
 
-        <!-- NEXT PROJECT: its own inverted band so it never runs into the list above -->
-        <nav class="mm-next" aria-label="Next project">
-            <a href={`/projects/${slugOf(next)}/`} class="mm-next__link wrap">
-                <span class="mono mm-next__label">Next project</span>
-                <span class="mm-next__title">{next.data.title}</span>
-                <span class="mm-next__arrow" aria-hidden="true">→</span>
-            </a>
-        </nav>
     </article>
 
-    <!-- LIGHTBOX -->
-    <dialog class="mm-lightbox" data-mm-lightbox aria-label="Image viewer">
-        <figure class="mm-lightbox__figure">
-            <img data-mm-lightbox-img alt="" />
-            <figcaption class="mono" data-mm-lightbox-caption></figcaption>
-        </figure>
-        <button type="button" class="mm-lightbox__btn mm-lightbox__close mono" data-mm-lightbox-close>Close ✕</button>
-        <button type="button" class="mm-lightbox__btn mm-lightbox__prev mono" data-mm-lightbox-prev aria-label="Previous image">←</button>
-        <button type="button" class="mm-lightbox__btn mm-lightbox__next mono" data-mm-lightbox-next aria-label="Next image">→</button>
-        <span class="mm-lightbox__count mono" data-mm-lightbox-count></span>
-    </dialog>
+    <NextProject current="miles-and-meals" />
+
+    <Lightbox />
 </Base>
 
 <script>
@@ -563,70 +541,6 @@ const values = [
             document.querySelectorAll<HTMLImageElement>("[data-mm-track] img").forEach((img) => (img.loading = "eager")),
     });
 
-    /* ---------------- LIGHTBOX ---------------- */
-    const dialog = document.querySelector<HTMLDialogElement>("[data-mm-lightbox]");
-    if (dialog) {
-        const img = dialog.querySelector<HTMLImageElement>("[data-mm-lightbox-img]")!;
-        const caption = dialog.querySelector<HTMLElement>("[data-mm-lightbox-caption]")!;
-        const counter = dialog.querySelector<HTMLElement>("[data-mm-lightbox-count]")!;
-        // the header rail opens single images; the gallery is the page's figures
-        const items = [...document.querySelectorAll<HTMLElement>(".mm-zoom")].filter(
-            (el) => !el.hasAttribute("data-mm-rail-item"),
-        );
-        let index = 0;
-        let opener: HTMLElement | null = null;
-
-        const render = (src: string, text: string, position: string) => {
-            img.src = src;
-            img.alt = text;
-            caption.textContent = text;
-            counter.textContent = position;
-        };
-
-        const showItem = (i: number) => {
-            index = (i + items.length) % items.length;
-            const el = items[index];
-            render(el.dataset.zoom!, el.dataset.caption ?? "", `${index + 1} / ${items.length}`);
-        };
-
-        const open = (el: HTMLElement) => {
-            opener = el;
-            if (el.hasAttribute("data-mm-rail-item")) {
-                render(el.dataset.zoom!, el.dataset.caption ?? "", "");
-                dialog.classList.add("is-single");
-            } else {
-                dialog.classList.remove("is-single");
-                showItem(items.indexOf(el));
-            }
-            dialog.showModal();
-            if (!reduceMotion.matches) {
-                gsap.fromTo(dialog, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3, ease: "power2.out" });
-                gsap.fromTo(img, { scale: 0.94 }, { scale: 1, duration: 0.5, ease: "expo.out" });
-            }
-        };
-
-        const close = () => {
-            dialog.close();
-            opener?.focus();
-        };
-
-        document.querySelectorAll<HTMLElement>(".mm-zoom").forEach((el) =>
-            el.addEventListener("click", () => open(el)),
-        );
-        dialog.querySelector("[data-mm-lightbox-close]")!.addEventListener("click", close);
-        dialog.querySelector("[data-mm-lightbox-prev]")!.addEventListener("click", () => showItem(index - 1));
-        dialog.querySelector("[data-mm-lightbox-next]")!.addEventListener("click", () => showItem(index + 1));
-        // click on the backdrop (outside the image) closes
-        dialog.addEventListener("click", (e) => {
-            if (e.target === dialog) close();
-        });
-        dialog.addEventListener("keydown", (e) => {
-            if (dialog.classList.contains("is-single")) return;
-            if (e.key === "ArrowLeft") showItem(index - 1);
-            if (e.key === "ArrowRight") showItem(index + 1);
-        });
-    }
-
     // Fonts and images change layout heights; re-measure every trigger
     document.fonts.ready.then(() => ScrollTrigger.refresh());
 </script>
@@ -639,21 +553,6 @@ const values = [
         --mm-ink: #241e1b;
         /* background of the brand board artboards, so panels sit seamlessly */
         --mm-board: #1b191a;
-    }
-
-    /* every enlargeable image is a plain button */
-    .mm-zoom {
-        display: block;
-        width: 100%;
-        padding: 0;
-        border: 0;
-        background: none;
-        color: inherit;
-        cursor: zoom-in;
-    }
-
-    .mm-zoom :global(img) {
-        display: block;
     }
 
     /* --- HEADER --- */
@@ -1296,131 +1195,4 @@ const values = [
         }
     }
 
-    /* --- NEXT PROJECT: inverted band --- */
-
-    .mm-next {
-        background: var(--text);
-        color: var(--bg);
-    }
-
-    .mm-next__link {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        align-items: end;
-        gap: 12px var(--gutter);
-        padding-block: clamp(56px, 8vw, 120px);
-    }
-
-    .mm-next__label {
-        grid-column: 1 / -1;
-        opacity: 0.6;
-    }
-
-    .mm-next__title {
-        font-size: clamp(2.25rem, 1rem + 5vw, 6rem);
-        line-height: 0.95;
-        letter-spacing: -0.045em;
-    }
-
-    .mm-next__arrow {
-        font-size: clamp(2.25rem, 1rem + 5vw, 6rem);
-        line-height: 0.95;
-        transition: transform 0.6s var(--ease);
-    }
-
-    .mm-next__link:hover .mm-next__arrow,
-    .mm-next__link:focus-visible .mm-next__arrow {
-        transform: translateX(16px);
-    }
-
-    /* --- LIGHTBOX --- */
-
-    .mm-lightbox {
-        width: 100vw;
-        max-width: none;
-        height: 100dvh;
-        max-height: none;
-        margin: 0;
-        padding: clamp(56px, 7vw, 88px) clamp(16px, 6vw, 96px);
-        border: 0;
-        background: rgba(14, 14, 13, 0.94);
-        color: #ecebe6;
-    }
-
-    .mm-lightbox::backdrop {
-        background: transparent;
-    }
-
-    .mm-lightbox[open] {
-        display: grid;
-        place-items: center;
-    }
-
-    .mm-lightbox__figure {
-        display: grid;
-        gap: 14px;
-        justify-items: center;
-        margin: 0;
-        max-height: 100%;
-    }
-
-    .mm-lightbox__figure img {
-        max-width: 100%;
-        max-height: calc(100dvh - 2 * clamp(56px, 7vw, 88px) - 40px);
-        object-fit: contain;
-    }
-
-    .mm-lightbox__figure figcaption {
-        max-width: 60ch;
-        text-align: center;
-        opacity: 0.8;
-    }
-
-    .mm-lightbox__btn {
-        position: fixed;
-        padding: 10px 14px;
-        border: 1px solid rgba(236, 235, 230, 0.3);
-        border-radius: 999px;
-        background: rgba(14, 14, 13, 0.6);
-        color: inherit;
-        cursor: pointer;
-    }
-
-    .mm-lightbox__btn:hover {
-        background: #ecebe6;
-        color: #0e0e0d;
-    }
-
-    .mm-lightbox__close {
-        top: 16px;
-        right: 16px;
-    }
-
-    .mm-lightbox__prev,
-    .mm-lightbox__next {
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 1.1rem;
-    }
-
-    .mm-lightbox__prev {
-        left: 16px;
-    }
-
-    .mm-lightbox__next {
-        right: 16px;
-    }
-
-    .mm-lightbox__count {
-        position: fixed;
-        top: 26px;
-        left: 20px;
-        opacity: 0.7;
-    }
-
-    .mm-lightbox.is-single .mm-lightbox__prev,
-    .mm-lightbox.is-single .mm-lightbox__next,
-    .mm-lightbox.is-single .mm-lightbox__count {
-        display: none;
-    }
 </style>

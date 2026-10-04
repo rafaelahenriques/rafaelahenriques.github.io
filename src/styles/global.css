@@ -308,6 +308,21 @@ main {
     white-space: nowrap;
 }
 
+/* an image that opens in the case-study lightbox (Lightbox.astro) */
+.zoom-btn {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: zoom-in;
+}
+
+.zoom-btn img {
+    display: block;
+}
+
 /* hover image that follows the cursor over index lists (animations.ts) */
 .cursor-preview {
     position: fixed;
