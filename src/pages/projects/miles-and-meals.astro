@@ -6,23 +6,24 @@
  * mockups, the app and its walkthrough.
  */
 import Base from "../../layouts/BaseLayout.astro";
-import { Image } from "astro:assets";
+import { Image, getImage } from "astro:assets";
 import { getEntry } from "astro:content";
 import { getProjects, slugOf, pad } from "../../lib/content";
 
 import hero from "../../content/projects/miles-and-meals/main.jpg";
-import bbVision from "../../content/projects/miles-and-meals/brandboard-1.jpg";
-import bbLook from "../../content/projects/miles-and-meals/brandboard-2.jpg";
-import bbLogo from "../../content/projects/miles-and-meals/brandboard-3.jpg";
-import bbLogoColours from "../../content/projects/miles-and-meals/brandboard-4.jpg";
-import bbColour from "../../content/projects/miles-and-meals/brandboard-5.jpg";
-import bbTote from "../../content/projects/miles-and-meals/brandboard-6.jpg";
-import bbType from "../../content/projects/miles-and-meals/brandboard-7.jpg";
-import bbBox from "../../content/projects/miles-and-meals/brandboard-8.jpg";
-import bbPattern from "../../content/projects/miles-and-meals/brandboard-9.jpg";
-import bbIcons from "../../content/projects/miles-and-meals/brandboard-10.jpg";
-import bbStreetMade from "../../content/projects/miles-and-meals/brandboard-11.jpg";
-import bbPhoto from "../../content/projects/miles-and-meals/brandboard-12.jpg";
+import bbVision from "../../content/projects/miles-and-meals/brandboard-1.png";
+import bbLook from "../../content/projects/miles-and-meals/brandboard-2.png";
+import bbLogo from "../../content/projects/miles-and-meals/brandboard-3.png";
+import bbLogoColours from "../../content/projects/miles-and-meals/brandboard-4.png";
+import bbColour from "../../content/projects/miles-and-meals/brandboard-5.png";
+import bbTote from "../../content/projects/miles-and-meals/brandboard-6.png";
+import bbType from "../../content/projects/miles-and-meals/brandboard-7.png";
+import bbBox from "../../content/projects/miles-and-meals/brandboard-8.png";
+import bbPattern from "../../content/projects/miles-and-meals/brandboard-9.png";
+import bbIcons from "../../content/projects/miles-and-meals/brandboard-10.png";
+import bbStreetMade from "../../content/projects/miles-and-meals/brandboard-11.png";
+import bbPhoto from "../../content/projects/miles-and-meals/brandboard-12.png";
+import appSplash from "../../content/projects/miles-and-meals/logo_app.png";
 import appMain from "../../content/projects/miles-and-meals/app-main.png";
 import appExplore from "../../content/projects/miles-and-meals/app-explore.png";
 import appFavorites from "../../content/projects/miles-and-meals/app-favorites.png";
@@ -43,6 +44,10 @@ const links = {
         "https://www.figma.com/proto/icN4oVbYhw1gKWb5aECHgS/Miles-and-Meals---Rafaela-Henriques?node-id=58769-5168&viewport=-1707%2C638%2C0.17&scaling=scale-down&content-scaling=fixed&starting-point-node-id=58769%3A5168&show-proto-sidebar=1&page-id=6817%3A1887",
     pdf: "/files/miles-and-meals-brandboard.pdf",
 };
+
+// The pattern tile repeats sideways as a CSS background (GSAP shifts its position)
+const PATTERN_TILE = 1200;
+const patternTile = await getImage({ src: bbPattern, width: PATTERN_TILE, format: "webp", quality: 90 });
 
 const facts = [
     { value: "3", label: "box themes" },
@@ -67,6 +72,7 @@ const identity = [
 ];
 
 const phones = [
+    { img: appSplash, alt: "Splash screen with the Miles & Meals symbol" },
     { img: appMain, alt: "Home: this week's Local Legend box" },
     { img: appExplore, alt: "Explore cities" },
     { img: appFavorites, alt: "Favourite recipes" },
@@ -223,12 +229,12 @@ const values = [
         </section>
 
         <!-- PATTERN: the logo pattern drifts with the scroll -->
-        <div class="mm-pattern" aria-hidden="true" data-mm-pattern>
-            <div class="mm-pattern__track" data-mm-pattern-track>
-                <Image quality={90} src={bbPattern} alt="" widths={[1600, 3024]} sizes="100vw" />
-                <Image quality={90} src={bbPattern} alt="" widths={[1600, 3024]} sizes="100vw" />
-                <Image quality={90} src={bbPattern} alt="" widths={[1600, 3024]} sizes="100vw" />
-            </div>
+        <div
+            class="mm-pattern"
+            aria-hidden="true"
+            data-mm-pattern
+            style={`background-image: url(${patternTile.src})`}
+        >
         </div>
 
         <!-- APPLICATIONS: parallax collage -->
@@ -265,7 +271,7 @@ const values = [
                     {
                         phones.map((p) => (
                             <li class="mm-phone">
-                                <Image quality={90} src={p.img} alt={p.alt} widths={[340, 680]} sizes="(min-width: 900px) 20vw, 45vw" />
+                                <Image quality={90} src={p.img} alt={p.alt} widths={[400, 700, 1016]} sizes="(min-width: 900px) 18vw, 45vw" />
                             </li>
                         ))
                     }
@@ -366,16 +372,24 @@ const values = [
             );
         });
 
-        // Logo pattern drifts sideways while the page scrolls
+        // Logo pattern drifts sideways while the page scrolls (one tile's width)
         const pattern = document.querySelector<HTMLElement>("[data-mm-pattern]");
         if (pattern) {
+            // tile is 3024×1964, scaled to the band height
+            const tileWidth = () => (pattern.offsetHeight * 3024) / 1964;
             gsap.fromTo(
-                "[data-mm-pattern-track]",
-                { xPercent: 0 },
+                pattern,
+                { backgroundPositionX: 0 },
                 {
-                    xPercent: -33.333,
+                    backgroundPositionX: () => -tileWidth(),
                     ease: "none",
-                    scrollTrigger: { trigger: pattern, start: "top bottom", end: "bottom top", scrub: true },
+                    scrollTrigger: {
+                        trigger: pattern,
+                        start: "top bottom",
+                        end: "bottom top",
+                        scrub: true,
+                        invalidateOnRefresh: true,
+                    },
                 },
             );
         }
@@ -780,19 +794,11 @@ const values = [
     /* --- PATTERN STRIP --- */
 
     .mm-pattern {
-        overflow: hidden;
-        background: var(--mm-red);
-    }
-
-    .mm-pattern__track {
-        display: flex;
-        width: 300%;
-    }
-
-    .mm-pattern__track :global(img) {
-        width: 33.333%;
-        height: auto;
-        flex: none;
+        height: clamp(180px, 24vw, 360px);
+        background-color: var(--mm-red);
+        background-repeat: repeat-x;
+        background-size: auto 100%;
+        background-position: 0 50%;
     }
 
     /* --- APPLICATIONS --- */
@@ -851,7 +857,7 @@ const values = [
 
     @media (min-width: 900px) {
         .mm-phones {
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(5, minmax(0, 1fr));
             align-items: start;
         }
 
