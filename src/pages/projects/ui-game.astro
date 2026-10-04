@@ -106,9 +106,9 @@ const workflow = [
                     <p class="ui-copy" data-reveal>
                         A UI kit for a hypothetical game: start menu, settings and
                         every component in between. Instead of starting from
-                        screens, I started from the illustration style — taking it
-                        apart in a style guide, then using those findings as the
-                        rules for the interface.
+                        screens, I started from a reference illustration by another
+                        artist — taking its style apart in a style guide, then using
+                        those findings as the rules for my own interface.
                     </p>
                 </div>
             </div>
@@ -123,10 +123,14 @@ const workflow = [
                 </p>
             </div>
             <figure class="ui-guide" data-reveal-img>
-                <button type="button" class="zoom-btn" data-zoom={zoom.styleGuide} data-caption="Style guide — shapes, colour, shading and lines" aria-label="View larger: style guide">
+                <button type="button" class="zoom-btn" data-zoom={zoom.styleGuide} data-caption="Style guide — shapes, colour, shading and lines. Reference illustration (top right) by another artist, used only to study the style." aria-label="View larger: style guide">
                     <Image quality={90} src={styleGuide} alt="Style guide analysing shapes, colour, shading and lines" widths={[1000, 1600, 1920]} sizes="100vw" />
                 </button>
             </figure>
+            <p class="ui-credit mono muted">
+                The reference illustration (top right) is not my work — it is by another
+                artist and was used only to study the style. The analysis and the UI are mine.
+            </p>
             <ol class="ui-principles">
                 {
                     principles.map((p, i) => (
@@ -366,6 +370,11 @@ const workflow = [
 
     .ui-guide {
         margin-top: clamp(40px, 6vw, 96px);
+    }
+
+    .ui-credit {
+        margin: 12px 0 0;
+        max-width: 70ch;
     }
 
     .ui-principles {
