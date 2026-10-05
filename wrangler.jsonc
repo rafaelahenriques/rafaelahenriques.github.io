@@ -1,0 +1,11 @@
+// Cloudflare Workers Builds: `npm run build`, then `npx wrangler deploy`
+// serves the static Astro output in ./dist. The name must match the Worker
+// in the Cloudflare dashboard.
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "rafaelahenriques-github-io",
+    "compatibility_date": "2026-10-01",
+    "assets": {
+        "directory": "./dist"
+    }
+}
