@@ -1,7 +1,8 @@
 ---
 category: "Interaction & motion"
-order: 2
+order: 4
 items:
   - "GSAP"
   - "Framer Motion"
+  - "Three.js"
 ---

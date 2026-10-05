@@ -1,9 +1,10 @@
 ---
 category: "Tools"
-order: 5
+order: 6
 items:
   - "Git"
   - "GitHub"
-  - "VS Code"
+  - "Playwright"
   - "Figma"
+  - "VS Code"
 ---
