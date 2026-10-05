@@ -20,7 +20,6 @@ import mainGame from "../../content/projects/wolf-sheep/maingame.png";
 import startScreen from "../../content/projects/wolf-sheep/startscreen.png";
 import difficulty from "../../content/projects/wolf-sheep/difficulty.png";
 import rules from "../../content/projects/wolf-sheep/rules.png";
-import winScreen from "../../content/projects/wolf-sheep/winscreen.png";
 import statistics from "../../content/projects/wolf-sheep/statistics.png";
 
 const project = (await getEntry("projects", "wolf-sheep"))!;
@@ -63,8 +62,8 @@ const heroFull = await fullSize(mainGame);
 
 const testing = [
     { value: 31, label: "pytest tests" },
-    { value: 4, label: "layers covered: engine, AI, database, API" },
-    { value: 2, label: "separate deploys: API on Render, frontend on Netlify" },
+    { value: 4, label: "layers covered" },
+    { value: 2, label: "separate deploys" },
 ];
 
 // Starting position, as in the game: four wolves on the top row, the sheep bottom left
@@ -121,32 +120,28 @@ const pieces = [
 
         <!-- ============ PART 1: THE PROJECT ============ -->
         <div class="ws-part-wrap wrap" data-reveal data-part="The project">
-            <div class="ws-part">
-                <span class="mono muted">Part 1</span>
-                <span class="ws-part__title">The project</span>
-                <span class="mono muted">01—03</span>
-            </div>
+            <p class="ws-part mono">The project</p>
         </div>
 
-        <Chapter id="ws-origin" num="01" title="Origin" html={text("Origin")}>
+        <Chapter id="ws-origin" num={1} title="Origin" html={text("Origin")}>
             <div class="ws-versions" slot="media" data-ws-versions>
                 <a class="ws-version" href={repos.original} target="_blank" rel="noopener">
                     <span class="mono muted">Before</span>
                     <strong>University group project</strong>
-                    <span class="muted">Python and Pygame. My part: the board, the main game file, the menu and the code structure.</span>
+                    <span class="muted">Python + Pygame</span>
                     <span class="ws-version__link mono">Original code on GitHub ↗</span>
                 </a>
                 <span class="ws-versions__arrow" aria-hidden="true">→</span>
                 <a class="ws-version ws-version--now" href={repos.mine} target="_blank" rel="noopener">
                     <span class="mono">After</span>
                     <strong>My individual version</strong>
-                    <span>A pure Python engine, a minimax AI, a FastAPI backend, a React web client and PostgreSQL, deployed.</span>
+                    <span>Engine, AI, API, web client, database</span>
                     <span class="ws-version__link mono">My code on GitHub ↗</span>
                 </a>
             </div>
         </Chapter>
 
-        <Chapter id="ws-game" num="02" title="The game" html={text("The game")} side="left">
+        <Chapter id="ws-game" num={2} title="The game" html={text("The game")} side="left">
             <figure class="ws-demo" slot="media">
                 <div class="ws-demo__status">
                     <p class="ws-demo__turn"><span data-ws-turn>Your turn…</span><span class="muted" data-ws-side>-Sheep</span></p>
@@ -166,13 +161,10 @@ const pieces = [
                         <span>The sheep slipped through.</span>
                     </div>
                 </div>
-                <figcaption class="mono muted">
-                    A replayed match against the computer. Dots mark the moves the engine allows.
-                </figcaption>
             </figure>
         </Chapter>
 
-        <Chapter id="ws-walkthrough" num="03" title="Walkthrough" wide>
+        <Chapter id="ws-walkthrough" num={3} title="Walkthrough" wide>
             <div class="ws-video" data-ws-video>
                 <iframe
                     src="https://player.vimeo.com/video/1233170503?badge=0&autopause=0&dnt=1"
@@ -185,14 +177,10 @@ const pieces = [
 
         <!-- ============ PART 2: HOW IT'S BUILT ============ -->
         <div class="ws-part-wrap wrap" data-reveal data-part="How it's built">
-            <div class="ws-part">
-                <span class="mono muted">Part 2</span>
-                <span class="ws-part__title">How it's built</span>
-                <span class="mono muted">04—09</span>
-            </div>
+            <p class="ws-part mono">How it's built</p>
         </div>
 
-        <Chapter id="ws-stack" num="04" title="Stack" html={text("Stack")}>
+        <Chapter id="ws-stack" num={4} title="Stack" html={text("Stack")} lead={2}>
             <figure class="ws-diagram" slot="media">
                 <div class="ws-arch" data-ws-arch>
                     <div class="ws-node" style="grid-area: desk"><strong>Desktop game</strong><span>Pygame</span></div>
@@ -201,28 +189,23 @@ const pieces = [
                     <div class="ws-node" style="grid-area: db"><strong>Database</strong><span>PostgreSQL · SQLAlchemy · Alembic</span></div>
                     <div class="ws-node ws-node--core" style="grid-area: engine"><strong>Game engine</strong><span>Pure Python: the rules, written once</span></div>
                 </div>
-                <figcaption class="mono muted">
-                    One engine at the centre. The desktop game uses it directly; the web client reaches it through the API.
-                </figcaption>
             </figure>
         </Chapter>
 
-        <Chapter id="ws-rules" num="05" title="One source of truth for the game rules" html={text("One source of truth for the game rules")} side="left">
-            <Shot slot="media" img={rules} alt="The rules overlay in the game" caption="The rules a player reads here are enforced in one place: the Python engine." />
+        <Chapter id="ws-rules" num={5} title="One source of truth for the game rules" html={text("One source of truth for the game rules")} side="left">
+            <Shot slot="media" img={rules} alt="The rules overlay in the game" />
         </Chapter>
 
-        <Chapter id="ws-server" num="06" title="Server-authoritative game state" html={text("Server-authoritative game state")}>
+        <Chapter id="ws-server" num={6} title="Server-authoritative game state" html={text("Server-authoritative game state")}>
             <figure class="ws-diagram" slot="media">
                 <ol class="ws-flow" data-ws-flow>
                     <li class="ws-flow__step">
                         <span class="mono muted">Browser</span>
                         <strong>Sends the move it wants</strong>
-                        <code class="mono">{"{ from: [2, 4], to: [3, 3] }"}</code>
                     </li>
                     <li class="ws-flow__step">
                         <span class="mono muted">Server</span>
                         <strong>Checks it with the engine</strong>
-                        <code class="mono">legal_moves(state)</code>
                     </li>
                     <li class="ws-flow__outcomes">
                         <div class="ws-flow__step ws-flow__step--ok">
@@ -235,19 +218,18 @@ const pieces = [
                         </div>
                     </li>
                 </ol>
-                <figcaption class="mono muted">The client never sends a board, only an intention.</figcaption>
             </figure>
         </Chapter>
 
-        <Chapter id="ws-ai" num="07" title="AI opponent" html={text("AI opponent")} side="left">
-            <Shot slot="media" img={difficulty} alt="The difficulty screen with easy, medium and hard" caption="Three levels. The higher the difficulty, the further ahead the search looks." />
+        <Chapter id="ws-ai" num={7} title="AI opponent" html={text("AI opponent")} side="left">
+            <Shot slot="media" img={difficulty} alt="The difficulty screen with easy, medium and hard" />
         </Chapter>
 
-        <Chapter id="ws-database" num="08" title="Database design" html={text("Database design")}>
-            <Shot slot="media" img={statistics} alt="The statistics screen: games played, win rate, average moves and wins per difficulty" caption="Every number on this screen is calculated from the stored game history." />
+        <Chapter id="ws-database" num={8} title="Database design" html={text("Database design")}>
+            <Shot slot="media" img={statistics} alt="The statistics screen: games played, win rate, average moves and wins per difficulty" />
         </Chapter>
 
-        <Chapter id="ws-testing" num="09" title="Testing and development" html={text("Testing and development")} side="left">
+        <Chapter id="ws-testing" num={9} title="Testing and development" html={text("Testing and development")} side="left">
             <ul class="ws-stats" slot="media">
                 {
                     testing.map((s) => (
@@ -262,36 +244,26 @@ const pieces = [
 
         <!-- ============ PART 3: WHAT'S NEXT ============ -->
         <div class="ws-part-wrap wrap" data-reveal data-part="What's next">
-            <div class="ws-part">
-                <span class="mono muted">Part 3</span>
-                <span class="ws-part__title">What's next</span>
-                <span class="mono muted">{extra.length ? `10—${pad(10 + extra.length)}` : "10"}</span>
-            </div>
+            <p class="ws-part mono">What's next</p>
         </div>
 
-        <Chapter id="ws-next" num="10" title="In progress" html={text("In progress")}>
-            <Shot slot="media" img={startScreen} alt="The start screen with player vs computer, player vs player and online multiplayer" caption="Online multiplayer already has its place on the start screen." />
+        <Chapter id="ws-next" num={10} title="In progress" html={text("In progress")}>
+            <Shot slot="media" img={startScreen} alt="The start screen with player vs computer, player vs player and online multiplayer" />
         </Chapter>
 
-        {extra.map((heading, i) => <Chapter id={`ws-extra-${i}`} num={pad(11 + i)} title={heading} html={text(heading)} />)}
+        {extra.map((heading, i) => <Chapter id={`ws-extra-${i}`} num={11 + i} title={heading} html={text(heading)} />)}
 
         <!-- PLAY -->
-        <Chapter id="ws-play" num="↗" title="Try it yourself" side="left">
-            <ul class="ws-links ws-links--end">
-                {
-                    links.map((l) => (
-                        <li>
-                            <a href={l.href} target="_blank" rel="noopener">
-                                <span class="ws-links__title">{l.title}</span>
-                                <span class="ws-links__note mono muted">{l.note}</span>
-                                <span class="ws-links__arrow" aria-hidden="true">↗</span>
-                            </a>
-                        </li>
-                    ))
-                }
-            </ul>
-            <Shot slot="media" img={winScreen} alt="The game-over screen: You win! The sheep slipped through." caption="The sheep slipped through." />
-        </Chapter>
+        {
+            media?.live && (
+                <section class="wrap ws-play" aria-label="Play">
+                    <a href={media.live} class="ws-cta" target="_blank" rel="noopener">
+                        <span class="mono muted">Try it yourself</span>
+                        <span class="ws-cta__title">Play Wolf &amp; Sheep <span class="ws-cta__arrow" aria-hidden="true">↗</span></span>
+                    </a>
+                </section>
+            )
+        }
     </article>
 
     <ChapterNav />
@@ -412,14 +384,6 @@ const pieces = [
                 scrollTrigger: { trigger: hero, start: "top top+=80", end: "bottom top", scrub: true },
             });
         }
-
-        // chapter text arrives paragraph by paragraph
-        gsap.set(".chapter__prose > *", { autoAlpha: 0, y: 24 });
-        ScrollTrigger.batch(".chapter__prose > *", {
-            start: "top 92%",
-            once: true,
-            onEnter: (els) => gsap.to(els, { autoAlpha: 1, y: 0, duration: 1, ease: "expo.out", stagger: 0.06 }),
-        });
 
         // origin: before, then the arrow, then after
         const versions = document.querySelector<HTMLElement>("[data-ws-versions]");
@@ -595,10 +559,6 @@ const pieces = [
         transform: translate(4px, -4px);
     }
 
-    .ws-links--end {
-        margin-top: 0;
-    }
-
     /* --- HERO --- */
 
     .ws-hero figure {
@@ -613,49 +573,51 @@ const pieces = [
         height: auto;
     }
 
-    /* --- PART DIVIDERS --- */
+    /* --- PART DIVIDERS: a rule and a quiet label, then lots of air --- */
 
     .ws-part-wrap {
-        margin-top: var(--section);
+        margin-top: calc(var(--section) * 1.4);
     }
 
     .ws-part {
-        display: grid;
-        grid-template-columns: auto 1fr auto;
-        align-items: baseline;
-        gap: var(--gutter);
+        margin: 0;
         padding-top: 14px;
         border-top: 1px solid var(--text);
-    }
-
-    .ws-part__title {
-        font-size: var(--fs-lead);
-        line-height: 1.1;
-        letter-spacing: -0.03em;
-    }
-
-    @media (min-width: 900px) {
-        .ws-part {
-            grid-template-columns: repeat(12, minmax(0, 1fr));
-        }
-
-        .ws-part > :first-child {
-            grid-column: 1 / span 3;
-        }
-
-        .ws-part__title {
-            grid-column: 4 / span 7;
-        }
-
-        .ws-part > :last-child {
-            grid-column: 11 / -1;
-            text-align: right;
-        }
     }
 
     /* the first chapter of a part sits closer to its divider */
     .ws-part-wrap + :global(.chapter) {
         padding-top: clamp(40px, 6vw, 80px);
+    }
+
+    /* --- PLAY --- */
+
+    .ws-play {
+        padding-top: calc(var(--section) * 1.4);
+    }
+
+    .ws-cta {
+        display: grid;
+        gap: 14px;
+        padding-block: 14px clamp(24px, 3vw, 40px);
+        border-block: 1px solid var(--line);
+    }
+
+    .ws-cta__title {
+        font-size: var(--fs-display);
+        font-weight: 500;
+        line-height: 0.95;
+        letter-spacing: -0.055em;
+    }
+
+    .ws-cta__arrow {
+        display: inline-block;
+        transition: transform 0.6s var(--ease);
+    }
+
+    .ws-cta:hover .ws-cta__arrow,
+    .ws-cta:focus-visible .ws-cta__arrow {
+        transform: translate(0.12em, -0.12em);
     }
 
     /* --- 01 ORIGIN: before → after --- */
