@@ -1,167 +1,91 @@
+---
+/**
+ * Text theme toggle. BaseLayout's <head> script applies the initial theme
+ * (saved choice, else system); this switches it and follows system changes
+ * until the visitor picks one manually.
+ */
+---
+
 <button
     type="button"
-    class="theme-icon"
+    class="theme-toggle text-button"
     data-theme-toggle
     aria-pressed="false"
-    aria-label="Toggle dark mode"
-    title="Toggle dark mode"
+    aria-label="Switch to dark mode"
 >
-    <!-- SUN ICON -->
-    <svg viewBox="0 0 24 24" class="icon icon-sun" aria-hidden="true">
-        <circle
-            cx="12"
-            cy="12"
-            r="5"
-            stroke="currentColor"
-            stroke-width="2"
-            fill="none"></circle>
-        <g stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <line x1="12" y1="1" x2="12" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="23"></line>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-            <line x1="1" y1="12" x2="3" y2="12"></line>
-            <line x1="21" y1="12" x2="23" y2="12"></line>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-        </g>
-    </svg>
-
-    <!-- MOON ICON -->
-    <svg viewBox="0 0 24 24" class="icon icon-moon" aria-hidden="true">
-        <path
-            d="M21 12.79A9 9 0 0 1 11.21 3 
-         7 7 0 1 0 21 12.79z"
-            fill="currentColor"></path>
-    </svg>
+    <span class="theme-toggle__dot" aria-hidden="true"></span>
+    <span data-theme-label>Light</span>
 </button>
 
 <style>
-    .theme-icon {
-        position: relative;
-        width: 36px;
-        height: 36px;
-        border-radius: 999px;
-        border: 1px solid var(--border);
-        background: var(--glass);
+    .theme-toggle {
         display: inline-flex;
         align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        padding: 0;
-        transition:
-            background 0.18s ease,
-            border-color 0.18s ease,
-            transform 0.12s ease,
-            box-shadow 0.18s ease;
+        gap: 8px;
     }
 
-    .theme-icon:hover {
-        background: color-mix(in oklab, var(--accent) 15%, transparent);
-        border-color: color-mix(in oklab, var(--accent) 50%, var(--border));
-        transform: translateY(-1px);
-        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+    .theme-toggle__dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        border: 1px solid currentColor;
+        background: linear-gradient(90deg, currentColor 50%, transparent 50%);
+        transition: transform 0.6s var(--ease);
     }
 
-    .theme-icon:active {
-        transform: translateY(0);
-        box-shadow: none;
+    :global(html.dark) .theme-toggle__dot {
+        transform: rotate(180deg);
     }
 
-    .theme-icon:focus-visible {
-        outline: 2px solid color-mix(in oklab, var(--accent) 80%, white);
-        outline-offset: 2px;
-    }
+    /* icon only on small screens; aria-label still names the action */
+    @media (max-width: 480px) {
+        [data-theme-label] {
+            display: none;
+        }
 
-    .icon {
-        width: 18px;
-        height: 18px;
-        position: absolute;
-        transition:
-            opacity 0.25s ease,
-            transform 0.25s ease;
-    }
-
-    /* Initial state: LIGHT MODE → show sun */
-    .icon-sun {
-        opacity: 1;
-        transform: rotate(0deg) scale(1);
-    }
-
-    .icon-moon {
-        opacity: 0;
-        transform: rotate(-30deg) scale(0.7);
-    }
-
-    /* DARK MODE → swap icons */
-    :global(html.dark) .icon-sun {
-        opacity: 0;
-        transform: rotate(30deg) scale(0.7);
-    }
-
-    :global(html.dark) .icon-moon {
-        opacity: 1;
-        transform: rotate(0deg) scale(1);
+        .theme-toggle__dot {
+            width: 12px;
+            height: 12px;
+        }
     }
 </style>
 
-<script is:inline>
-    const mql = window.matchMedia("(prefers-color-scheme: dark)");
+<script>
+    const root = document.documentElement;
+    const button = document.querySelector<HTMLButtonElement>("[data-theme-toggle]");
+    const label = document.querySelector<HTMLElement>("[data-theme-label]");
+    const system = window.matchMedia("(prefers-color-scheme: dark)");
 
-    const getInitialTheme = () => {
-        const saved = localStorage.getItem("theme");
-        if (saved === "light" || saved === "dark") return saved;
-        return mql.matches ? "dark" : "light";
+    const hasManualChoice = () => {
+        try {
+            const saved = localStorage.getItem("theme");
+            return saved === "light" || saved === "dark";
+        } catch {
+            return false;
+        }
     };
 
-    const applyTheme = (theme) => {
-        const root = document.documentElement;
+    const applyTheme = (theme: "light" | "dark") => {
         const isDark = theme === "dark";
-
         root.classList.toggle("dark", isDark);
         root.classList.toggle("light", !isDark);
-        root.style.colorScheme = isDark ? "dark" : "light";
-
-        localStorage.setItem("theme", theme);
-
-        const btn = document.querySelector("[data-theme-toggle]");
-        if (btn instanceof HTMLButtonElement) {
-            btn.setAttribute("aria-pressed", isDark ? "true" : "false");
-            btn.setAttribute(
-                "aria-label",
-                isDark ? "Switch to light mode" : "Switch to dark mode",
-            );
-        }
+        root.style.colorScheme = theme;
+        button?.setAttribute("aria-pressed", String(isDark));
+        button?.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
+        if (label) label.textContent = isDark ? "Dark" : "Light";
     };
 
-    const initial = getInitialTheme();
-    applyTheme(initial);
+    applyTheme(root.classList.contains("dark") ? "dark" : "light");
 
-    // Follow system changes only when user hasn't chosen manually
-    const hasManual = () => {
-        const saved = localStorage.getItem("theme");
-        return saved === "light" || saved === "dark";
-    };
+    button?.addEventListener("click", () => {
+        const next = root.classList.contains("dark") ? "light" : "dark";
+        try {
+            localStorage.setItem("theme", next);
+        } catch {}
+        applyTheme(next);
+    });
 
-    const onSystemChange = (e) => {
-        if (!hasManual()) {
-            applyTheme(e.matches ? "dark" : "light");
-        }
-    };
-
-    // Modern browsers use 'change'; older Safari used 'addListener'
-    if (typeof mql.addEventListener === "function") {
-        mql.addEventListener("change", onSystemChange);
-    } else if (typeof mql.addListener === "function") {
-        mql.addListener(onSystemChange);
-    }
-
-    const button = document.querySelector("[data-theme-toggle]");
-    if (button instanceof HTMLButtonElement) {
-        button.addEventListener("click", () => {
-            const isDark = document.documentElement.classList.contains("dark");
-            const next = isDark ? "light" : "dark";
-            applyTheme(next);
-        });
-    }
+    system.addEventListener("change", (e) => {
+        if (!hasManualChoice()) applyTheme(e.matches ? "dark" : "light");
+    });
 </script>

@@ -2,6 +2,9 @@
 import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
 
+// A short label with optional one-line explanation (pipeline stages, metrics)
+const labelled = z.object({ label: z.string(), detail: z.string().optional() });
+
 // PROJECTS COLLECTION
 const projects = defineCollection({
   loader: glob({
@@ -27,21 +30,16 @@ const projects = defineCollection({
         })
         .optional(),
       tags: z.array(z.string()).optional(),
-    }),
-});
-
-// BLOG COLLECTION
-const blog = defineCollection({
-  loader: glob({
-    pattern: "**/*.md",
-    base: "./src/content/blog",
-  }),
-  schema: () =>
-    z.object({
-      title: z.string(),
-      date: z.date(),
-      description: z.string().optional(),
-      tags: z.array(z.string()).optional(),
+      // Portfolio structure: 4 numbered featured projects + smaller "other work"
+      section: z.enum(["featured", "other"]).default("featured"),
+      order: z.number().optional(),
+      status: z.enum(["complete", "in-progress"]).default("complete"),
+      category: z.string().optional(),
+      // Optional system overview: pipeline stages and the metrics it reports
+      architecture: z.array(labelled).optional(),
+      metrics: z.array(labelled).optional(),
+      // Projects with their own page in src/pages/projects/ (e.g. case studies)
+      customPage: z.boolean().optional(),
     }),
 });
 
@@ -59,4 +57,4 @@ const skills = defineCollection({
     }),
 });
 
-export const collections = { projects, blog, skills };
+export const collections = { projects, skills };

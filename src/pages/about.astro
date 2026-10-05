@@ -1,259 +1,289 @@
 ---
 import Base from "../layouts/BaseLayout.astro";
-import { getCollection, type CollectionEntry } from "astro:content";
+import ContactLinks from "../components/ContactLinks.astro";
+import { Image } from "astro:assets";
+import { getCollection } from "astro:content";
+import { pad } from "../lib/content";
+import portrait from "../assets/me/rafaela.jpg";
 
-type SkillEntry = CollectionEntry<"skills">;
-
-// Load skills groups from content collection
-let skills = (await getCollection("skills")) as SkillEntry[];
-
-// Sort by `order`, then by category name
-skills = skills.sort((a, b) => {
-  const orderA = a.data.order ?? 999;
-  const orderB = b.data.order ?? 999;
-  if (orderA !== orderB) return orderA - orderB;
-  return a.data.category.localeCompare(b.data.category);
+// Skill groups from the content collection, by `order` then name
+const skills = (await getCollection("skills")).sort((a, b) => {
+    const byOrder = (a.data.order ?? 999) - (b.data.order ?? 999);
+    return byOrder || a.data.category.localeCompare(b.data.category);
 });
+
+const traits = ["Adaptable", "Hard-working", "Friendly", "Curious", "Observant", "Proactive"];
 ---
 
-<Base title="About" description="About Rafaela Henriques">
-  <section class="section about">
-    <!-- HEADER / INTRO -->
-    <header class="about__header">
-      <h1 class="page-title">About Me</h1>
-
-      <!-- TRAIT PILLS -->
-      <div class="about__traits" aria-label="Personal traits">
-        {["Adaptable", "Hard-working", "Friendly", "Curious", "Observant", "Proactive"].map(
-          (trait) => (
-            <span class="about__trait-pill">{trait}</span>
-          ),
-        )}
-      </div>
-
-      <p class="lead">
-        I’m a web developer with a background in game development. Right now I’m
-        studying Digital Design &amp; Development (Devine) at Howest, where I
-        focus on building interfaces that feel sharp, fast, and clear.
-      </p>
-
-      <p>
-        I’m Angolan and Portuguese, and that mix shows up in how I think about
-        products: practical, direct, but still open to experimentation when it
-        actually improves the experience.
-      </p>
-
-      <p>
-        I like working close to the front end: design tokens, responsive
-        layouts, and interactions that feel intentional instead of noisy.
-      </p>
+<Base title="About" description="About Rafaela Henriques, web developer.">
+    <!-- HEADER: name on the left, portrait on the right -->
+    <header class="page-head wrap about-head">
+        <div class="about-head__title">
+            <p class="mono muted" data-reveal>About</p>
+            <h1 class="display about-name" data-split>Rafaela Henriques</h1>
+            <div class="about-head__links" data-reveal>
+                <ContactLinks class="mono" />
+            </div>
+        </div>
+        <figure class="about-portrait" data-about-portrait>
+            <div class="about-portrait__frame" data-reveal-img>
+                <div class="about-portrait__inner" data-about-parallax>
+                <Image
+                    src={portrait}
+                    alt="Rafaela sitting on a stone quay by the water in the evening sun"
+                    widths={[500, 900, 1400, 1800]}
+                    sizes="(min-width: 900px) 34vw, 100vw"
+                    loading="eager"
+                    quality={88}
+                />
+                </div>
+            </div>
+        </figure>
     </header>
 
-    <!-- WHAT I WORK WITH (from content collection) -->
-    <section class="about__skills" aria-labelledby="about-skills-heading">
-      <h2 id="about-skills-heading" class="about__skills-title">
-        What I work with
-      </h2>
-
-      <div class="about__skills-grid">
-        {skills.map((group) => (
-          <article class="about__card">
-            <h3 class="about__card-title">
-              {group.data.category}
-            </h3>
-
-            <div class="about__pill-row">
-              {group.data.items.map((item) => (
-                <span class="about__pill">{item}</span>
-              ))}
+    <section class="wrap" aria-label="Profile">
+        <div class="row">
+            <p class="row__label mono muted">Profile</p>
+            <div class="row__body">
+                <p class="lead" data-split>
+                    I’m a web developer with a background in game development,
+                    studying Digital Design &amp; Development (Devine) at Howest.
+                    I build interfaces that feel sharp, fast and clear.
+                </p>
+                <div class="about__columns" data-reveal>
+                    <p>
+                        I’m Angolan and Portuguese, and that mix shows up in how
+                        I think about products: practical, direct, but still open
+                        to experimentation when it actually improves the
+                        experience.
+                    </p>
+                    <p>
+                        I like working close to the front end: design tokens,
+                        responsive layouts, and interactions that feel
+                        intentional instead of noisy.
+                    </p>
+                </div>
             </div>
-          </article>
-        ))}
-      </div>
+        </div>
     </section>
 
-    <!-- CONTACT BLOCK (SEPARATE & CENTERED) -->
-    <section class="about__contact" aria-labelledby="about-contact-heading">
-      <h2 id="about-contact-heading" class="about__contact-title">
-        Contact
-      </h2>
-      <p class="about__contact-text">
-        Open for front-end focused roles, collaboration, and projects where
-        design and development actually talk to each other.
-      </p>
-      <a
-        href="mailto:rafaela.henriques@student.howest.be"
-        class="button button--primary"
-        aria-label="Email Rafaela"
-      >
-        Email me
-      </a>
+    <!-- TRAITS: one big centred statement -->
+    <section class="section wrap about-traits" aria-labelledby="traits">
+        <h2 id="traits" class="mono muted about-center-label">Traits</h2>
+        <p class="caps about-traits__text" data-split>
+            {
+                traits.map((t, i) => (
+                    <>
+                        {t}
+                        {i < traits.length - 1 && <span class="about-traits__slash"> / </span>}
+                    </>
+                ))
+            }
+        </p>
     </section>
-  </section>
 
-  <style>
-    .about {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-s);
-    }
+    <!-- SKILLS: numbered like a playbook -->
+    <section class="section wrap" aria-labelledby="skills">
+        <h2 id="skills" class="mono muted about-skills__label">What I work with</h2>
+        <ol class="playbook">
+            {
+                skills.map((group, i) => (
+                    <li class="playbook__item" data-reveal>
+                        <span class="playbook__num">{pad(i + 1)}</span>
+                        <h3 class="playbook__name">{group.data.category}</h3>
+                        <p class="playbook__items mono">
+                            <span aria-hidden="true">→</span> {group.data.items.join(", ")}
+                        </p>
+                    </li>
+                ))
+            }
+        </ol>
+    </section>
 
-    .about__header {
-      display: flex;
-      flex-direction: column;
-      gap: var(--gap);
-    }
-
-    .about .page-title {
-      margin-bottom: calc(var(--gap) * 1.5);
-    }
-
-    .about__traits {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 6px;
-    }
-
-    .about__trait-pill {
-      padding: 6px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: color-mix(in oklab, var(--surface) 95%, transparent);
-      font-size: var(--step--1);
-      color: var(--text);
-      white-space: nowrap;
-    }
-
-    .about__skills {
-      display: flex;
-      flex-direction: column;
-      gap: var(--gap);
-    }
-
-    .about__skills-title {
-      font-size: var(--step-2);
-      margin-bottom: 4px;
-    }
-
-    .about__skills-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: var(--gap);
-    }
-
-    .about__card {
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      background: linear-gradient(
-        145deg,
-        color-mix(in oklab, var(--surface) 96%, transparent),
-        color-mix(in oklab, var(--surface) 90%, transparent)
-      );
-      padding: clamp(14px, 2vw, 20px);
-      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 10px;
-      position: relative;
-      overflow: hidden;
-      isolation: isolate;
-      transition:
-        transform 0.18s ease,
-        box-shadow 0.2s ease,
-        border-color 0.18s ease,
-        background 0.18s ease;
-    }
-
-    .about__card::before {
-      content: "";
-      position: absolute;
-      inset: -40%;
-      opacity: 0;
-      background: radial-gradient(
-        circle at 0 0,
-        color-mix(in oklab, var(--accent) 35%, transparent),
-        transparent 60%
-      );
-      z-index: -1;
-      transition: opacity 0.25s ease, transform 0.25s ease;
-      transform: translate3d(-10px, -10px, 0);
-    }
-
-    .about__card:hover,
-    .about__card:focus-within {
-      transform: translateY(-4px);
-      border-color: color-mix(in oklab, var(--accent) 55%, white);
-      background: color-mix(in oklab, var(--accent) 8%, var(--surface));
-      box-shadow: 0 20px 52px rgba(0, 0, 0, 0.2);
-    }
-
-    .about__card:hover::before,
-    .about__card:focus-within::before {
-      opacity: 1;
-      transform: translate3d(0, 0, 0);
-    }
-
-    .about__card-title {
-      font-size: var(--step-1);
-      margin: 0;
-    }
-
-    .about__pill-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      justify-content: center;
-    }
-
-    .about__pill {
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: var(--step--1);
-      background: color-mix(in oklab, var(--bg) 70%, var(--accent) 15%);
-      border: 1px solid color-mix(in oklab, var(--accent) 45%, transparent);
-      color: var(--text);
-      white-space: nowrap;
-    }
-
-    .about__contact {
-      margin-top: calc(var(--gap) * 1);
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .about__contact-title {
-      font-size: var(--step-2);
-    }
-
-    .about__contact-text {
-      margin: 0 auto;
-      max-width: 40rem;
-    }
-
-    @media (min-width: 720px) {
-      .about {
-        gap: calc(var(--gap) * 2.5);
-      }
-
-      .about__skills-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (min-width: 1024px) {
-      .about {
-        gap: calc(var(--gap) * 3.5);
-      }
-
-      .about__skills-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-    }
-  </style>
+    <section class="section wrap about-last" aria-labelledby="availability">
+        <div class="row">
+            <h2 id="availability" class="row__label mono muted">Availability</h2>
+            <div class="row__body">
+                <p class="lead" data-split>
+                    Open for front-end focused roles, collaboration, and projects
+                    where design and development actually talk to each other.
+                </p>
+                <div data-reveal>
+                    <ContactLinks class="about__links mono" />
+                </div>
+            </div>
+        </div>
+    </section>
 </Base>
+
+<script>
+    import { gsap } from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    // the portrait drifts slower than the page, like it's further away
+    gsap.matchMedia().add("(prefers-reduced-motion: no-preference) and (min-width: 900px)", () => {
+        const portrait = document.querySelector<HTMLElement>("[data-about-portrait]");
+        if (!portrait) return;
+        gsap.fromTo(
+            portrait.querySelector("[data-about-parallax]"),
+            { yPercent: -5 },
+            {
+                yPercent: 5,
+                ease: "none",
+                scrollTrigger: { trigger: portrait, start: "top bottom", end: "bottom top", scrub: true },
+            },
+        );
+    });
+</script>
+
+<style>
+    /* --- HEADER --- */
+
+    .about-head {
+        display: grid;
+        gap: clamp(32px, 5vw, 64px) var(--gutter);
+    }
+
+    .about-name {
+        margin-top: 18px;
+        max-width: 8ch;
+    }
+
+    .about-head__links {
+        margin-top: clamp(20px, 3vw, 32px);
+    }
+
+    .about-portrait {
+        margin: 0;
+    }
+
+    .about-portrait__frame {
+        aspect-ratio: 3 / 4;
+        overflow: hidden;
+    }
+
+    /* taller than the frame so the parallax never shows an edge */
+    .about-portrait__inner {
+        height: 112%;
+        margin-top: -6%;
+    }
+
+    .about-portrait__frame :global(img) {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 50% 60%;
+    }
+
+    @media (min-width: 900px) {
+        .about-head {
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+            align-items: end;
+        }
+
+        .about-head__title {
+            grid-column: 1 / span 7;
+        }
+
+        .about-portrait {
+            grid-column: 9 / span 4;
+        }
+    }
+
+    /* --- PROFILE --- */
+
+    .about__columns {
+        display: grid;
+        gap: 1em var(--gutter);
+        margin-top: clamp(32px, 4vw, 56px);
+        max-width: 60rem;
+        color: var(--muted);
+    }
+
+    @media (min-width: 900px) {
+        .about__columns {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    /* --- TRAITS --- */
+
+    .about-center-label {
+        margin: 0 0 clamp(20px, 3vw, 32px);
+        text-align: center;
+    }
+
+    .about-traits__text {
+        max-width: 22ch;
+        font-size: clamp(2rem, 1rem + 4.4vw, 5.5rem);
+    }
+
+    .about-traits__slash {
+        color: var(--muted);
+        font-weight: 500;
+    }
+
+    /* --- SKILLS PLAYBOOK --- */
+
+    .about-skills__label {
+        margin: 0 0 14px;
+    }
+
+    .playbook {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .playbook__item {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 6px var(--gutter);
+        align-items: baseline;
+        padding-block: clamp(16px, 2vw, 28px);
+        border-top: 1px solid var(--line);
+    }
+
+    .playbook__num,
+    .playbook__name {
+        font-size: clamp(2rem, 1rem + 3.6vw, 4.5rem);
+        font-weight: 800;
+        line-height: 0.95;
+        letter-spacing: -0.04em;
+        text-transform: uppercase;
+    }
+
+    .playbook__name {
+        margin: 0;
+    }
+
+    .playbook__items {
+        grid-column: 2;
+        margin: 0;
+        color: var(--muted);
+    }
+
+    @media (min-width: 900px) {
+        .playbook__item {
+            grid-template-columns: 8rem minmax(0, 1fr) minmax(0, 1fr);
+        }
+
+        .playbook__items {
+            grid-column: 3;
+            align-self: end;
+            padding-bottom: 0.6em;
+        }
+    }
+
+    .about-last {
+        padding-bottom: var(--section);
+    }
+
+    :global(.about__links) {
+        margin-top: 32px;
+    }
+</style>

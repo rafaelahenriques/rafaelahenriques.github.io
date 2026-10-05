@@ -1,106 +1,60 @@
 /*
- * 1.0 TOKENS & SETUP
+ * 1.0 TOKENS
  * -------------------
+ * Editorial, monochrome. Light is the default (and the no-JS state);
+ * html.dark is toggled by ThemeIcon.astro.
  */
 
-/* LIGHT THEME (DEFAULT + NO-JS) */
 :root {
-    color-scheme: light dark;
+    color-scheme: light;
 
-    /* Color tokens */
-    --bg: #ffffff;
-    --surface: #f5f7fa;
-    --text: #0d0f12;
-    --muted: #515e6d;
-    --accent: #0066ff;
-    --glass: rgba(0, 0, 0, 0.04);
-    --border: rgba(0, 0, 0, 0.12);
-    --shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
+    --bg: #f3f1ec;
+    --text: #111110;
+    --muted: #75736e;
+    --line: rgba(17, 17, 16, 0.16);
+    --media-shadow: 1px 1px 30px rgba(0, 0, 0, 0.08);
 
-    --radius: 14px;
-    --max-width: 1200px;
+    --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Helvetica Neue",
+        Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
-    /* Font families */
-    --font-title: "Press Start 2P", system-ui;
-    --font-tag: "Anonymous Pro", monospace;
-    --font-body: "Anonymous Pro", monospace;
+    /* type scale */
+    --fs-mono: 0.75rem;
+    --fs-small: clamp(0.875rem, 0.84rem + 0.15vw, 0.95rem);
+    --fs-body: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+    --fs-lead: clamp(1.375rem, 1.1rem + 1.2vw, 2.25rem);
+    --fs-h2: clamp(1.75rem, 1.3rem + 2vw, 3.25rem);
+    --fs-display: clamp(3rem, 1.2rem + 8.5vw, 10rem);
 
-    --ui: var(--font-body);
-
-    /* Utopia – fluid font sizes */
-    /* @link https://utopia.fyi/type/calculator?c=320,18,1.2,1240,27,1.25,7,2,&s=0.75|0.5|0.25,1.5|2|3|4|6,s-l&g=s,l,xl,12 */
---fontsize--3: clamp(0.5787rem, 0.5574rem + 0.1066vw, 0.64rem);
-  --fontsize--2: clamp(0.6944rem, 0.6577rem + 0.1836vw, 0.8rem);
-  --fontsize--1: clamp(0.8333rem, 0.7754rem + 0.2899vw, 1rem);
-  --fontsize-0: clamp(1rem, 0.913rem + 0.4348vw, 1.25rem);
-  --fontsize-1: clamp(1.2rem, 1.0739rem + 0.6304vw, 1.5625rem);
-  --fontsize-2: clamp(1.44rem, 1.2615rem + 0.8924vw, 1.9531rem);
-  --fontsize-3: clamp(1.728rem, 1.4799rem + 1.2407vw, 2.4414rem);
-  --fontsize-4: clamp(2.0736rem, 1.7334rem + 1.7011vw, 3.0518rem);
-
-    /* Backwards-compat aliases for step-* tokens */
-    --step--1: var(--fontsize--1);
-    --step-0: var(--fontsize-0);
-    --step-1: var(--fontsize-1);
-    --step-2: var(--fontsize-2);
-    --step-3: var(--fontsize-3);
-    --step-4: var(--fontsize-4);
-    --step-5: var(--fontsize-5);
-
-    /* Utopia – spacing scale */
-    /* @link https://utopia.fyi/space/calculator?c=320,18,1.2,1240,27,1.25,7,2,&s=0.75|0.5|0.25,1.5|2|3|4|6,s-l&g=s,l,xl,12 */
-    --space-3xs: clamp(0.3125rem, 0.269rem + 0.2174vw, 0.4375rem);
-    --space-2xs: clamp(0.5625rem, 0.4538rem + 0.5435vw, 0.875rem);
-    --space-xs: clamp(0.875rem, 0.7446rem + 0.6522vw, 1.25rem);
-    --space-s: clamp(1.125rem, 0.9293rem + 0.9783vw, 1.6875rem);
-    --space-m: clamp(1.6875rem, 1.3832rem + 1.5217vw, 2.5625rem);
-    --space-l: clamp(2.25rem, 1.8587rem + 1.9565vw, 3.375rem);
-    --space-xl: clamp(3.375rem, 2.788rem + 2.9348vw, 5.0625rem);
-    --space-2xl: clamp(4.5rem, 3.7174rem + 3.913vw, 6.75rem);
-    --space-3xl: clamp(6.75rem, 5.5761rem + 5.8696vw, 10.125rem);
-
-    /* One-up pairs */
-    --space-3xs-2xs: clamp(0.3125rem, 0.1168rem + 0.9783vw, 0.875rem);
-    --space-2xs-xs: clamp(0.5625rem, 0.3234rem + 1.1957vw, 1.25rem);
-    --space-xs-s: clamp(0.875rem, 0.5924rem + 1.413vw, 1.6875rem);
-    --space-s-m: clamp(1.125rem, 0.625rem + 2.5vw, 2.5625rem);
-    --space-m-l: clamp(1.6875rem, 1.1005rem + 2.9348vw, 3.375rem);
-    --space-l-xl: clamp(2.25rem, 1.2717rem + 4.8913vw, 5.0625rem);
-    --space-xl-2xl: clamp(3.375rem, 2.2011rem + 5.8696vw, 6.75rem);
-    --space-2xl-3xl: clamp(4.5rem, 2.5435rem + 9.7826vw, 10.125rem);
-
-    /* Custom pair */
-    --space-s-l: clamp(1.125rem, 0.3424rem + 3.913vw, 3.375rem);
-
-    /* Generic layout gap token */
-    --gap: var(--space-m);
-
-    /* Generic fluid clamp example (free to use anywhere) */
-    /* @link https://utopia.fyi/clamp/calculator?a=320,1240,16—48 */
-    --fluid-16-48: clamp(1rem, 0.3043rem + 3.4783vw, 3rem);
+    --gutter: clamp(16px, 2.2vw, 32px);
+    --section: clamp(80px, 12vw, 180px);
+    --header-h: 56px;
+    --ease: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
-/* DARK THEME OVERRIDES (triggered by html.dark from ThemeToggle) */
 html.dark {
     color-scheme: dark;
 
-    --bg: #050608;
-    --surface: #0b0f13;
-    --text: #f2f6ff;
-    --muted: #8491a0;
-    --accent: #4da6ff;
-    --glass: rgba(255, 255, 255, 0.03);
-    --border: rgba(255, 255, 255, 0.08);
-    --shadow: 0 35px 90px rgba(0, 0, 0, 0.65);
+    --bg: #0e0e0d;
+    --text: #ecebe6;
+    --muted: #8b8984;
+    --line: rgba(236, 235, 230, 0.16);
+    --media-shadow: 1px 1px 30px rgba(0, 0, 0, 0.4);
 }
 
-/* Manual LIGHT override (wins over system dark) */
 html.light {
     color-scheme: light;
 }
 
+@media (prefers-contrast: more) {
+    :root {
+        --muted: color-mix(in oklab, var(--text) 80%, var(--bg));
+        --line: color-mix(in oklab, var(--text) 45%, transparent);
+    }
+}
+
 /*
- * 2.0 BASE & RESET
+ * 2.0 BASE
  * -------------------
  */
 
@@ -110,90 +64,42 @@ html.light {
     box-sizing: border-box;
 }
 
-html,
-body {
-    height: auto;
-    max-width: 100%;
-}
-
-html,
-body,
-div,
-span,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-p,
-ul,
-ol,
-li,
-figure,
-figcaption,
-blockquote,
-dt,
-dd {
-    margin: 0;
-    padding: 0;
+html {
+    -webkit-text-size-adjust: 100%;
 }
 
 body {
-    font-family: var(--font-body);
-    font-weight: 700;
+    min-height: 100dvh;
+    background: var(--bg);
     color: var(--text);
+    font: 500 var(--fs-body) / 1.45 var(--sans);
+    letter-spacing: -0.005em;
     -webkit-font-smoothing: antialiased;
-    line-height: 1.5;
-    padding-block: var(--space-2xs);
-    padding-inline-start: max(var(--space-2xs), env(safe-area-inset-left));
-    padding-inline-end: max(var(--space-2xs), env(safe-area-inset-right));
+    -moz-osx-font-smoothing: grayscale;
+    transition:
+        background-color 0.4s var(--ease),
+        color 0.4s var(--ease);
+}
 
-    background-color: var(--bg);
-    background-image:
-        radial-gradient(
-            at 10% 10%,
-            color-mix(in oklab, var(--accent) 18%, transparent) 0%,
-            transparent 40%
-        ),
-        radial-gradient(
-            1200px 600px at 20% 0%,
-            color-mix(in oklab, var(--surface) 96%, transparent) 0%,
-            color-mix(in oklab, var(--bg) 100%, transparent) 60%
-        );
-    background-attachment: fixed;
+img {
+    display: block;
+    max-width: 100%;
+    height: auto;
 }
 
 a {
-    color: var(--accent);
+    color: inherit;
     text-decoration: none;
-    transition: opacity 0.12s ease;
 }
 
-a:hover {
-    opacity: 0.9;
-    text-decoration: underline;
+::selection {
+    background: var(--text);
+    color: var(--bg);
 }
 
-code,
-pre {
-    font-family: var(--font-tag);
-    font-weight: 400;
-    background: var(--glass);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    font-size: var(--fontsize--1);
-}
-
-pre {
-    padding: var(--space-xs);
-
-}
-
-code {
-    padding: 2px 6px;
-    border-radius: 6px;
+:focus-visible {
+    outline: 1px solid var(--text);
+    outline-offset: 3px;
 }
 
 /*
@@ -201,592 +107,436 @@ code {
  * -------------------
  */
 
-.h-kicker {
-    color: var(--muted);
-    font-size: var(--fontsize--1);
+.mono {
+    font-family: var(--mono);
+    font-size: var(--fs-mono);
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
-    letter-spacing: 0.18em;
 }
 
-h1,
-#main .page-title {
-    font-family: var(--font-title);
-    font-size: var(--fontsize-2);
-    line-height: 1.3;
-    letter-spacing: -0.01em;
-    font-weight: 400;
-    margin-bottom: var(--space-s);
-    background: linear-gradient(180deg, #111111 40%, #4a4a4a);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+.muted {
+    color: var(--muted);
 }
 
-html.dark h1,
-html.dark #main .page-title {
-    background: linear-gradient(180deg, #ffffff 60%, #d7e7f7);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+.display {
+    font-size: var(--fs-display);
+    font-weight: 500;
+    line-height: 0.9;
+    letter-spacing: -0.055em;
 }
 
 .lead {
-    font-size: var(--fontsize-2);
-    color: color-mix(in oklab, var(--text) 92%, transparent);
-    margin-bottom: var(--gap);
+    font-size: var(--fs-lead);
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    max-width: 26ch;
 }
 
-#main h2 {
-    font-family: var(--font-title);
-    font-size: var(--fontsize-1);
-    font-weight: 400;
-    line-height: 1.4;
-    letter-spacing: -0.01em;
-    margin-bottom: var(--gap);
-    margin-top: calc(var(--gap) * 1.5);
-
+.h2 {
+    font-size: var(--fs-h2);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.04em;
 }
 
-#main h3 {
-    font-family: var(--font-body);
-    font-size: var(--fontsize-1);
-    font-weight: 700;
-    line-height: 1.3;
-    margin-bottom: var(--space-xs);
-    margin-top: calc(var(--gap) * 1.5);
+/* bold uppercase statement, centred (borrowed from poster-style studios) */
+.caps {
+    margin: 0 auto;
+    max-width: 30ch;
+    font-size: clamp(1.5rem, 0.9rem + 2.6vw, 3.4rem);
+    font-weight: 800;
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    text-align: center;
+    text-transform: uppercase;
+    text-wrap: balance;
 }
 
-#main p,
-#main ul,
-#main ol {
-    font-size: var(--fontsize-0);
-    margin-bottom: var(--space-xs);
-    line-height: 1.7;
+/* small "e.g." line that follows a statement */
+.caps-eg {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin: clamp(20px, 3vw, 32px) auto 0;
+    max-width: 52ch;
+    text-align: left;
 }
 
-#main ul,
-#main ol {
-    padding-left: 1.5rem;
+/* underline that draws in on hover */
+.link {
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+    transition: background-size 0.5s var(--ease);
 }
 
-#main li {
-    margin-bottom: var(--space-3xs);
+.link:hover,
+.link:focus-visible,
+.link[aria-current="page"],
+.link[aria-pressed="true"] {
+    background-size: 100% 1px;
+}
+
+/* text-only buttons (filters, sort, carousel controls) */
+.text-button {
+    padding: 0;
+    border: 0;
+    background-color: transparent;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+}
+
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+}
+
+.filters .text-button {
+    color: var(--muted);
+    transition: color 0.3s var(--ease);
+}
+
+.filters .text-button:hover,
+.filters .text-button[aria-pressed="true"] {
+    color: var(--text);
 }
 
 /*
- * 4.0 LAYOUT CONTAINER
+ * 4.0 LAYOUT
  * -------------------
  */
 
-#main {
-    max-width: var(--max-width);
-    width: 100%;
-    margin: var(--space-2xs) auto;
-    padding: var(--space-xs);
-    padding-bottom: var(--space-3xs);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    backdrop-filter: blur(12px);
-    background: linear-gradient(
-        180deg,
-        color-mix(in oklab, var(--surface) 96%, transparent),
-        color-mix(in oklab, var(--surface) 90%, transparent)
-    );
-    position: relative;
-    z-index: 2;
+main {
+    padding-top: var(--header-h);
+}
+
+.wrap {
+    padding-inline: var(--gutter);
 }
 
 .section {
-    position: relative;
-    margin: var(--space-l) 0;
+    padding-block: var(--section) 0;
 }
 
-.section__label {
-    font-size: var(--fontsize--1);
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.16em;
-    margin-bottom: 10px;
-    position: static;
+/* label column + content column, the core editorial grid */
+.row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px var(--gutter);
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
 }
 
-.section__title {
-    font-size: var(--fontsize-4);
-    line-height: 0.95;
-    margin-bottom: var(--space-s);
+@media (min-width: 900px) {
+    .row {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+
+    .row > .row__label {
+        grid-column: 1 / span 3;
+    }
+
+    .row > .row__body {
+        grid-column: 4 / -1;
+    }
+}
+
+.page-head {
+    padding-top: clamp(48px, 8vw, 120px);
+    padding-bottom: clamp(40px, 6vw, 96px);
+}
+
+.page-head .display {
+    margin-top: 18px;
 }
 
 /*
- * 5.0 GRID & CARD SYSTEM
+ * 5.0 INDEX LIST (work, journal)
  * -------------------
  */
 
-/* Base: 1-column grid for content + lists */
-.grid,
-.projects-list,
-.home-grid {
+.index {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.index__item {
+    border-top: 1px solid var(--line);
+}
+
+.index__link {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--gap);
-}
-
-/* Card component */
-.card {
-    background: linear-gradient(
-        180deg,
-        color-mix(in oklab, var(--surface) 98%, transparent),
-        color-mix(in oklab, var(--surface) 92%, transparent)
-    );
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: var(--space-xs);
-    overflow: hidden;
-    color: var(--text);
-    text-decoration: none;
-    position: relative;
-    z-index: 1;
+    grid-template-columns: 2.5rem 1fr auto;
+    align-items: baseline;
+    gap: var(--gutter);
+    padding-block: clamp(14px, 1.6vw, 22px);
     transition:
-        transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
-        box-shadow 0.2s ease,
-        border-color 0.2s ease,
-        background 0.2s ease;
+        opacity 0.3s var(--ease),
+        padding 0.5s var(--ease);
 }
 
-.card::before {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    z-index: -1;
-    border-radius: 17px;
-    background: radial-gradient(
-        400px at 50% 50%,
-        color-mix(in oklab, var(--accent) 50%, transparent),
-        transparent 70%
-    );
-    opacity: 0;
-    transition: opacity 0.2s ease;
+.index__title {
+    font-size: var(--fs-lead);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
 }
 
-.card:hover {
-    transform: translateY(-6px);
-    border-color: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-    text-decoration: none;
+.index__meta {
+    display: none;
 }
 
-.card:hover::before {
+/* dim siblings on hover */
+.index:hover .index__link {
+    opacity: 0.35;
+}
+
+.index .index__link:hover,
+.index .index__link:focus-visible {
     opacity: 1;
+    padding-left: 12px;
 }
 
-.card__media {
+@media (min-width: 900px) {
+    .index__link {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+
+    .index__num {
+        grid-column: 1 / span 1;
+    }
+
+    .index__title {
+        grid-column: 2 / span 6;
+    }
+
+    .index__meta {
+        display: block;
+        grid-column: 8 / span 4;
+    }
+
+    .index__year {
+        grid-column: 12 / span 1;
+        text-align: right;
+    }
+}
+
+.index__year {
+    white-space: nowrap;
+}
+
+/* an image that opens in the case-study lightbox (Lightbox.astro) */
+.zoom-btn {
+    display: block;
     width: 100%;
-    height: 180px;
-    border-radius: 10px;
-    overflow: hidden;
-    background: color-mix(in oklab, var(--surface) 92%, transparent);
-    margin-bottom: 12px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: zoom-in;
+}
+
+.zoom-btn img {
     display: block;
 }
 
-.card__media img {
+/* hover image that follows the cursor over index lists (animations.ts) */
+.cursor-preview {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 40;
+    width: clamp(220px, 22vw, 360px);
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    pointer-events: none;
+    visibility: hidden;
+    box-shadow: var(--media-shadow);
+}
+
+.cursor-preview img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    display: block;
-    transition: transform 220ms ease;
-}
-
-.card:hover .card__media img {
-    transform: scale(1.04);
-}
-
-.card__title {
-    font-family: var(--font-body);
-    font-size: var(--fontsize-1);
-    letter-spacing: -0.01em;
-    font-weight: 700;
-    margin-bottom: 6px;
-    color: var(--text);
-}
-
-.card__meta {
-    color: var(--muted);
-    font-size: var(--fontsize--1);
-}
-
-/* Tag pills for card lists */
-.card__tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3xs);
-    margin-top: var(--space-3xs);
-}
-
-.tag-pill {
-    font-family: var(--font-tag);
-    font-size: var(--fontsize--2);
-    padding: 2px 8px;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    background: color-mix(in oklab, var(--surface) 96%, transparent);
-    color: var(--muted);
-}
-
-/* remove media block when there is no image */
-.card__media:not(:has(img)),
-.card__media:empty {
-    display: none;
-    margin: 0;
-    height: 0;
-    padding: 0;
 }
 
 /*
- * 6.0 GALLERIES & MISC PATTERNS
+ * 6.0 PROSE (markdown bodies)
  * -------------------
  */
 
-.gallery {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-xs);
-    margin-top: var(--space-xs);
+/* Text keeps a reading measure; images, phone rows and video use the full column */
+.prose > :where(p, ul, ol, h2, h3, blockquote) {
+    max-width: 62ch;
 }
 
-.gallery img {
+/* code gets the full column so less of it scrolls sideways */
+.prose > pre {
+    max-width: 100%;
+}
+
+.prose > * + * {
+    margin-top: 1em;
+}
+
+.prose img {
     width: 100%;
     height: auto;
-    border-radius: 10px;
-    display: block;
 }
 
-.stagger > *:nth-child(3n + 1) {
-    transform: translateY(8px);
+.prose > p:has(> img:only-child),
+.prose > .phones,
+.prose > .video {
+    max-width: none;
+    margin-top: clamp(24px, 3vw, 40px);
 }
 
-.stagger > *:nth-child(3n + 2) {
-    transform: translateY(0);
+.prose > p:has(> img:only-child) + p:has(> img:only-child) {
+    margin-top: var(--gutter);
 }
 
-.stagger > *:nth-child(3n + 3) {
-    transform: translateY(16px);
-}
-
-.marquee {
-    display: flex;
-    gap: 40px;
-    overflow: hidden;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    padding: 14px 0;
-    mask-image: linear-gradient(
-        90deg,
-        transparent,
-        #000 10%,
-        #000 90%,
-        transparent
-    );
-}
-
-.marquee__track {
-    flex-shrink: 0;
-    display: flex;
-    gap: 40px;
-    padding-inline: 40px;
-    animation: scroll 18s linear infinite;
-}
-
-@keyframes scroll {
-    to {
-        transform: translateX(-50%);
-    }
-}
-
-/* split layout (content + aside) */
-.split {
+/* App screens side by side */
+.prose .phones {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-m);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--gutter);
 }
 
-.split__aside {
-    position: static;
+.prose .phones p {
+    margin: 0;
 }
 
-.split__aside .box {
-    background: var(--glass);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: var(--space-xs);
-}
-
-/*
- * 7.0 BUTTONS
- * -------------------
- */
-
-.button {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 16px;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    background: linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.04),
-        rgba(255, 255, 255, 0.02)
-    );
-    font-weight: 700;
-    letter-spacing: 0.01em;
-    transition:
-        transform 0.12s ease,
-        box-shadow 0.18s ease,
-        background 0.18s ease,
-        border-color 0.18s ease;
-    color: var(--text);
-    text-decoration: none;
-}
-
-.button:hover {
-    transform: translateY(-2px);
-    text-decoration: none;
-    opacity: 1;
-}
-
-.button--primary {
-    border-color: var(--accent);
-    background: color-mix(in oklab, var(--accent) 25%, transparent);
-    color: #fff;
-    text-shadow: 0 1px 4px color-mix(in oklab, var(--accent) 40%, transparent);
-}
-
-.button--primary:hover {
-    background: color-mix(in oklab, var(--accent) 35%, transparent);
-    border-color: color-mix(in oklab, var(--accent) 80%, white);
-    box-shadow:
-        0 10px 20px rgba(0, 0, 0, 0.2),
-        0 0 20px color-mix(in oklab, var(--accent) 30%, transparent);
-}
-
-/*
- * 8.0 PROJECT / BLOG LISTS
- * -------------------
- * No horizontal scroll. Pure grids.
- */
-
-/* already covered by .grid, .projects-list, .home-grid base rule */
-
-/*
- * 9.0 ANIMATION & ACCESSIBILITY
- * -------------------
- */
-
-.reveal {
-    opacity: 0;
-    transform: translateY(12px);
-    animation: reveal 0.6s ease forwards;
-    animation-timeline: view();
-    animation-range: entry 10% cover 25%;
-}
-
-@keyframes reveal {
-    to {
-        opacity: 1;
-        transform: none;
+@media (min-width: 720px) {
+    .prose .phones {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
     }
+}
+
+/* Responsive embed (Vimeo) */
+.prose .video {
+    position: relative;
+    aspect-ratio: 16 / 10.4;
+    background: var(--line);
+}
+
+.prose .video iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.prose h2 {
+    margin-top: 2.4em;
+    font-family: var(--mono);
+    font-size: var(--fs-mono);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.prose h2 + * {
+    margin-top: 0.6em;
+}
+
+.prose h3 {
+    margin-top: 2em;
+    font-size: var(--fs-lead);
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+}
+
+.prose h2 + h3 {
+    margin-top: 0.8em;
+}
+
+.prose h3 + * {
+    margin-top: 0.6em;
+}
+
+.prose ul,
+.prose ol {
+    padding-left: 1.2em;
+}
+
+.prose ul {
+    list-style: "— ";
+}
+
+.prose ol {
+    list-style: decimal;
+}
+
+.prose li + li {
+    margin-top: 0.35em;
+}
+
+.prose a {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+}
+
+.prose strong {
+    font-weight: 800;
+}
+
+.prose em {
+    font-style: italic;
+}
+
+.prose code,
+.prose pre {
+    font-family: var(--mono);
+    font-size: 0.85em;
+}
+
+.prose pre {
+    padding: 16px;
+    overflow-x: auto;
+    border: 1px solid var(--line);
+}
+
+.prose blockquote {
+    padding-left: 1em;
+    border-left: 1px solid var(--text);
+    font-size: var(--fs-lead);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+/*
+ * 7.0 MOTION HOOKS
+ * -------------------
+ * Elements marked for GSAP start hidden only when JS is running and the
+ * user hasn't asked for reduced motion (the .js class is set in <head>).
+ */
+
+@media (prefers-reduced-motion: no-preference) {
+    html.js [data-reveal],
+    html.js [data-split] {
+        visibility: hidden;
+    }
+}
+
+/* SplitText line masks: extra room so tight display type keeps descenders */
+.split-line-mask {
+    padding-bottom: 0.14em;
+    margin-bottom: -0.14em;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .projects-list,
-    .home-grid,
-    .card,
-    .marquee__track,
-        .reveal,
-        .navigation__link,
-        .button,
-        .theme-icon {
-        transition: none !important;
-        animation: none !important;
-        scroll-behavior: auto;
-    }
-}
-
-/* High contrast preferences */
-@media (prefers-contrast: more) {
-    :root {
-        --border: color-mix(in oklab, var(--text) 35%, transparent);
-        --glass: color-mix(in oklab, var(--bg) 94%, transparent);
-    }
-    a { text-decoration: underline; }
-    .button, .navigation__link, .blog-back, .blog-nav__link, .project-filters__button, .blog-filters__button {
-        border-width: 2px;
-    }
-    .site-header { backdrop-filter: none; }
-}
-
-@media (prefers-contrast: less) {
-    :root {
-        --border: color-mix(in oklab, var(--border) 70%, transparent);
-    }
-}
-
-/*
- * 10.0 BREAKPOINT 1 – TABLET (min-width: 720px)
- * ---------------------------------------------
- */
-
-@media (min-width: 720px) {
-    body {
-        padding-block: var(--space-m);
-        padding-inline-start: max(var(--space-m), env(safe-area-inset-left));
-        padding-inline-end: max(var(--space-m), env(safe-area-inset-right));
-    }
-
-    #main {
-        margin: var(--space-m) auto;
-        padding: var(--space-s);
-    }
-
-    /* generic grid: 2 columns on tablet */
-    .grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    /* project/blog home lists: 2 columns tablet+ */
-    .projects-list,
-    .home-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .gallery {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: var(--gap);
-    }
-}
-
-/*
- * 10.5 BREAKPOINT 1.5 – TABLET+ (min-width: 900px)
- * -----------------------------------------------
- * Intermediate breakpoint for better tablet UX
- */
-
-@media (min-width: 900px) {
-    body {
-        padding-block: var(--space-m);
-        padding-inline-start: max(var(--space-m), env(safe-area-inset-left));
-        padding-inline-end: max(var(--space-m), env(safe-area-inset-right));
-    }
-
-    #main {
-        margin: var(--space-m) auto;
-        max-width: 96%;
-        padding: var(--space-s);
-        padding-bottom: var(--space-2xs);
-    }
-
-    .section {
-        margin: calc(var(--space-l) * 1.25) 0;
-    }
-}
-
-/*
- * 11.0 BREAKPOINT 2 – DESKTOP (min-width: 1024px)
- * -----------------------------------------------
- */
-
-@media (min-width: 1024px) {
-    body {
-        padding-block: var(--space-m);
-        padding-inline-start: max(var(--space-m), env(safe-area-inset-left));
-        padding-inline-end: max(var(--space-m), env(safe-area-inset-right));
-    }
-
-    #main {
-        max-width: 96%;
-        padding: var(--space-m);
-        padding-bottom: var(--space-s);
-    }
-
-    .section__label {
-        position: sticky;
-        top: 16px;
-        z-index: 10;
-    }
-
-    /* generic grid for non-card layouts */
-    .grid {
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    }
-
-    /* CARD GRIDS – projects + home + blog → MAX 2 COLUMNS */
-    .projects-list,
-    .home-grid,
-    .blog-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        max-width: 1200px;
-        margin-inline: auto;
-        gap: var(--space-m);
-    }
-
-    /* split layout: 2 columns with sticky aside */
-    .split {
-        grid-template-columns: minmax(0, 2fr) minmax(260px, 340px);
-        align-items: flex-start;
-    }
-
-    .split__aside {
-        position: sticky;
-        top: 20px;
-        align-self: start;
-    }
-
-    .gallery img {
-        aspect-ratio: 16 / 9;
-    }
-
-    .gallery {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-/*
- * 12.0 BREAKPOINT 3 – ULTRA-WIDE (min-width: 1400px)
- * ---------------------------------------------------
- */
-
-@media (min-width: 1400px) {
-    /* generic grids can expand further if used elsewhere */
-    .grid {
-        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-    }
-
-    /* CARD GRIDS STAY AT 2 COLUMNS → big cards */
-    .projects-list,
-    .home-grid,
-    .blog-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        max-width: 1300px;
-        margin-inline: auto;
-        gap: var(--space-m);
-    }
-
-    .gallery {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
-/* System dark mode fallback when user hasn't toggled manually */
-@media (prefers-color-scheme: dark) {
-    html:not(.dark):not(.light) {
-        --bg: #050608;
-        --surface: #0b0f13;
-        --text: #f2f6ff;
-        --muted: #c2ccd8;
-        --accent: #4da6ff;
-        --glass: rgba(255, 255, 255, 0.04);
-        --border: rgba(255, 255, 255, 0.14);
-        --shadow: 0 35px 90px rgba(0, 0, 0, 0.65);
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0.01ms !important;
     }
 }

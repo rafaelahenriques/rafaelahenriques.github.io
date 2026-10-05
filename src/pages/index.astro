@@ -1,91 +1,122 @@
 ---
 import Base from "../layouts/BaseLayout.astro";
-import { getCollection, type CollectionEntry } from "astro:content";
-import { Picture } from "astro:assets";
+import ProjectCarousel, { type Slide } from "../components/ProjectCarousel.astro";
+import WorkIndex from "../components/WorkIndex.astro";
+import SpreadName from "../components/SpreadName.astro";
+import babyPhoto from "../assets/me/rafaela-2006.jpg";
+import { getImage } from "astro:assets";
+import { getProjects, getFeatured, getOtherWork, slugOf } from "../lib/content";
 
-type ProjectEntry = CollectionEntry<"projects">;
-type BlogEntry = CollectionEntry<"blog">;
+const projects = await getProjects();
+const featured = await getFeatured();
+const otherWork = await getOtherWork();
 
-// Sort helpers
-const sortProjects = (items: ProjectEntry[]) =>
-  [...items].sort((a, b) => (b.data.year ?? "").localeCompare(a.data.year ?? ""));
+// Carousel: gallery images (or the screenshot), taken round-robin across
+// projects so every project shows up and neighbours differ. 10 max.
+const CAROUSEL_SIZE = 10;
+const galleries = projects.map((p) =>
+    (p.data.media?.gallery ?? [p.data.media?.screenshot]).filter((img) => img !== undefined),
+);
+const depth = Math.max(...galleries.map((g) => g.length));
+const sources = Array.from({ length: depth }, (_, round) =>
+    projects.map((p, i) => ({ p, image: galleries[i][round] })),
+)
+    .flat()
+    .filter((s) => s.image !== undefined)
+    .slice(0, CAROUSEL_SIZE);
 
-const sortPosts = (items: BlogEntry[]) =>
-  [...items].sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
-
-const projects = sortProjects(await getCollection("projects") as ProjectEntry[]);
-const latestProjects = projects.slice(0, 3);
-
-const posts = sortPosts(await getCollection("blog") as BlogEntry[]);
-const latestPosts = posts.slice(0, 3);
+const slides: Slide[] = await Promise.all(
+    sources.map(async ({ p, image }) => ({
+        src: (await getImage({ src: image!, width: 800, format: "webp" })).src,
+        title: p.data.title,
+        year: p.data.year,
+        href: `/projects/${slugOf(p)}/`,
+    })),
+);
 ---
 
-<Base title="Home" description="Rafaela — projects and blog.">
-  <section class="section reveal" style="margin-top: 0;">
-    <h1 class="reveal">Web Developer</h1>
-    <p class="lead reveal">
-      I build sleek, interactive web applications with a focus on clean code and great design.
-    </p>
-    <a href="/about/" class="button button--primary reveal">More About Me</a>
-  </section>
+<Base title="Home" description="Rafaela Henriques — web developer. Selected projects.">
+    <!-- HELLO: my name spread across the page, with me in 2006 in the middle -->
+    <section class="hello" aria-labelledby="intro">
+        <h2 id="intro" class="visually-hidden">Intro</h2>
+        <SpreadName
+            word="Rafaela"
+            insertAt={3}
+            image={babyPhoto}
+            alt="Rafaela as a little girl in a party hat, getting a kiss on the cheek"
+            focus="46% 42%"
+            figLeft="Fig. 01 — Rafaela, 2006"
+        />
+        <div class="wrap hello__text">
+            <p class="caps" data-split>
+                Web developer working across full-stack, mobile and data — with a
+                background in game development and design.
+            </p>
+            <p class="caps-eg mono" data-reveal>
+                <span aria-hidden="true">→</span>
+                <span>E.g. Python, React Native, Supabase, GSAP and Figma</span>
+            </p>
+            <p class="hello__more" data-reveal>
+                <a href="/about/" class="mono link">More about me →</a>
+            </p>
+        </div>
+    </section>
 
-  <section class="section reveal" aria-labelledby="home-projects">
-    <div class="section__label" id="home-projects">Latest Projects</div>
+    <ProjectCarousel slides={slides} />
 
-    <!-- 1-column on mobile, 2-column grid from 720px+ -->
-    <div class="grid home-grid home-projects-grid stagger">
-      {latestProjects.map((p) => {
-        const screenshot = p.data.media?.screenshot;
-        return (
-          <a href={`/projects/${p.id.replace(/\.md$/, "")}/`} class="card">
-            <div class="card__media">
-              {screenshot && (
-                <Picture
-                  src={screenshot}
-                  alt={p.data.title}
-                  loading="lazy"
-                  formats={["avif", "webp", "png"]}
-                  widths={[320, 640, 768, 1024, 1400]}
-                  sizes="(max-width: 719px) 100vw, (max-width: 1023px) 50vw, (max-width: 1399px) 33vw, 25vw"
-                />
-              )}
-            </div>
-            <h3 class="card__title">{p.data.title}</h3>
-            <p class="card__meta">{p.data.year}</p>
-          </a>
-        );
-      })}
-    </div>
-
-    <p style={`margin-top: var(--gap);`}>
-      <a href="/projects/" class="button">See all projects</a>
-    </p>
-  </section>
-
-  <section class="section reveal" aria-labelledby="home-blog">
-    <div class="section__label" id="home-blog">Latest Posts</div>
-
-    <!-- 1-column on mobile, 2-column grid from 720px+ -->
-    <div class="grid home-grid home-blog-grid">
-      {latestPosts.map((post) => (
-        <a href={`/blog/${post.id}/`} class="card">
-          <h3 class="card__title">{post.data.title}</h3>
-          <p class="card__meta">
-            {post.data.date.toLocaleDateString("en-GB", { dateStyle: "medium" })}
-          </p>
-          {post.data.tags && post.data.tags.length > 0 && (
-            <div class="card__tags" aria-label="Tags">
-              {post.data.tags.map((tag) => (
-                <span class="tag-pill">{tag}</span>
-              ))}
-            </div>
-          )}
-        </a>
-      ))}
-    </div>
-
-    <p style={`margin-top: var(--gap);`}>
-      <a href="/blog/" class="button">See all posts</a>
-    </p>
-  </section>
+    <section class="section wrap" aria-labelledby="work">
+        <div class="section-head">
+            <h2 id="work" class="mono muted">Selected projects</h2>
+            <a href="/projects/" class="mono link">All projects</a>
+        </div>
+        <WorkIndex projects={featured} />
+        <p class="other-line mono muted" data-reveal>
+            Other work —
+            {
+                otherWork.map((p, i) => (
+                    <>
+                        <a href={`/projects/${slugOf(p)}/`} class="link">{p.data.title}</a>
+                        {i < otherWork.length - 1 && " · "}
+                    </>
+                ))
+            }
+        </p>
+    </section>
 </Base>
+
+<style>
+    /* first thing on the page: sits right under the header */
+    .hello {
+        padding-block: clamp(40px, 7vw, 96px) clamp(64px, 9vw, 140px);
+    }
+
+    .hello__text {
+        margin-top: clamp(48px, 7vw, 96px);
+    }
+
+    .hello__more {
+        margin: clamp(28px, 4vw, 48px) 0 0;
+        text-align: center;
+    }
+
+    .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    .other-line {
+        margin-top: 18px;
+    }
+
+    .section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: var(--gutter);
+        margin-bottom: 14px;
+    }
+</style>
