@@ -54,9 +54,7 @@ The frontend uses React and TypeScript with Vite. TypeScript was particularly us
 
 The first database version used SQLite. I later moved to PostgreSQL and now use it in both development and production, with SQLAlchemy for database access and Alembic for schema migrations.
 
-## Architecture
-
-### One source of truth for the game rules
+## One source of truth for the game rules
 The biggest architectural change was separating the rules from Pygame.
 
 The original project mixed game state, rules and interface code. I moved the rules into a pure Python engine that has no dependency on Pygame, React or FastAPI.
@@ -81,7 +79,7 @@ Game states are immutable. Instead of modifying the current state, a move produc
 
 This makes the engine easier to test and allows the AI to simulate possible moves without changing the actual game.
 
-### Server-authoritative game state
+## Server-authoritative game state
 The frontend sends the player's intended move, not a modified board.
 
 ```json
@@ -95,7 +93,7 @@ The server checks the move against the game engine before updating the state. Il
 
 This also provides the foundation for multiplayer: both players can send actions while the server remains responsible for the actual game state.
 
-### AI opponent
+## AI opponent
 The AI uses minimax with alpha-beta pruning.
 
 A pathfinding algorithm such as A* would find an efficient route through a fixed environment, but Wolf & Sheep is adversarial: every move changes what the other player can do next. Minimax allows the AI to evaluate moves while accounting for the opponent's possible responses.
@@ -104,7 +102,7 @@ Difficulty changes how far the AI searches. Easy mode uses simpler decisions, wh
 
 The evaluation function scores possible states based on factors such as the sheep's progress across the board and the wolves' ability to restrict its movement.
 
-### Database design
+## Database design
 Game history is stored using a relational structure built around games, players and moves rather than storing the entire match in a single database row.
 
 Statistics are calculated from that game history instead of being duplicated in a separate statistics table.

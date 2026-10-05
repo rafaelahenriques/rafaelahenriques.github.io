@@ -1,0 +1,120 @@
+---
+/**
+ * One chapter of a case study: number and title, then the text beside the
+ * visual it explains. The visual (slot "media") stays in view while longer
+ * text scrolls past it; side="left" puts it on the left for rhythm.
+ * `html` is a rendered part of the project's markdown; the default slot adds
+ * anything after it. wide stacks text and visual full width (e.g. a video).
+ */
+interface Props {
+    id: string;
+    num: string;
+    title: string;
+    html?: string;
+    side?: "left" | "right";
+    wide?: boolean;
+}
+
+const { id, num, title, html, side = "right", wide = false } = Astro.props;
+const hasMedia = Astro.slots.has("media");
+---
+
+<section
+    class="chapter wrap"
+    id={id}
+    aria-labelledby={`${id}-title`}
+    data-side={side}
+    data-wide={wide ? "" : undefined}
+    data-media={hasMedia ? "" : undefined}
+>
+    <div class="row chapter__head">
+        <span class="row__label mono muted">{num}</span>
+        <h2 id={`${id}-title`} class="row__body chapter__title" data-split>{title}</h2>
+    </div>
+    <div class="chapter__grid">
+        <div class="chapter__text">
+            {html && <div class="prose chapter__prose" set:html={html} />}
+            <slot />
+        </div>
+        {
+            hasMedia && (
+                <div class="chapter__media">
+                    <slot name="media" />
+                </div>
+            )
+        }
+    </div>
+</section>
+
+<style>
+    .chapter {
+        padding-top: var(--section);
+    }
+
+    .chapter__title {
+        margin: 0;
+        max-width: 22ch;
+        font-size: var(--fs-h2);
+        font-weight: 500;
+        line-height: 1;
+        letter-spacing: -0.04em;
+    }
+
+    .chapter__grid {
+        display: grid;
+        gap: clamp(28px, 4vw, 48px) var(--gutter);
+        margin-top: clamp(28px, 4vw, 56px);
+    }
+
+    /* on phones the visual comes first, then the explanation */
+    .chapter__media {
+        order: -1;
+        min-width: 0;
+    }
+
+    .chapter__text {
+        min-width: 0;
+    }
+
+    /* the markdown's own spacing starts flush with the column */
+    .chapter__prose > :global(:first-child) {
+        margin-top: 0;
+    }
+
+    @media (min-width: 900px) {
+        .chapter__grid {
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+            align-items: start;
+        }
+
+        .chapter[data-media] .chapter__text {
+            grid-column: 1 / span 5;
+            grid-row: 1;
+        }
+
+        .chapter[data-media] .chapter__media {
+            grid-column: 7 / -1;
+            grid-row: 1;
+            order: 0;
+            position: sticky;
+            top: calc(var(--header-h) + 32px);
+        }
+
+        .chapter[data-side="left"][data-media] .chapter__text {
+            grid-column: 8 / -1;
+        }
+
+        .chapter[data-side="left"][data-media] .chapter__media {
+            grid-column: 1 / span 6;
+        }
+
+        /* text-only or wide: text lines up with the title */
+        .chapter:not([data-media]) .chapter__text {
+            grid-column: 4 / -1;
+        }
+
+        .chapter[data-wide] .chapter__text {
+            grid-column: 1 / -1;
+        }
+    }
+</style>
