@@ -232,6 +232,11 @@ main {
     border-top: 1px solid var(--line);
 }
 
+/* let wide children (code blocks) scroll instead of stretching the column */
+.row > * {
+    min-width: 0;
+}
+
 @media (min-width: 900px) {
     .row {
         grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -499,10 +504,74 @@ main {
     font-size: 0.85em;
 }
 
+/* inline code: a light tint so names like apply_move read as code */
+.prose :not(pre) > code {
+    padding: 0.1em 0.35em;
+    background: color-mix(in oklab, var(--text) 8%, transparent);
+}
+
+/*
+ * Code blocks stand out: an inverted panel (dark on the light theme, light on
+ * the dark one) with a language bar and line numbers. Shiki's css-variables
+ * theme colours the tokens; a page can set --code-accent for keywords.
+ */
 .prose pre {
-    padding: 16px;
+    --code-fg: var(--bg);
+    --code-dim: color-mix(in oklab, var(--bg) 50%, var(--text));
+    --code-soft: color-mix(in oklab, var(--bg) 78%, var(--text));
+    --astro-code-foreground: var(--code-fg);
+    --astro-code-background: var(--text);
+    --astro-code-token-keyword: var(--code-accent, var(--code-fg));
+    --astro-code-token-function: var(--code-accent, var(--code-fg));
+    --astro-code-token-constant: var(--code-fg);
+    --astro-code-token-parameter: var(--code-fg);
+    --astro-code-token-punctuation: var(--code-dim);
+    --astro-code-token-string: var(--code-soft);
+    --astro-code-token-string-expression: var(--code-soft);
+    --astro-code-token-comment: var(--code-dim);
+    --astro-code-token-link: var(--code-fg);
+
+    margin-block: 2em;
+    padding: 0 0 20px;
     overflow-x: auto;
-    border: 1px solid var(--line);
+    font-size: 0.8em;
+    line-height: 1.75;
+    box-shadow: var(--media-shadow);
+}
+
+.prose pre code {
+    display: block;
+    width: max-content;
+    min-width: 100%;
+    padding-inline: 20px;
+    font-size: 1em;
+    counter-reset: line;
+}
+
+.prose pre[data-language]::before {
+    content: attr(data-language);
+    position: sticky;
+    left: 0;
+    display: block;
+    margin-bottom: 16px;
+    padding: 10px 20px;
+    border-bottom: 1px solid color-mix(in oklab, var(--bg) 16%, transparent);
+    color: var(--code-dim);
+    font-size: var(--fs-mono);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.prose pre .line::before {
+    counter-increment: line;
+    content: counter(line);
+    display: inline-block;
+    width: 2ch;
+    margin-right: 2.4ch;
+    text-align: right;
+    color: var(--code-dim);
+    opacity: 0.6;
+    user-select: none;
 }
 
 .prose blockquote {

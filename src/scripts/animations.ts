@@ -65,8 +65,11 @@ function fadeReveals() {
 function imageReveals() {
     document.querySelectorAll<HTMLElement>("[data-reveal-img]").forEach((el) => {
         const img = el.querySelector("img");
+        // plays once without killing its trigger: a timeline trigger that kills
+        // itself during another trigger's first refresh (page loaded mid-scroll)
+        // breaks ScrollTrigger's refresh loop
         const tl = gsap.timeline({
-            scrollTrigger: { trigger: el, start: "top 88%", once: true },
+            scrollTrigger: { trigger: el, start: "top 88%", toggleActions: "play none none none" },
         });
         tl.fromTo(
             el,
@@ -86,6 +89,19 @@ function imageReveals() {
                 0.2,
             );
         }
+    });
+}
+
+/** .prose pre: a code block's lines appear one after another, top to bottom. */
+function codeReveals() {
+    document.querySelectorAll<HTMLElement>(".prose pre").forEach((pre) => {
+        gsap.from(pre.querySelectorAll(".line"), {
+            autoAlpha: 0,
+            duration: 0.5,
+            ease: "power2.out",
+            stagger: 0.05,
+            scrollTrigger: { trigger: pre, start: "top 85%", once: true },
+        });
     });
 }
 
@@ -154,6 +170,7 @@ function start() {
         introHeader();
         fadeReveals();
         imageReveals();
+        codeReveals();
         // Split after webfonts load so line breaks are measured correctly;
         // ctx.add keeps it inside this matchMedia context for cleanup.
         document.fonts.ready.then(ctx.add(splitReveals));

@@ -24,6 +24,7 @@ const projects = defineCollection({
       media: z
         .object({
           repo: z.string().url().optional(),
+          live: z.string().url().optional(),
           video: z.string().url().optional(),
           screenshot: image().optional(),
           gallery: z.array(image()).optional(),
