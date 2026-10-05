@@ -92,6 +92,19 @@ function imageReveals() {
     });
 }
 
+/** .prose pre: a code block's lines appear one after another, top to bottom. */
+function codeReveals() {
+    document.querySelectorAll<HTMLElement>(".prose pre").forEach((pre) => {
+        gsap.from(pre.querySelectorAll(".line"), {
+            autoAlpha: 0,
+            duration: 0.5,
+            ease: "power2.out",
+            stagger: 0.05,
+            scrollTrigger: { trigger: pre, start: "top 85%", once: true },
+        });
+    });
+}
+
 /** [data-preview-list] [data-preview-src]: image that follows the cursor. */
 function indexPreview() {
     const links = document.querySelectorAll<HTMLElement>(
@@ -157,6 +170,7 @@ function start() {
         introHeader();
         fadeReveals();
         imageReveals();
+        codeReveals();
         // Split after webfonts load so line breaks are measured correctly;
         // ctx.add keeps it inside this matchMedia context for cleanup.
         document.fonts.ready.then(ctx.add(splitReveals));

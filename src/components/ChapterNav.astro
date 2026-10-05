@@ -1,0 +1,293 @@
+---
+/**
+ * Floating chapter bar for long case studies. Built in the browser from the
+ * page's [data-chapter] sections (Chapter.astro) and [data-part] dividers:
+ * shows the current chapter and how far through the story you are, steps to
+ * the previous / next chapter, and opens a contents list. It slides in at the
+ * first chapter and out again after the last.
+ */
+---
+
+<nav class="cnav" aria-label="Chapters" data-cnav hidden>
+    <div class="cnav__panel" id="cnav-panel" data-cnav-panel hidden>
+        <ol class="cnav__list" data-cnav-list></ol>
+    </div>
+    <div class="cnav__bar">
+        <span class="cnav__progress" data-cnav-progress aria-hidden="true"></span>
+        <button type="button" class="cnav__toggle text-button" aria-expanded="false" aria-controls="cnav-panel" data-cnav-toggle>
+            <span class="cnav__num mono" data-cnav-num></span>
+            <span class="cnav__title" data-cnav-title></span>
+            <span class="cnav__hint mono" aria-hidden="true">Contents</span>
+        </button>
+        <button type="button" class="cnav__step text-button mono" aria-label="Previous chapter" data-cnav-prev>↑</button>
+        <button type="button" class="cnav__step text-button mono" aria-label="Next chapter" data-cnav-next>↓</button>
+    </div>
+</nav>
+
+<style>
+    .cnav {
+        position: fixed;
+        left: 50%;
+        bottom: max(16px, env(safe-area-inset-bottom));
+        z-index: 45;
+        width: min(560px, calc(100% - 2 * var(--gutter)));
+        color: var(--bg);
+        transform: translate(-50%, calc(100% + 32px));
+        transition: transform 0.6s var(--ease);
+    }
+
+    .cnav.is-visible {
+        transform: translate(-50%, 0);
+    }
+
+    .cnav__bar,
+    .cnav__panel {
+        background: var(--text);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18);
+    }
+
+    .cnav__bar {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        align-items: center;
+    }
+
+    /* reading progress along the top edge */
+    .cnav__progress {
+        position: absolute;
+        inset: 0 0 auto;
+        height: 2px;
+        background: var(--bg);
+        transform: scaleX(0);
+        transform-origin: left;
+    }
+
+    .cnav__toggle {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        min-width: 0;
+        padding: 14px 16px;
+        text-align: left;
+        text-transform: none;
+    }
+
+    .cnav__num {
+        flex: none;
+        opacity: 0.6;
+    }
+
+    .cnav__title {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        font-size: var(--fs-small);
+    }
+
+    .cnav__hint {
+        flex: none;
+        margin-left: auto;
+        opacity: 0.6;
+        transition: opacity 0.3s var(--ease);
+    }
+
+    .cnav__toggle:hover .cnav__hint,
+    .cnav__toggle[aria-expanded="true"] .cnav__hint {
+        opacity: 1;
+    }
+
+    .cnav__step {
+        align-self: stretch;
+        width: 44px;
+        border-left: 1px solid color-mix(in oklab, var(--bg) 18%, transparent);
+        transition: opacity 0.3s var(--ease);
+    }
+
+    .cnav__step:disabled {
+        opacity: 0.3;
+        cursor: default;
+    }
+
+    @media (max-width: 480px) {
+        .cnav__hint {
+            display: none;
+        }
+    }
+
+    /* contents list, opening above the bar */
+    .cnav__panel {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: calc(100% + 8px);
+        max-height: min(70vh, 560px);
+        overflow-y: auto;
+        padding: 8px 0 12px;
+    }
+
+    .cnav__list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .cnav__list :global(.cnav__part) {
+        padding: 14px 16px 6px;
+        font-family: var(--mono);
+        font-size: var(--fs-mono);
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        opacity: 0.55;
+    }
+
+    .cnav__list :global(a) {
+        display: grid;
+        grid-template-columns: 2.5rem 1fr;
+        gap: 12px;
+        padding: 7px 16px;
+        font-size: var(--fs-small);
+        opacity: 0.65;
+        transition:
+            opacity 0.3s var(--ease),
+            padding 0.4s var(--ease);
+    }
+
+    .cnav__list :global(a:hover),
+    .cnav__list :global(a:focus-visible) {
+        opacity: 1;
+        padding-left: 22px;
+    }
+
+    .cnav__list :global(a[aria-current="true"]) {
+        opacity: 1;
+    }
+
+    .cnav__list :global(.cnav__item-num) {
+        font-family: var(--mono);
+        font-size: var(--fs-mono);
+        line-height: 1.9;
+        opacity: 0.6;
+    }
+
+    .cnav__list :global(a[aria-current="true"] .cnav__item-num) {
+        opacity: 1;
+    }
+</style>
+
+<script>
+    const nav = document.querySelector<HTMLElement>("[data-cnav]");
+    const chapters = [...document.querySelectorAll<HTMLElement>("[data-chapter]")];
+
+    if (nav && chapters.length > 1) {
+        const list = nav.querySelector<HTMLOListElement>("[data-cnav-list]")!;
+        const panel = nav.querySelector<HTMLElement>("[data-cnav-panel]")!;
+        const toggle = nav.querySelector<HTMLButtonElement>("[data-cnav-toggle]")!;
+        const numEl = nav.querySelector<HTMLElement>("[data-cnav-num]")!;
+        const titleEl = nav.querySelector<HTMLElement>("[data-cnav-title]")!;
+        const progress = nav.querySelector<HTMLElement>("[data-cnav-progress]")!;
+        const prev = nav.querySelector<HTMLButtonElement>("[data-cnav-prev]")!;
+        const next = nav.querySelector<HTMLButtonElement>("[data-cnav-next]")!;
+        const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+        const numbered = chapters.filter((c) => /^\d+$/.test(c.dataset.num ?? ""));
+        const total = numbered.length;
+
+        // contents: parts as small labels, chapters as links, in page order
+        const links: HTMLAnchorElement[] = [];
+        document.querySelectorAll<HTMLElement>("[data-part], [data-chapter]").forEach((el) => {
+            const li = document.createElement("li");
+            if (el.hasAttribute("data-part")) {
+                li.className = "cnav__part";
+                li.textContent = el.dataset.part ?? "";
+            } else {
+                const a = document.createElement("a");
+                a.href = `#${el.id}`;
+                const num = document.createElement("span");
+                num.className = "cnav__item-num";
+                num.textContent = el.dataset.num ?? "";
+                const label = document.createElement("span");
+                label.textContent = el.dataset.title ?? "";
+                a.append(num, label);
+                li.append(a);
+                links.push(a);
+            }
+            list.append(li);
+        });
+
+        // headings sit under the fixed header, with a little air
+        const headerH = () => document.querySelector("[data-header]")?.getBoundingClientRect().height ?? 56;
+        const headOf = (c: HTMLElement) => c.querySelector<HTMLElement>(".chapter__head") ?? c;
+        const goTo = (i: number) => {
+            const target = chapters[Math.max(0, Math.min(chapters.length - 1, i))];
+            const top = headOf(target).getBoundingClientRect().top + window.scrollY - headerH() - 24;
+            window.scrollTo({ top, behavior: reduceMotion.matches ? "auto" : "smooth" });
+            history.replaceState(null, "", `#${target.id}`);
+        };
+
+        const setOpen = (open: boolean, focusToggle = false) => {
+            panel.hidden = !open;
+            toggle.setAttribute("aria-expanded", String(open));
+            if (open) links[active]?.scrollIntoView({ block: "nearest" });
+            if (!open && focusToggle) toggle.focus();
+        };
+
+        let active = -1;
+        const update = () => {
+            const line = window.innerHeight * 0.35;
+            const tops = chapters.map((c) => headOf(c).getBoundingClientRect().top);
+            const current = tops.reduce((acc, top, i) => (top <= line ? i : acc), -1);
+            const first = tops[0];
+            const lastBottom = chapters[chapters.length - 1].getBoundingClientRect().bottom;
+
+            // on screen from the first chapter until the last one has scrolled past
+            const visible = first < window.innerHeight * 0.6 && lastBottom > window.innerHeight * 0.4;
+            nav.classList.toggle("is-visible", visible);
+            if (!visible && !panel.hidden) setOpen(false);
+
+            const span = lastBottom - first;
+            const done = span > 0 ? Math.min(1, Math.max(0, (line - first) / span)) : 0;
+            progress.style.transform = `scaleX(${done})`;
+
+            if (current === active) return;
+            active = current;
+            const shown = chapters[Math.max(0, active)];
+            numEl.textContent = /^\d+$/.test(shown.dataset.num ?? "") ? `${shown.dataset.num} / ${String(total).padStart(2, "0")}` : (shown.dataset.num ?? "");
+            titleEl.textContent = shown.dataset.title ?? "";
+            links.forEach((a, i) => a.setAttribute("aria-current", String(i === Math.max(0, active))));
+            prev.disabled = active <= 0;
+            next.disabled = active >= chapters.length - 1;
+        };
+
+        let ticking = false;
+        const onScroll = () => {
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(() => {
+                ticking = false;
+                update();
+            });
+        };
+
+        toggle.addEventListener("click", () => setOpen(panel.hidden));
+        prev.addEventListener("click", () => goTo(active - 1));
+        next.addEventListener("click", () => goTo(active + 1));
+        links.forEach((a, i) =>
+            a.addEventListener("click", (e) => {
+                e.preventDefault();
+                setOpen(false);
+                goTo(i);
+            }),
+        );
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && !panel.hidden) setOpen(false, true);
+        });
+        document.addEventListener("pointerdown", (e) => {
+            if (!panel.hidden && !nav.contains(e.target as Node)) setOpen(false);
+        });
+
+        nav.hidden = false;
+        window.addEventListener("scroll", onScroll, { passive: true });
+        window.addEventListener("resize", onScroll);
+        update();
+    }
+</script>

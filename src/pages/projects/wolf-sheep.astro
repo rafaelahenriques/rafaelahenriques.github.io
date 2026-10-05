@@ -14,6 +14,7 @@ import Chapter from "../../components/Chapter.astro";
 import Shot from "../../components/Shot.astro";
 import Lightbox from "../../components/Lightbox.astro";
 import NextProject from "../../components/NextProject.astro";
+import ChapterNav from "../../components/ChapterNav.astro";
 
 import mainGame from "../../content/projects/wolf-sheep/maingame.png";
 import startScreen from "../../content/projects/wolf-sheep/startscreen.png";
@@ -119,7 +120,7 @@ const pieces = [
         </section>
 
         <!-- ============ PART 1: THE PROJECT ============ -->
-        <div class="ws-part-wrap wrap" data-reveal>
+        <div class="ws-part-wrap wrap" data-reveal data-part="The project">
             <div class="ws-part">
                 <span class="mono muted">Part 1</span>
                 <span class="ws-part__title">The project</span>
@@ -183,7 +184,7 @@ const pieces = [
         </Chapter>
 
         <!-- ============ PART 2: HOW IT'S BUILT ============ -->
-        <div class="ws-part-wrap wrap" data-reveal>
+        <div class="ws-part-wrap wrap" data-reveal data-part="How it's built">
             <div class="ws-part">
                 <span class="mono muted">Part 2</span>
                 <span class="ws-part__title">How it's built</span>
@@ -260,7 +261,7 @@ const pieces = [
         </Chapter>
 
         <!-- ============ PART 3: WHAT'S NEXT ============ -->
-        <div class="ws-part-wrap wrap" data-reveal>
+        <div class="ws-part-wrap wrap" data-reveal data-part="What's next">
             <div class="ws-part">
                 <span class="mono muted">Part 3</span>
                 <span class="ws-part__title">What's next</span>
@@ -293,6 +294,7 @@ const pieces = [
         </Chapter>
     </article>
 
+    <ChapterNav />
     <NextProject current="wolf-sheep" />
     <Lightbox />
 </Base>
@@ -517,8 +519,14 @@ const pieces = [
         --ws-sheep: #b4c6e2;
         --ws-dark: #1b1b1a;
         --ws-light: #ececea;
+        /* code keywords: sheep blue on the dark panel, wolf purple on the light one */
+        --code-accent: var(--ws-sheep);
         overflow-x: clip;
         padding-bottom: var(--section);
+    }
+
+    :global(html.dark) .ws {
+        --code-accent: var(--ws-wolf);
     }
 
     /* --- INTRO --- */
