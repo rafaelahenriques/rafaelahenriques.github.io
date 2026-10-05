@@ -1,299 +1,346 @@
 ---
 import Base from "../../layouts/BaseLayout.astro";
-import {
-  getCollection,
-  render,
-  type CollectionEntry,
-} from "astro:content";
+import { render } from "astro:content";
 import { Picture } from "astro:assets";
-
-type ProjectEntry = CollectionEntry<"projects">;
+import { getProjects, pad, slugOf, type ProjectEntry } from "../../lib/content";
 
 export async function getStaticPaths() {
-  const entries = await getCollection("projects");
-  return entries.map((entry) => ({
-    params: { slug: entry.id.replace(/\.md$/, "") },
-  }));
+    const projects = await getProjects();
+    return projects
+        .map((project, i) => ({
+            params: { slug: slugOf(project) },
+            props: {
+                project,
+                prev: projects[i - 1] ?? null,
+                next: projects[i + 1] ?? null,
+            },
+        }))
+        // custom pages (e.g. case studies) render their own route
+        .filter(({ props }) => !props.project.data.customPage);
 }
 
-const projects: ProjectEntry[] = await getCollection("projects");
-
-const currentId = Astro.params.slug;
-const project = projects.find((p) => p.id.replace(/\.md$/, "") === currentId);
-if (!project) {
-  throw new Error("Project not found");
+interface Props {
+    project: ProjectEntry;
+    prev: ProjectEntry | null;
+    next: ProjectEntry | null;
 }
 
+const { project, prev, next } = Astro.props;
 const { Content } = await render(project);
+const { title, description, year, role, context, tech, scope, media, section, order, status, category, architecture, metrics } =
+    project.data;
 
-const sortedProjects = [...projects].sort((a, b) => {
-  const yearA = a.data.year ?? "";
-  const yearB = b.data.year ?? "";
-  if (yearA !== yearB) return yearB.localeCompare(yearA);
-  return (a.data.title ?? "").localeCompare(b.data.title ?? "");
-});
+// Only explicit galleries: generated covers shouldn't repeat on the project page
+const gallery = media?.gallery ?? [];
+const inProgress = status === "in-progress";
+const kicker = [section === "featured" && order ? pad(order) : "Other work", category].filter(Boolean).join(" — ");
 
-const currentIndex = sortedProjects.findIndex(
-  (p) => p.id.replace(/\.md$/, "") === currentId
-);
-const prev =
-  currentIndex > 0 ? sortedProjects[currentIndex - 1] : null;
-const next =
-  currentIndex < sortedProjects.length - 1
-    ? sortedProjects[currentIndex + 1]
-    : null;
-
-const media = project.data.media;
-
-const rawRole = project.data.role;
-const roles: string[] = Array.isArray(rawRole)
-  ? rawRole
-  : typeof rawRole === "string" && rawRole.trim().length > 0
-  ? rawRole
-      .split(/[,/]|&/)
-      .map((r) => r.trim())
-      .filter(Boolean)
-  : [];
+const facts = [
+    { label: "Year", value: year },
+    { label: "Role", value: role },
+    { label: "Context", value: context },
+    { label: "Tools", value: tech?.join(", ") },
+].filter((f) => f.value);
 ---
 
-<Base title={project.data.title} description={project.data.description}>
-  <section class="project-header">
-    <a href="/projects/" class="back-link">← Back to all projects</a>
+<Base title={title} description={description}>
+    <header class="page-head wrap">
+        <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
+        <p class="project-kicker mono muted" data-reveal>
+            {kicker}
+            {inProgress && <span class="status">In progress</span>}
+        </p>
+        <h1 class="display project-title" data-split>{title}</h1>
+    </header>
 
-    <h1 class="page-title">{project.data.title}</h1>
-
-    {project.data.description && (
-      <p class="lead">{project.data.description}</p>
-    )}
-
-    {roles.length > 0 && (
-      <div class="roles">
-        {roles.map((role) => (
-          <span class="role-pill">{role}</span>
-        ))}
-      </div>
-    )}
-
-    {(prev || next) && (
-      <nav class="project-nav" aria-label="Project navigation">
-        <div class="project-nav__side">
-          {prev && (
-            <a
-              href={`/projects/${prev.id.replace(/\.md$/, "")}/`}
-              class="nav-link nav-prev"
-              aria-label={`Previous: ${prev.data.title}`}
-            >
-              {/* MOBILE CIRCLE ARROW ONLY */}
-              <span class="nav-circle" aria-hidden="true">←</span>
-
-              {/* DESKTOP TEXT + ARROW (SAME LOOK AS BEFORE) */}
-              <span class="nav-label">← Previous: {prev.data.title}</span>
-            </a>
-          )}
+    <section class="wrap">
+        <div class="row">
+            <dl class="row__label facts mono" data-reveal>
+                {
+                    facts.map((f) => (
+                        <div>
+                            <dt class="muted">{f.label}</dt>
+                            <dd>{f.value}</dd>
+                        </div>
+                    ))
+                }
+                {
+                    media?.repo && (
+                        <div>
+                            <dt class="muted">Source</dt>
+                            <dd>
+                                <a href={media.repo} class="link">GitHub ↗</a>
+                            </dd>
+                        </div>
+                    )
+                }
+            </dl>
+            <div class="row__body">
+                {description && <p class="lead" data-split>{description}</p>}
+                {
+                    scope && (
+                        <ul class="scope mono" aria-label="Scope" data-reveal>
+                            {scope.map((s) => <li>{s}</li>)}
+                        </ul>
+                    )
+                }
+            </div>
         </div>
+    </section>
 
-        <div class="project-nav__side project-nav__side--right">
-          {next && (
-            <a
-              href={`/projects/${next.id.replace(/\.md$/, "")}/`}
-              class="nav-link nav-next"
-              aria-label={`Next: ${next.data.title}`}
-            >
-              {/* DESKTOP TEXT + ARROW (SAME LOOK AS BEFORE) */}
-              <span class="nav-label">Next: {next.data.title} →</span>
+    {
+        gallery.length > 0 && (
+            <section class="gallery wrap" aria-label="Images">
+                {gallery.map((img, i) => (
+                    <figure class="gallery__item" data-reveal-img>
+                        <Picture
+                            src={img}
+                            alt={`${title}, image ${i + 1}`}
+                            formats={["avif", "webp"]}
+                            widths={[800, 1400, 2000]}
+                            sizes="(min-width: 900px) 75vw, 100vw"
+                            loading={i === 0 ? "eager" : "lazy"}
+                        />
+                    </figure>
+                ))}
+            </section>
+        )
+    }
 
-              {/* MOBILE CIRCLE ARROW ONLY */}
-              <span class="nav-circle" aria-hidden="true">→</span>
-            </a>
-          )}
+    {
+        architecture && (
+            <section class="section wrap" aria-labelledby="architecture">
+                <div class="row">
+                    <h2 id="architecture" class="row__label mono muted">Architecture</h2>
+                    <ol class="row__body pipeline">
+                        {architecture.map((stage, i) => (
+                            <li class="pipeline__stage" data-reveal>
+                                <span class="pipeline__num mono muted">{pad(i + 1)}</span>
+                                <span class="pipeline__label h2">{stage.label}</span>
+                                {stage.detail && <span class="pipeline__detail muted">{stage.detail}</span>}
+                            </li>
+                        ))}
+                    </ol>
+                </div>
+            </section>
+        )
+    }
+
+    {
+        metrics && (
+            <section class="section wrap" aria-labelledby="metrics">
+                <div class="row">
+                    <h2 id="metrics" class="row__label mono muted">What it measures</h2>
+                    <dl class="row__body metrics">
+                        {metrics.map((m) => (
+                            <div class="metrics__item" data-reveal>
+                                <dt>{m.label}</dt>
+                                {m.detail && <dd class="muted">{m.detail}</dd>}
+                            </div>
+                        ))}
+                    </dl>
+                </div>
+            </section>
+        )
+    }
+
+    <section class="section wrap">
+        <div class="row">
+            <p class="row__label mono muted">Case study</p>
+            <div class="row__body prose" data-reveal>
+                <Content />
+            </div>
         </div>
-      </nav>
-    )}
-  </section>
+    </section>
 
-  <section class="project-body">
-    <Content />
-
-    {media?.gallery && media.gallery.length > 0 && (
-      <div class="gallery">
-        {media.gallery.map((img) => (
-          <figure class="gallery__item">
-            <Picture
-              src={img}
-              alt={`${project.data.title} – screenshot`}
-              loading="lazy"
-              formats={["avif", "webp", "png"]}
-              widths={[320, 640, 768, 1024]}
-              sizes="(max-width: 719px) 100vw, (max-width: 1023px) 50vw, 33vw"
-            />
-          </figure>
-        ))}
-      </div>
-    )}
-  </section>
+    <nav class="section wrap pager" aria-label="Project navigation">
+        {
+            prev && (
+                <a href={`/projects/${slugOf(prev)}/`} class="pager__link row">
+                    <span class="row__label mono muted">← Previous</span>
+                    <span class="row__body h2">{prev.data.title}</span>
+                </a>
+            )
+        }
+        {
+            next && (
+                <a href={`/projects/${slugOf(next)}/`} class="pager__link row">
+                    <span class="row__label mono muted">Next →</span>
+                    <span class="row__body h2">{next.data.title}</span>
+                </a>
+            )
+        }
+    </nav>
 </Base>
 
 <style>
-  .project-header {
-    margin-bottom: var(--gap);
-    display: grid;
-    gap: var(--gap);
-  }
+    .project-title {
+        max-width: 14ch;
+        font-size: clamp(2.75rem, 1rem + 7vw, 8.5rem);
+    }
 
-  .back-link {
-    font-size: var(--step--1);
-    text-decoration: none;
-    color: var(--accent);
-    opacity: 0.9;
-    transition: opacity 0.2s ease;
-  }
+    .project-kicker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 16px;
+        margin-top: 24px;
+    }
 
-  .back-link:hover {
-    opacity: 1;
-  }
+    .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--text);
+    }
 
-  .roles {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 8px;
-  }
+    .status::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border: 1px solid currentColor;
+        border-radius: 50%;
+    }
 
-  .role-pill {
-    padding: 6px 12px;
-    border-radius: 999px;
-    background: color-mix(in oklab, var(--accent) 15%, transparent);
-    border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent);
-    font-size: var(--step--1);
-    color: var(--text);
-    backdrop-filter: blur(6px);
-    white-space: nowrap;
-  }
+    /* --- ARCHITECTURE: a vertical flow, each stage feeding the next --- */
 
-  .project-nav {
-    display: flex;
-    justify-content: space-between;
-    margin-top: var(--gap);
-    gap: 8px;
-    flex-wrap: nowrap;
-    border-top: 1px solid var(--border);
-    padding-top: 10px;
-  }
+    .pipeline {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
 
-  .project-nav__side {
-    display: flex;
-    flex: 1 1 auto;
-  }
+    .pipeline__stage {
+        position: relative;
+        display: grid;
+        grid-template-columns: 3rem 1fr;
+        gap: 4px var(--gutter);
+        padding-bottom: 40px;
+    }
 
-  .project-nav__side--right {
-    justify-content: flex-end;
-  }
+    /* connector line + arrow head down to the next stage */
+    .pipeline__stage:not(:last-child)::after {
+        content: "↓";
+        position: absolute;
+        left: 0;
+        bottom: 8px;
+        font-family: var(--mono);
+        color: var(--muted);
+    }
 
-  .nav-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    font-size: var(--step--1);
-    color: var(--muted);
-    text-decoration: none;
-    padding: 6px 10px;
-    border-radius: 999px;
-    transition:
-      color 0.18s ease,
-      background 0.18s ease,
-      transform 0.12s ease;
-  }
+    .pipeline__label {
+        grid-column: 2;
+    }
 
-  .nav-link:hover {
-    color: var(--text);
-    background: var(--glass);
-    transform: translateY(-1px);
-    text-decoration: none;
-  }
+    .pipeline__detail {
+        grid-column: 2;
+    }
 
-  /* Circle (mobile only by default) */
-  .nav-circle {
-    display: none; /* hidden on desktop */
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background: color-mix(in oklab, var(--accent) 15%, transparent);
-    border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    font-size: var(--fontsize-1);
-    color: var(--text);
-    font-weight: bold;
-    flex-shrink: 0;
-  }
+    /* --- METRICS --- */
 
-  .nav-link:hover .nav-circle {
-    background: var(--glass);
-    border-color: var(--accent);
-  }
+    .metrics {
+        display: grid;
+        gap: 0 var(--gutter);
+        margin: 0;
+    }
 
-  .nav-label {
-    white-space: nowrap;
-  }
+    .metrics__item {
+        padding-block: 16px;
+        border-bottom: 1px solid var(--line);
+    }
 
-  .project-body {
-    margin-top: calc(var(--gap) * 2);
-    display: grid;
-    gap: var(--gap);
-  }
+    .metrics__item:first-child {
+        padding-top: 0;
+    }
 
-  .gallery {
-    display: grid;
-    gap: var(--gap);
-    grid-template-columns: 1fr;
-  }
+    .metrics__item dt {
+        font-size: var(--fs-lead);
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+    }
 
-  .gallery__item img {
-    width: 100%;
-    border-radius: var(--radius);
-    object-fit: cover;
-    border: 1px solid var(--border);
-  }
+    .metrics__item dd {
+        margin: 6px 0 0;
+    }
 
-  @media (min-width: 720px) {
+    @media (min-width: 720px) {
+        .metrics {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .metrics__item:nth-child(2) {
+            padding-top: 0;
+        }
+    }
+
+    .facts {
+        display: grid;
+        gap: 14px;
+        align-content: start;
+    }
+
+    .facts dd {
+        margin: 2px 0 0;
+    }
+
+    .scope {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 32px 0 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .scope li {
+        padding: 6px 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+    }
+
     .gallery {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .gallery {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
-  /* MOBILE BEHAVIOUR: circles only, no text; arrows aligned left/right */
-  @media (max-width: 599px) {
-    .project-nav {
-      flex-wrap: nowrap;
-      justify-content: space-between;
+        display: grid;
+        gap: var(--gutter);
+        margin-top: clamp(48px, 8vw, 120px);
     }
 
-    .nav-label {
-      display: none;
+    .gallery__item {
+        margin: 0;
+        overflow: hidden;
     }
 
-    .nav-circle {
-      display: flex;
+    /* <Picture> renders outside this component's scope, hence :global */
+    .gallery__item :global(img) {
+        width: 100%;
     }
 
-    .project-nav__side {
-      justify-content: flex-start;
+    @media (min-width: 900px) {
+        .gallery {
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+        }
+
+        .gallery__item {
+            grid-column: 4 / -1;
+        }
+
+        .gallery__item:nth-child(even) {
+            grid-column: 1 / span 9;
+        }
     }
 
-    .project-nav__side--right {
-      justify-content: flex-end;
+    .pager {
+        display: grid;
     }
 
-    .nav-link {
-      padding-inline: 0;
-      background: transparent;
+    .pager__link .h2 {
+        padding-bottom: 14px;
+        transition: transform 0.6s var(--ease);
     }
-  }
+
+    .pager__link:hover .h2 {
+        transform: translateX(12px);
+    }
+
+    .pager__link:last-child {
+        border-bottom: 1px solid var(--line);
+    }
 </style>

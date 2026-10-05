@@ -1,0 +1,1198 @@
+---
+/**
+ * Miles & Meals case study. A custom page (customPage in the content entry)
+ * so the identity can be shown as an editorial sequence: header slideshow,
+ * hero reveal, brief, boxes rising out of the red band, pinned horizontal
+ * brand-board scroll, pattern strip, parallax mockups, the app and its
+ * walkthrough. Every image opens in a lightbox.
+ */
+import Base from "../../layouts/BaseLayout.astro";
+import { Image } from "astro:assets";
+import { getEntry } from "astro:content";
+import { pad } from "../../lib/content";
+import { fullSize as full } from "../../lib/images";
+import Lightbox from "../../components/Lightbox.astro";
+import NextProject from "../../components/NextProject.astro";
+
+import hero from "../../content/projects/miles-and-meals/main.jpg";
+import bbVision from "../../content/projects/miles-and-meals/brandboard-1.png";
+import bbLook from "../../content/projects/miles-and-meals/brandboard-2.png";
+import bbLogo from "../../content/projects/miles-and-meals/brandboard-3.png";
+import bbLogoColours from "../../content/projects/miles-and-meals/brandboard-4.png";
+import bbColour from "../../content/projects/miles-and-meals/brandboard-5.png";
+import bbTote from "../../content/projects/miles-and-meals/brandboard-6.png";
+import bbType from "../../content/projects/miles-and-meals/brandboard-7.png";
+import bbBox from "../../content/projects/miles-and-meals/brandboard-8.png";
+import bbPattern from "../../content/projects/miles-and-meals/brandboard-9.png";
+import bbIcons from "../../content/projects/miles-and-meals/brandboard-10.png";
+import bbStreetMade from "../../content/projects/miles-and-meals/brandboard-11.png";
+import bbPhoto from "../../content/projects/miles-and-meals/brandboard-12.png";
+import moodboard from "../../content/projects/miles-and-meals/moodboard.png";
+import mockupPhone from "../../content/projects/miles-and-meals/mockup_phone.png";
+import appSplash from "../../content/projects/miles-and-meals/logo_app.png";
+import appMain from "../../content/projects/miles-and-meals/app-main.png";
+import appExplore from "../../content/projects/miles-and-meals/app-explore.png";
+import appFavorites from "../../content/projects/miles-and-meals/app-favorites.png";
+import appRecipe from "../../content/projects/miles-and-meals/app-recipe-detail.png";
+
+const project = (await getEntry("projects", "miles-and-meals"))!;
+const { title, description, role, year, category, tech } = project.data;
+
+const links = {
+    brandBoard: "https://www.figma.com/design/icN4oVbYhw1gKWb5aECHgS/Miles-and-Meals---Rafaela-Henriques?node-id=59105-12675",
+    appDesign: "https://www.figma.com/design/icN4oVbYhw1gKWb5aECHgS/Miles-and-Meals---Rafaela-Henriques?node-id=6817-1887",
+    prototype:
+        "https://www.figma.com/proto/icN4oVbYhw1gKWb5aECHgS/Miles-and-Meals---Rafaela-Henriques?node-id=58769-5168&viewport=-1707%2C638%2C0.17&scaling=scale-down&content-scaling=fixed&starting-point-node-id=58769%3A5168&show-proto-sidebar=1&page-id=6817%3A1887",
+    pdf: "/files/miles-and-meals-brandboard.pdf",
+};
+
+// Header rail: a vertical column of images drifting upward
+const rail = await Promise.all(
+    [
+        { img: moodboard, alt: "Look and feel moodboard" },
+        { img: mockupPhone, alt: "The Miles & Meals app on a phone" },
+        { img: bbTote, alt: "Tote bag and food mockups" },
+    ].map(async (s) => ({ ...s, full: await full(s.img) })),
+);
+
+const facts = [
+    { value: "3", label: "box themes" },
+    { value: "4", label: "recipes per box" },
+    { value: "2 · 4 · 6", label: "servings" },
+    { value: "100%", label: "compostable box" },
+];
+
+const boxes = [
+    { name: "Local Legend", text: "The classics people grow up with and order without looking at the menu." },
+    { name: "Street Made", text: "Fast and loud: smoke, heat, crunch and layered sauces, ready in little time." },
+    { name: "Neighbourhood Bakes", text: "Fritters, breads, sticky sweets — the snacks sold on corners and markets." },
+];
+
+const identity = await Promise.all(
+    [
+        { img: bbLogo, title: "Logo", text: "A bicycle and a cloche: food and movement, with a nod to Belgium and delivery by bike." },
+        { img: bbLogoColours, title: "Logo in use", text: "Sharp forms for energy, curves to keep it approachable — on every brand colour." },
+        { img: bbColour, title: "Colour", text: "Warm, food-led tones with one strong contemporary contrast, used selectively." },
+        { img: bbType, title: "Typography", text: "Bold, condensed headlines for energy; a clean sans for everything you need to read." },
+        { img: bbIcons, title: "Iconography", text: "Simple, bold and functional — the structured side of the identity." },
+        { img: bbPhoto, title: "Photography", text: "Direct flash, documentary style: people, busy tables, markets and city details." },
+    ].map(async (p) => ({ ...p, full: await full(p.img) })),
+);
+
+const phones = await Promise.all(
+    [
+        { img: appSplash, alt: "Splash screen with the Miles & Meals symbol" },
+        { img: appMain, alt: "Home: this week's Local Legend box" },
+        { img: appExplore, alt: "Explore cities" },
+        { img: appFavorites, alt: "Favourite recipes" },
+        { img: appRecipe, alt: "Recipe detail" },
+    ].map(async (p) => ({ ...p, full: await full(p.img) })),
+);
+
+const zoom = {
+    hero: await full(hero),
+    streetMade: await full(bbStreetMade),
+    vision: await full(bbVision),
+    look: await full(bbLook),
+    box: await full(bbBox),
+    tote: await full(bbTote),
+};
+
+const values = [
+    { name: "Out & Social", text: "Direct flash, people, strong colour." },
+    { name: "Authentic & Open", text: "Real places and local stories, without stereotypes." },
+    { name: "Trendy, not mainstream", text: "Editorial references instead of meal-kit clichés." },
+    { name: "Smart", text: "Structured layouts and clear, functional information." },
+];
+---
+
+<Base title={title} description={description}>
+    <article class="mm">
+        <!-- INTRO: title on the left, a slideshow of the work on the right -->
+        <header class="page-head wrap">
+            <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
+            <div class="mm-top">
+                <div class="mm-top__title">
+                    <p class="mm-kicker mono muted" data-reveal>Other work — {category}</p>
+                    <h1 class="display mm-title" data-split>{title}</h1>
+                </div>
+
+                <div class="mm-rail" data-mm-rail aria-label="Project images">
+                    <div class="mm-rail__window">
+                        <div class="mm-rail__track" data-mm-rail-track>
+                            {
+                                [0, 1].map((copy) =>
+                                    rail.map((r) => (
+                                        <button
+                                            type="button"
+                                            class="mm-rail__item zoom-btn"
+                                            data-mm-rail-item
+                                            data-zoom-single
+                                            data-zoom={r.full}
+                                            data-caption={r.alt}
+                                            aria-label={`View larger: ${r.alt}`}
+                                            aria-hidden={copy ? "true" : undefined}
+                                            tabindex={copy ? "-1" : undefined}
+                                        >
+                                            <Image quality={90} src={r.img} alt={copy ? "" : r.alt} widths={[400, 700, 1000]} sizes="(min-width: 900px) 22vw, 60vw" loading="eager" />
+                                        </button>
+                                    )),
+                                )
+                            }
+                        </div>
+                    </div>
+                    <button type="button" class="text-button link mono mm-rail__toggle" data-mm-rail-toggle aria-pressed="false">Pause</button>
+                </div>
+            </div>
+
+            <div class="row mm-intro">
+                <dl class="row__label mm-facts mono" data-reveal>
+                    <div><dt class="muted">Role</dt><dd>{role}</dd></div>
+                    <div><dt class="muted">Year</dt><dd>{year}</dd></div>
+                    <div><dt class="muted">Scope</dt><dd>{tech?.join(", ")}</dd></div>
+                    <div>
+                        <dt class="muted">Figma</dt>
+                        <dd class="mm-links">
+                            <a href={links.brandBoard} class="link" target="_blank" rel="noopener noreferrer">Brand board ↗</a>
+                            <a href={links.appDesign} class="link" target="_blank" rel="noopener noreferrer">App design ↗</a>
+                            <a href={links.prototype} class="link" target="_blank" rel="noopener noreferrer">Prototype ↗</a>
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="muted">Download</dt>
+                        <dd><a href={links.pdf} class="link" download>Brand board PDF ↓</a></dd>
+                    </div>
+                </dl>
+                <p class="row__body lead" data-split>{description}</p>
+            </div>
+        </header>
+
+        <!-- HERO: full-bleed photo that opens up as you scroll -->
+        <figure class="mm-hero" data-mm-hero>
+            <button type="button" class="mm-hero__frame zoom-btn" data-zoom={zoom.hero} data-caption="Miles & Meals" aria-label="View larger: Miles & Meals hero image">
+                <Image quality={90} src={hero} alt="Friends laughing over pizza and pasta, with the Miles & Meals logo" widths={[1000, 1600, 2400, 3024]} sizes="100vw" loading="eager" />
+            </button>
+        </figure>
+
+        <!-- BRIEF -->
+        <section class="section wrap" aria-labelledby="mm-brief">
+            <div class="row">
+                <h2 id="mm-brief" class="row__label mono muted">The brief</h2>
+                <div class="row__body">
+                    <p class="mm-statement" data-split>Street food. Local stories. At home.</p>
+                    <p class="mm-copy" data-reveal>
+                        A street-food box built around signature dishes found on
+                        Melanie and Rob's travels and developed with the locals
+                        who cook them. Pre-portioned ingredients, step-by-step
+                        recipe cards, no professional skills needed — delivered by
+                        bike in compostable packaging, starting in Antwerp.
+                    </p>
+                    <dl class="mm-stats">
+                        {
+                            facts.map((f) => (
+                                <div class="mm-stat" data-reveal>
+                                    <dd>{f.value}</dd>
+                                    <dt class="mono">{f.label}</dt>
+                                </div>
+                            ))
+                        }
+                    </dl>
+                </div>
+            </div>
+        </section>
+
+        <!-- BOXES: cards rise out of the red band as you scroll -->
+        <section class="mm-band mm-band--red mm-boxes-band" aria-labelledby="mm-boxes" data-mm-boxes>
+            <div class="wrap">
+                <h2 id="mm-boxes" class="mono mm-band__label">Three boxes</h2>
+                <ol class="mm-boxes">
+                    {
+                        boxes.map((b, i) => (
+                            <li class="mm-box" data-mm-box>
+                                <span class="mm-box__num">{pad(i + 1)}</span>
+                                <h3 class="mm-box__name">{b.name}</h3>
+                                <p>{b.text}</p>
+                            </li>
+                        ))
+                    }
+                </ol>
+            </div>
+        </section>
+
+        <!-- STREET MADE: one big image between the boxes and the art direction -->
+        <section class="wrap mm-feature" aria-label="Street Made box and poster">
+            <figure data-reveal-img>
+                <button type="button" class="zoom-btn" data-zoom={zoom.streetMade} data-caption="Street Made box and poster" aria-label="View larger: Street Made box and poster">
+                    <Image quality={90} src={bbStreetMade} alt="Street Made box and poster" widths={[1000, 1600, 2400]} sizes="100vw" />
+                </button>
+            </figure>
+        </section>
+
+        <!-- ART DIRECTION: expressive vs structured -->
+        <section class="section wrap" aria-labelledby="mm-direction">
+            <div class="row">
+                <h2 id="mm-direction" class="row__label mono muted">Art direction</h2>
+                <div class="row__body">
+                    <p class="mm-statement mm-statement--small" data-split>
+                        Less meal kit, more independent food and travel magazine.
+                    </p>
+                    <div class="mm-duo">
+                        <div data-reveal>
+                            <p class="mono muted">Expressive</p>
+                            <p>Bold type, strong colour and spontaneous photography bring energy and the social side of food.</p>
+                        </div>
+                        <div data-reveal>
+                            <p class="mono muted">Structured</p>
+                            <p>Clean type, grids and clear information keep the brand smart and easy to use.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mm-pair">
+                <figure class="mm-pair__a" data-speed="-6" data-reveal-img>
+                    <button type="button" class="zoom-btn" data-zoom={zoom.vision} data-caption="Brand vision, tone of voice and personality" aria-label="View larger: brand vision">
+                        <Image quality={90} src={bbVision} alt="Brand vision, tone of voice and personality" widths={[700, 1200, 1800]} sizes="(min-width: 900px) 38vw, 100vw" />
+                    </button>
+                </figure>
+                <figure class="mm-pair__b" data-speed="8" data-reveal-img>
+                    <button type="button" class="zoom-btn" data-zoom={zoom.look} data-caption="Look and feel moodboard" aria-label="View larger: look and feel">
+                        <Image quality={90} src={bbLook} alt="Look and feel moodboard" widths={[900, 1500, 2200]} sizes="(min-width: 900px) 55vw, 100vw" />
+                    </button>
+                </figure>
+            </div>
+        </section>
+
+        <!-- IDENTITY: pinned horizontal scroll on desktop, swipe on touch -->
+        <section class="mm-band mm-band--ink mm-identity" aria-labelledby="mm-identity" data-mm-identity>
+            <div class="wrap mm-identity__head">
+                <h2 id="mm-identity" class="mono mm-band__label">The identity</h2>
+                <p class="mono mm-identity__links">
+                    <a href={links.brandBoard} class="link" target="_blank" rel="noopener noreferrer">Full brand board in Figma ↗</a>
+                    <a href={links.pdf} class="link" download>PDF ↓</a>
+                </p>
+            </div>
+            <div class="mm-identity__viewport" data-mm-viewport>
+                <ol class="mm-identity__track" data-mm-track>
+                    {
+                        identity.map((panel, i) => (
+                            <li class="mm-panel">
+                                <figure>
+                                    <button type="button" class="zoom-btn" data-zoom={panel.full} data-caption={`${panel.title} — ${panel.text}`} aria-label={`View larger: ${panel.title}`}>
+                                        <Image quality={90} src={panel.img} alt={panel.title} widths={[1000, 1600, 2400]} sizes="(min-width: 900px) 80vw, 88vw" />
+                                    </button>
+                                    <figcaption>
+                                        <span class="mono">{pad(i + 1)} / {pad(identity.length)}</span>
+                                        <strong>{panel.title}</strong>
+                                        <span>{panel.text}</span>
+                                    </figcaption>
+                                </figure>
+                            </li>
+                        ))
+                    }
+                </ol>
+            </div>
+            <div class="wrap"><div class="mm-identity__progress" data-mm-progress></div></div>
+        </section>
+
+        <!-- PATTERN: one image, full width, cropped to a strip -->
+        <div class="mm-pattern" aria-hidden="true" data-mm-pattern>
+            <Image quality={90} src={bbPattern} alt="" widths={[1200, 2000, 3024]} sizes="100vw" />
+        </div>
+
+        <!-- APPLICATIONS: parallax collage -->
+        <section class="section wrap" aria-labelledby="mm-applications">
+            <div class="row">
+                <h2 id="mm-applications" class="row__label mono muted">Applications</h2>
+                <p class="row__body mm-statement mm-statement--small" data-split>
+                    From the box on the doorstep to the tote on the way to the market.
+                </p>
+            </div>
+            <div class="mm-collage">
+                <figure class="mm-collage__box" data-speed="-10" data-reveal-img>
+                    <button type="button" class="zoom-btn" data-zoom={zoom.box} data-caption="Local Legend box" aria-label="View larger: Local Legend box">
+                        <Image quality={90} src={bbBox} alt="Local Legend box" widths={[900, 1500, 2200]} sizes="(min-width: 900px) 58vw, 100vw" />
+                    </button>
+                </figure>
+                <figure class="mm-collage__tote" data-speed="12" data-reveal-img>
+                    <button type="button" class="zoom-btn" data-zoom={zoom.tote} data-caption="Tote bag and food mockups" aria-label="View larger: tote bag">
+                        <Image quality={90} src={bbTote} alt="Tote bag and food mockups" widths={[700, 1200, 1800]} sizes="(min-width: 900px) 40vw, 100vw" />
+                    </button>
+                </figure>
+            </div>
+        </section>
+
+        <!-- APP on brand red -->
+        <section class="mm-band mm-band--red mm-app" aria-labelledby="mm-app">
+            <div class="wrap">
+                <div class="row mm-app__head">
+                    <h2 id="mm-app" class="row__label mono">The app</h2>
+                    <p class="row__body mm-statement mm-statement--small">
+                        Plan the next box, follow its delivery, explore cities and cook along step by step.
+                    </p>
+                </div>
+                <ul class="mm-phones" data-mm-phones>
+                    {
+                        phones.map((p) => (
+                            <li class="mm-phone">
+                                <button type="button" class="zoom-btn" data-zoom={p.full} data-caption={p.alt} aria-label={`View larger: ${p.alt}`}>
+                                    <Image quality={90} src={p.img} alt={p.alt} widths={[400, 700, 1016]} sizes="(min-width: 900px) 18vw, 45vw" />
+                                </button>
+                            </li>
+                        ))
+                    }
+                </ul>
+
+                <div class="mm-walkthrough">
+                    <div class="mm-walkthrough__side" data-reveal>
+                        <p class="mono mm-walkthrough__label">Full app walkthrough</p>
+                        <p class="mm-walkthrough__text">
+                            From opening this week's box to cooking along, step by step.
+                        </p>
+                        <div class="mm-walkthrough__links mono">
+                            <a href={links.prototype} class="mm-cta" target="_blank" rel="noopener noreferrer">Try the prototype ↗</a>
+                            <a href={links.appDesign} class="mm-cta mm-cta--ghost" target="_blank" rel="noopener noreferrer">App design in Figma ↗</a>
+                        </div>
+                    </div>
+                    <div class="mm-video" data-reveal>
+                        <iframe
+                            src="https://player.vimeo.com/video/1232722059?badge=0&autopause=0&dnt=1"
+                            title="Miles & Meals — app walkthrough"
+                            loading="lazy"
+                            allow="autoplay; fullscreen; picture-in-picture"
+                            referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- WHY IT WORKS -->
+        <section class="section wrap mm-why" aria-labelledby="mm-why">
+            <div class="row">
+                <h2 id="mm-why" class="row__label mono muted">Why it works</h2>
+                <ol class="row__body mm-values">
+                    {
+                        values.map((v, i) => (
+                            <li class="mm-value" data-reveal>
+                                <span class="mono muted">{pad(i + 1)}</span>
+                                <strong>{v.name}</strong>
+                                <span class="muted">{v.text}</span>
+                            </li>
+                        ))
+                    }
+                </ol>
+            </div>
+        </section>
+
+    </article>
+
+    <NextProject current="miles-and-meals" />
+
+    <Lightbox />
+</Base>
+
+<script>
+    import { gsap } from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    const MOTION = "(prefers-reduced-motion: no-preference)";
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const mm = gsap.matchMedia();
+
+    /* ---------------- HEADER RAIL ---------------- */
+    // The track holds the images twice; moving it up by half loops seamlessly.
+    const railEl = document.querySelector<HTMLElement>("[data-mm-rail]");
+    if (railEl) {
+        const track = railEl.querySelector<HTMLElement>("[data-mm-rail-track]")!;
+        const toggle = railEl.querySelector<HTMLButtonElement>("[data-mm-rail-toggle]")!;
+        let paused = reduceMotion.matches;
+        const loop = gsap.to(track, { yPercent: -50, duration: 28, ease: "none", repeat: -1, paused });
+
+        const setPaused = (value: boolean) => {
+            paused = value;
+            toggle.textContent = paused ? "Play" : "Pause";
+            toggle.setAttribute("aria-pressed", String(paused));
+            paused ? loop.pause() : loop.play();
+        };
+        setPaused(paused);
+        toggle.addEventListener("click", () => setPaused(!paused));
+        // slow down to a stop under the pointer so an image can be picked
+        railEl.addEventListener("pointerenter", () => !paused && gsap.to(loop, { timeScale: 0, duration: 0.6 }));
+        railEl.addEventListener("pointerleave", () => !paused && gsap.to(loop, { timeScale: 1, duration: 0.6 }));
+    }
+
+    /* ---------------- SCROLL MOTION ---------------- */
+    mm.add(MOTION, () => {
+        // Hero: the frame opens from an inset card to full bleed, the photo settles
+        const hero = document.querySelector<HTMLElement>("[data-mm-hero]");
+        if (hero) {
+            gsap.fromTo(
+                hero.querySelector(".mm-hero__frame"),
+                { clipPath: "inset(6% 12% 6% 12% round 4px)" },
+                {
+                    clipPath: "inset(0% 0% 0% 0% round 0px)",
+                    ease: "none",
+                    scrollTrigger: { trigger: hero, start: "top 85%", end: "top 15%", scrub: true },
+                },
+            );
+            gsap.fromTo(
+                hero.querySelector("img"),
+                { scale: 1.2 },
+                { scale: 1, ease: "none", scrollTrigger: { trigger: hero, start: "top bottom", end: "bottom top", scrub: true } },
+            );
+        }
+
+        // Boxes: the red band clips them, so they rise up out of it with the scroll
+        const boxesBand = document.querySelector<HTMLElement>("[data-mm-boxes]");
+        if (boxesBand) {
+            gsap.fromTo(
+                "[data-mm-box]",
+                { yPercent: 130, rotate: (i) => [6, -5, 4][i % 3] },
+                {
+                    yPercent: 0,
+                    rotate: (i) => [-2, 1.5, -1][i % 3],
+                    ease: "power3.out",
+                    stagger: 0.12,
+                    scrollTrigger: { trigger: boxesBand, start: "top 70%", end: "center 55%", scrub: 0.8 },
+                },
+            );
+        }
+
+        // Parallax: data-speed moves an element against the scroll (percent of its height)
+        gsap.utils.toArray<HTMLElement>("[data-speed]").forEach((el) => {
+            gsap.fromTo(
+                el,
+                { yPercent: -Number(el.dataset.speed) },
+                {
+                    yPercent: Number(el.dataset.speed),
+                    ease: "none",
+                    scrollTrigger: { trigger: el, start: "top bottom", end: "bottom top", scrub: true },
+                },
+            );
+        });
+
+        // Pattern strip: the cropped image glides inside its frame
+        const pattern = document.querySelector<HTMLElement>("[data-mm-pattern]");
+        if (pattern) {
+            gsap.fromTo(
+                pattern.querySelector("img"),
+                { yPercent: -6 },
+                { yPercent: 6, ease: "none", scrollTrigger: { trigger: pattern, start: "top bottom", end: "bottom top", scrub: true } },
+            );
+        }
+
+        // Phones rise in a staggered wave
+        gsap.from(".mm-phone", {
+            y: 120,
+            autoAlpha: 0,
+            duration: 1.2,
+            ease: "expo.out",
+            stagger: 0.1,
+            scrollTrigger: { trigger: "[data-mm-phones]", start: "top 85%", once: true },
+        });
+    });
+
+    // Identity: pin the section and scroll the panels sideways (desktop only).
+    // It holds on the first panel before moving and on the last one after, so
+    // both can be read. Without this the track is a native swipeable scroller.
+    mm.add(`${MOTION} and (min-width: 900px)`, () => {
+        const section = document.querySelector<HTMLElement>("[data-mm-identity]");
+        const viewport = document.querySelector<HTMLElement>("[data-mm-viewport]");
+        const track = document.querySelector<HTMLElement>("[data-mm-track]");
+        const progress = document.querySelector<HTMLElement>("[data-mm-progress]");
+        if (!section || !viewport || !track) return;
+
+        section.classList.add("is-pinned");
+        const distance = () => track.scrollWidth - viewport.clientWidth;
+        // Pause at each end for HOLD × the sideways distance (in timeline units)
+        const HOLD = 0.08;
+
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: section,
+                start: "top top",
+                end: () => `+=${distance() * (1 + HOLD * 2)}`,
+                pin: true,
+                scrub: 1,
+                invalidateOnRefresh: true,
+                onUpdate: (self) => progress && gsap.set(progress, { scaleX: self.progress }),
+            },
+        });
+        tl.to({}, { duration: HOLD })
+            .to(track, { x: () => -distance(), ease: "none", duration: 1 })
+            .to({}, { duration: HOLD });
+
+        return () => {
+            tl.scrollTrigger?.kill();
+            tl.kill();
+            section.classList.remove("is-pinned");
+            gsap.set(track, { clearProps: "x" });
+        };
+    });
+
+    // Identity panels slide in sideways, so lazy-loading would only start once
+    // each one is already on screen. Start loading them as the section nears.
+    ScrollTrigger.create({
+        trigger: "[data-mm-identity]",
+        start: "top bottom+=100%",
+        once: true,
+        onEnter: () =>
+            document.querySelectorAll<HTMLImageElement>("[data-mm-track] img").forEach((img) => (img.loading = "eager")),
+    });
+
+    // Fonts and images change layout heights; re-measure every trigger
+    document.fonts.ready.then(() => ScrollTrigger.refresh());
+</script>
+
+<style>
+    .mm {
+        --mm-red: #e4472f;
+        --mm-blue: #3e63ff;
+        --mm-cream: #f4ebde;
+        --mm-ink: #241e1b;
+        /* background of the brand board artboards, so panels sit seamlessly */
+        --mm-board: #1b191a;
+    }
+
+    /* --- HEADER --- */
+
+    .mm-top {
+        display: grid;
+        gap: clamp(24px, 4vw, 48px) var(--gutter);
+        margin-top: 24px;
+    }
+
+    .mm-title {
+        font-size: clamp(3rem, 1rem + 8vw, 9.5rem);
+    }
+
+    .mm-kicker {
+        margin: 0 0 18px;
+    }
+
+    /* Header rail: narrow column of images, cropped top and bottom */
+    .mm-rail {
+        display: grid;
+        gap: 10px;
+    }
+
+    .mm-rail__window {
+        height: clamp(360px, 62vh, 640px);
+        overflow: hidden;
+        mask-image: linear-gradient(transparent, #000 8%, #000 92%, transparent);
+    }
+
+    .mm-rail__track {
+        display: grid;
+        gap: 14px;
+    }
+
+    .mm-rail__item {
+        aspect-ratio: 4 / 5;
+        overflow: hidden;
+    }
+
+    .mm-rail__item :global(img) {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.8s var(--ease);
+    }
+
+    .mm-rail__item:hover :global(img) {
+        transform: scale(1.05);
+    }
+
+    .mm-rail__toggle {
+        justify-self: end;
+    }
+
+    @media (min-width: 900px) {
+        .mm-top {
+            grid-template-columns: minmax(0, 1fr) clamp(200px, 22vw, 320px);
+            align-items: start;
+        }
+
+        .mm-top__title {
+            align-self: end;
+        }
+    }
+
+    @media (max-width: 899px) {
+        /* on phones the rail becomes a short strip of three */
+        .mm-rail__window {
+            height: auto;
+            mask-image: none;
+        }
+
+        .mm-rail__track {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            transform: none !important;
+        }
+
+        .mm-rail__item[aria-hidden="true"],
+        .mm-rail__toggle {
+            display: none;
+        }
+    }
+
+    .mm-intro {
+        margin-top: clamp(32px, 5vw, 64px);
+    }
+
+    .mm-facts {
+        display: grid;
+        gap: 14px;
+        align-content: start;
+        margin: 0;
+    }
+
+    .mm-facts dd {
+        margin: 2px 0 0;
+    }
+
+    .mm-links {
+        display: grid;
+        gap: 2px;
+        justify-items: start;
+    }
+
+    /* --- HERO --- */
+
+    .mm-hero {
+        margin: 0;
+    }
+
+    .mm-hero__frame {
+        overflow: hidden;
+        aspect-ratio: 1512 / 982;
+        max-height: 100vh;
+    }
+
+    .mm-hero__frame :global(img) {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform-origin: 50% 50%;
+    }
+
+    /* --- BRIEF --- */
+
+    .mm-statement {
+        margin: 0;
+        font-size: clamp(2rem, 1rem + 4vw, 5rem);
+        line-height: 0.95;
+        letter-spacing: -0.045em;
+        max-width: 14ch;
+    }
+
+    .mm-statement--small {
+        font-size: clamp(1.6rem, 1rem + 2.4vw, 3.25rem);
+        max-width: 20ch;
+        line-height: 1.02;
+    }
+
+    .mm-copy {
+        margin: clamp(24px, 3vw, 40px) 0 0;
+        max-width: 52ch;
+    }
+
+    .mm-stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 28px var(--gutter);
+        margin: clamp(40px, 5vw, 72px) 0 0;
+    }
+
+    .mm-stat {
+        display: flex;
+        flex-direction: column-reverse;
+        gap: 6px;
+        padding-top: 12px;
+        border-top: 1px solid var(--line);
+    }
+
+    .mm-stat dd {
+        margin: 0;
+        font-size: var(--fs-h2);
+        line-height: 1;
+        letter-spacing: -0.04em;
+    }
+
+    .mm-stat dt {
+        color: var(--muted);
+    }
+
+    @media (min-width: 720px) {
+        .mm-stats {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+    }
+
+    /* --- COLOURED BANDS (fixed brand surfaces in both themes) --- */
+
+    .mm-band {
+        margin-top: var(--section);
+        padding-block: clamp(64px, 9vw, 140px);
+    }
+
+    .mm-band--red {
+        background: var(--mm-red);
+        color: var(--mm-ink);
+    }
+
+    .mm-band--ink {
+        background: var(--mm-board);
+        color: var(--mm-cream);
+    }
+
+    .mm-band__label {
+        margin: 0 0 clamp(32px, 4vw, 56px);
+        opacity: 0.75;
+    }
+
+    /* --- BOXES --- */
+
+    /* the band is the mask the cards rise out of */
+    .mm-boxes-band {
+        overflow: hidden;
+        padding-bottom: clamp(80px, 10vw, 160px);
+    }
+
+    .mm-boxes {
+        display: grid;
+        gap: var(--gutter);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .mm-box {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        min-height: 22rem;
+        padding: clamp(20px, 2vw, 32px);
+        background: var(--mm-ink);
+        color: var(--mm-cream);
+        box-shadow: 0 30px 60px -30px rgba(36, 30, 27, 0.6);
+    }
+
+    .mm-box__num {
+        font-size: clamp(3rem, 2rem + 4vw, 6rem);
+        line-height: 0.85;
+        letter-spacing: -0.05em;
+        color: var(--mm-red);
+    }
+
+    .mm-box__name {
+        margin: auto 0 0;
+        font-size: var(--fs-lead);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        text-transform: uppercase;
+    }
+
+    .mm-box p {
+        margin: 0;
+        opacity: 0.8;
+    }
+
+    @media (min-width: 900px) {
+        .mm-boxes {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .mm-box:nth-child(2) {
+            margin-top: 48px;
+            background: var(--mm-cream);
+            color: var(--mm-ink);
+        }
+
+        .mm-box:nth-child(3) {
+            margin-top: 96px;
+        }
+    }
+
+    /* --- FEATURE IMAGE (Street Made) --- */
+
+    .mm-feature {
+        margin-top: var(--section);
+    }
+
+    .mm-feature figure {
+        margin: 0;
+        overflow: hidden;
+    }
+
+    .mm-feature :global(img) {
+        width: 100%;
+        height: auto;
+    }
+
+    /* --- ART DIRECTION --- */
+
+    .mm-duo {
+        display: grid;
+        gap: var(--gutter);
+        margin-top: clamp(32px, 4vw, 56px);
+        max-width: 56rem;
+    }
+
+    .mm-duo p {
+        margin: 0;
+    }
+
+    .mm-duo p + p {
+        margin-top: 8px;
+    }
+
+    @media (min-width: 720px) {
+        .mm-duo {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    .mm-pair {
+        display: grid;
+        gap: var(--gutter);
+        margin-top: clamp(48px, 7vw, 120px);
+    }
+
+    .mm-pair figure,
+    .mm-collage figure {
+        margin: 0;
+        overflow: hidden;
+    }
+
+    .mm-pair :global(img),
+    .mm-collage :global(img) {
+        width: 100%;
+        height: auto;
+    }
+
+    @media (min-width: 900px) {
+        .mm-pair {
+            grid-template-columns: 5fr 7fr;
+            align-items: center;
+        }
+
+        .mm-pair__a {
+            margin-top: 12vh;
+        }
+    }
+
+    /* --- IDENTITY (horizontal) --- */
+
+    .mm-identity__head {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 8px var(--gutter);
+    }
+
+    .mm-identity__links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 20px;
+        margin: 0;
+    }
+
+    /* the wide track must never widen the page (clip keeps pinning intact) */
+    .mm-identity {
+        overflow-x: clip;
+    }
+
+    /* Default: native swipe with snap. JS pins and drives it on desktop. */
+    .mm-identity__viewport {
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+    }
+
+    .mm-identity__viewport::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* pinned: the section fills the screen and the panels use most of it */
+    .mm-identity.is-pinned {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        height: 100vh;
+        padding-block: calc(var(--header-h) + 16px) 32px;
+    }
+
+    .mm-identity.is-pinned .mm-band__label {
+        margin-bottom: 20px;
+    }
+
+    .mm-identity.is-pinned .mm-identity__viewport {
+        overflow: visible;
+    }
+
+    .mm-identity__track {
+        display: flex;
+        gap: clamp(20px, 3vw, 48px);
+        width: max-content;
+        margin: 0;
+        padding: 0 var(--gutter);
+        list-style: none;
+    }
+
+    /* panels are sized by height so each brand-board page fills the screen */
+    .mm-panel {
+        width: min(88vw, calc((100vh - 260px) * 3024 / 1964));
+        scroll-snap-align: center;
+    }
+
+    .mm-panel figure {
+        margin: 0;
+    }
+
+    .mm-panel :global(img) {
+        width: 100%;
+        height: auto;
+    }
+
+    .mm-panel figcaption {
+        display: grid;
+        grid-template-columns: 5rem 10rem 1fr;
+        gap: 6px var(--gutter);
+        align-items: baseline;
+        margin-top: 16px;
+        max-width: 52rem;
+    }
+
+    .mm-panel figcaption strong {
+        font-size: var(--fs-body);
+    }
+
+    .mm-panel figcaption span:last-child {
+        opacity: 0.75;
+    }
+
+    .mm-identity__progress {
+        height: 1px;
+        margin-top: 20px;
+        background: var(--mm-cream);
+        transform: scaleX(0);
+        transform-origin: left;
+    }
+
+    .mm-identity:not(.is-pinned) .mm-identity__progress {
+        display: none;
+    }
+
+    @media (max-width: 719px) {
+        .mm-panel {
+            width: 88vw;
+        }
+
+        .mm-panel figcaption {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* --- PATTERN STRIP: one image, full width, cropped --- */
+
+    .mm-pattern {
+        height: clamp(260px, 40vw, 600px);
+        overflow: hidden;
+        background: var(--mm-red);
+    }
+
+    .mm-pattern :global(img) {
+        width: 100%;
+        height: 116%;
+        margin-top: -8%;
+        object-fit: cover;
+    }
+
+    /* --- APPLICATIONS --- */
+
+    .mm-collage {
+        display: grid;
+        gap: var(--gutter);
+        margin-top: clamp(48px, 7vw, 120px);
+    }
+
+    @media (min-width: 900px) {
+        .mm-collage {
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+            align-items: start;
+        }
+
+        .mm-collage__box {
+            grid-column: 1 / span 7;
+        }
+
+        .mm-collage__tote {
+            grid-column: 8 / span 5;
+            margin-top: 18vh;
+        }
+    }
+
+    /* --- APP --- */
+
+    .mm-app__head {
+        border-top-color: color-mix(in oklab, var(--mm-ink) 30%, transparent);
+    }
+
+    .mm-app__head .row__label {
+        opacity: 0.75;
+    }
+
+    .mm-phones {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--gutter);
+        margin: clamp(48px, 6vw, 96px) 0 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .mm-phone :global(img) {
+        width: 100%;
+        height: auto;
+        filter: drop-shadow(0 24px 40px rgba(36, 30, 27, 0.35));
+    }
+
+    @media (min-width: 900px) {
+        .mm-phones {
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            align-items: start;
+        }
+
+        .mm-phone:nth-child(even) {
+            margin-top: 80px;
+        }
+    }
+
+    /* Walkthrough: copy and buttons on the left, the video sized to the screen */
+    .mm-walkthrough {
+        display: grid;
+        gap: clamp(28px, 4vw, 56px) var(--gutter);
+        margin-top: clamp(64px, 8vw, 120px);
+        align-items: center;
+    }
+
+    .mm-walkthrough__label {
+        margin: 0;
+        opacity: 0.75;
+    }
+
+    .mm-walkthrough__text {
+        margin: 14px 0 0;
+        font-size: var(--fs-lead);
+        line-height: 1.15;
+        letter-spacing: -0.02em;
+        max-width: 16ch;
+    }
+
+    .mm-walkthrough__links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+    }
+
+    .mm-video {
+        position: relative;
+        width: 100%;
+        /* never taller than the screen, so the whole phone stays in view */
+        max-width: calc(78vh * 1 / 0.6495);
+        aspect-ratio: 1 / 0.6495;
+        justify-self: end;
+        background: var(--mm-ink);
+    }
+
+    .mm-video iframe {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+
+    @media (min-width: 900px) {
+        .mm-walkthrough {
+            grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+        }
+
+        .mm-walkthrough__links {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+    .mm-cta {
+        padding: 12px 18px;
+        border: 1px solid var(--mm-ink);
+        border-radius: 999px;
+        background: var(--mm-ink);
+        color: var(--mm-cream);
+        transition:
+            background-color 0.3s var(--ease),
+            color 0.3s var(--ease);
+    }
+
+    .mm-cta--ghost {
+        background: transparent;
+        color: var(--mm-ink);
+    }
+
+    .mm-cta:hover {
+        background: var(--mm-cream);
+        color: var(--mm-ink);
+    }
+
+    /* --- WHY IT WORKS --- */
+
+    .mm-why {
+        padding-bottom: var(--section);
+    }
+
+    .mm-values {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .mm-value {
+        display: grid;
+        grid-template-columns: 3rem 1fr;
+        gap: 4px var(--gutter);
+        padding-block: 18px;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .mm-value:first-child {
+        padding-top: 0;
+    }
+
+    .mm-value strong {
+        font-size: var(--fs-lead);
+        font-weight: 500;
+        letter-spacing: -0.03em;
+    }
+
+    .mm-value span:last-child {
+        grid-column: 2;
+    }
+
+    @media (min-width: 900px) {
+        .mm-value {
+            grid-template-columns: 3rem minmax(0, 1fr) minmax(0, 1fr);
+            align-items: baseline;
+        }
+
+        .mm-value span:last-child {
+            grid-column: 3;
+        }
+    }
+
+</style>

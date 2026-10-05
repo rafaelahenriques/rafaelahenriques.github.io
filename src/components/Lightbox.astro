@@ -1,0 +1,173 @@
+---
+/**
+ * Full-screen image viewer for case studies.
+ *
+ * Any element with data-zoom="<large src>" opens it on click; data-caption
+ * sets the caption. Elements are browsable with prev/next and arrow keys in
+ * document order, except those marked data-zoom-single, which open alone.
+ * Pair data-zoom with class="zoom-btn" on a <button> for the reset styles.
+ */
+---
+
+<dialog class="lightbox" data-lightbox aria-label="Image viewer">
+    <figure class="lightbox__figure">
+        <img data-lightbox-img alt="" />
+        <figcaption class="mono" data-lightbox-caption></figcaption>
+    </figure>
+    <button type="button" class="lightbox__btn lightbox__close mono" data-lightbox-close>Close ✕</button>
+    <button type="button" class="lightbox__btn lightbox__prev mono" data-lightbox-prev aria-label="Previous image">←</button>
+    <button type="button" class="lightbox__btn lightbox__next mono" data-lightbox-next aria-label="Next image">→</button>
+    <span class="lightbox__count mono" data-lightbox-count></span>
+</dialog>
+
+<script>
+    import { gsap } from "gsap";
+
+    const dialog = document.querySelector<HTMLDialogElement>("[data-lightbox]");
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    if (dialog) {
+        const img = dialog.querySelector<HTMLImageElement>("[data-lightbox-img]")!;
+        const caption = dialog.querySelector<HTMLElement>("[data-lightbox-caption]")!;
+        const counter = dialog.querySelector<HTMLElement>("[data-lightbox-count]")!;
+        const all = [...document.querySelectorAll<HTMLElement>("[data-zoom]")];
+        const items = all.filter((el) => !el.hasAttribute("data-zoom-single"));
+        let index = 0;
+        let opener: HTMLElement | null = null;
+
+        const render = (el: HTMLElement, position: string) => {
+            img.src = el.dataset.zoom!;
+            img.alt = el.dataset.caption ?? "";
+            caption.textContent = el.dataset.caption ?? "";
+            counter.textContent = position;
+        };
+
+        const showItem = (i: number) => {
+            index = (i + items.length) % items.length;
+            render(items[index], `${index + 1} / ${items.length}`);
+        };
+
+        const open = (el: HTMLElement) => {
+            opener = el;
+            const single = el.hasAttribute("data-zoom-single");
+            dialog.classList.toggle("is-single", single);
+            if (single) render(el, "");
+            else showItem(items.indexOf(el));
+            dialog.showModal();
+            if (!reduceMotion.matches) {
+                gsap.fromTo(dialog, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3, ease: "power2.out" });
+                gsap.fromTo(img, { scale: 0.94 }, { scale: 1, duration: 0.5, ease: "expo.out" });
+            }
+        };
+
+        const close = () => {
+            dialog.close();
+            opener?.focus();
+        };
+
+        all.forEach((el) => el.addEventListener("click", () => open(el)));
+        dialog.querySelector("[data-lightbox-close]")!.addEventListener("click", close);
+        dialog.querySelector("[data-lightbox-prev]")!.addEventListener("click", () => showItem(index - 1));
+        dialog.querySelector("[data-lightbox-next]")!.addEventListener("click", () => showItem(index + 1));
+        // a click on the dark area around the image closes
+        dialog.addEventListener("click", (e) => {
+            if (e.target === dialog) close();
+        });
+        dialog.addEventListener("keydown", (e) => {
+            if (dialog.classList.contains("is-single")) return;
+            if (e.key === "ArrowLeft") showItem(index - 1);
+            if (e.key === "ArrowRight") showItem(index + 1);
+        });
+    }
+</script>
+
+<style>
+    .lightbox {
+        width: 100vw;
+        max-width: none;
+        height: 100dvh;
+        max-height: none;
+        margin: 0;
+        padding: clamp(56px, 7vw, 88px) clamp(16px, 6vw, 96px);
+        border: 0;
+        background: rgba(14, 14, 13, 0.94);
+        color: #ecebe6;
+    }
+
+    .lightbox::backdrop {
+        background: transparent;
+    }
+
+    .lightbox[open] {
+        display: grid;
+        place-items: center;
+    }
+
+    .lightbox__figure {
+        display: grid;
+        gap: 14px;
+        justify-items: center;
+        margin: 0;
+        max-height: 100%;
+    }
+
+    .lightbox__figure img {
+        max-width: 100%;
+        max-height: calc(100dvh - 2 * clamp(56px, 7vw, 88px) - 40px);
+        object-fit: contain;
+    }
+
+    .lightbox__figure figcaption {
+        max-width: 60ch;
+        text-align: center;
+        opacity: 0.8;
+    }
+
+    .lightbox__btn {
+        position: fixed;
+        padding: 10px 14px;
+        border: 1px solid rgba(236, 235, 230, 0.3);
+        border-radius: 999px;
+        background: rgba(14, 14, 13, 0.6);
+        color: inherit;
+        cursor: pointer;
+    }
+
+    .lightbox__btn:hover {
+        background: #ecebe6;
+        color: #0e0e0d;
+    }
+
+    .lightbox__close {
+        top: 16px;
+        right: 16px;
+    }
+
+    .lightbox__prev,
+    .lightbox__next {
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.1rem;
+    }
+
+    .lightbox__prev {
+        left: 16px;
+    }
+
+    .lightbox__next {
+        right: 16px;
+    }
+
+    .lightbox__count {
+        position: fixed;
+        top: 26px;
+        left: 20px;
+        opacity: 0.7;
+    }
+
+    .lightbox.is-single .lightbox__prev,
+    .lightbox.is-single .lightbox__next,
+    .lightbox.is-single .lightbox__count {
+        display: none;
+    }
+</style>

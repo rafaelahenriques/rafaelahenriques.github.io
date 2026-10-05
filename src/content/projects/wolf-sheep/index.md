@@ -1,84 +1,122 @@
 ---
 title: "Wolf & Sheep"
-year: "2021"
-tech: ["Python", "Game Development", "Algorithmic Logic"]
-role: "Core Logic & Rules Engine"
-context: "Team of 3 - Academic Project"
+section: featured
+order: 1
+category: "Full-stack"
+year: "2026"
+tech: ["Python", "FastAPI", "PostgreSQL", "SQLAlchemy", "Alembic", "React", "TypeScript", "Vite", "pytest"]
+role: "Full-stack developer"
+context: "Independent rebuild of a university group project"
+description: "From university project to full-stack app: a Pygame group project rebuilt on my own around a pure Python game engine shared by the desktop game, a FastAPI backend and the tests — with a minimax AI, a React web client and game history in PostgreSQL."
 scope:
-  - Movement validation algorithms
-  - Game state management
-  - PvE (Player vs Environment) Loop
-description: "A digital adaptation of the asymmetrical strategy board game. I architected the core rule enforcement, movement validation system, and the integration of the single-player AI loop."
+  - Pure Python game engine, shared by every client
+  - Server-authoritative game state
+  - Minimax AI with alpha-beta pruning
+  - PostgreSQL game history with Alembic migrations
+  - 31 pytest tests across engine, AI, database and API
+  - Deployed on Render (API) and Netlify (frontend)
 media:
-  repo: "https://github.com/rafaelahenriques/Wolf-and-Sheep-Game"
   screenshot: "./wolfsheepmenu.png"
   gallery:
-    - "./wolfsheepmenu.png" 
-
-tags: ["Python", "Game Logic", "AI Integration", "Strategy", "Game Dev"]
+    - "./wolfsheepmenu.png"
+tags: ["Full-stack", "Python", "API", "Game Logic"]
 ---
 
-## Overview
-**Wolf & Sheep** is an asymmetrical strategy game played on an 8x8 checkerboard. Unlike traditional games like Chess or Checkers where forces are equal, this game relies on disparate goals and capabilities:
-* **The Sheep (1 Unit):** Starts at the bottom. **Goal:** Reach one of the four top-row squares.
-* **The Wolves (4 Units):** Start at the top. **Goal:** Surround the sheep so it has no legal moves remaining.
+## Origin
+Wolf & Sheep started as a university group project built in Python with Pygame. I was responsible for the board, the main game file, the menu and the overall code structure.
 
-The project supports both **2-Player Local** (Hotseat) and **Single Player** (User vs. AI) modes.
+After the course, I continued the project independently. I restructured the original prototype, separated the game logic from the interface, built an AI opponent, exposed the game through an API, created a web version and added persistent data and deployment.
 
-## My Contribution
-My role focused on the "Brain" of the game—ensuring that the rules were enforced strictly and that the game state updated correctly after every interaction.
+This case study focuses on that independent rebuild.
 
-### 1. Movement Validation Engine
-I replaced basic coordinate checking with a robust validation system using an $(x, y)$ grid system:
-* **Directional Logic:** Hard-coded the movement deltas.
-    * *Sheep:* Can move `(x+1, y+1)`, `(x-1, y+1)`, `(x+1, y-1)`, or `(x-1, y-1)`.
-    * *Wolf:* Can only move "forward" relative to their start `(x+1, y+1)` or `(x-1, y+1)`.
-* **Boundary & Collision:** Implemented checks to ensure `0 <= x <= 7` and that no unit could land on a tile occupied by another wolf or the sheep.
+## The game
+Wolf & Sheep is a turn-based strategy game where one sheep tries to reach the opposite side of the board while four wolves try to block it.
 
-### 2. Game State & Victory Conditions
-I developed the logic to detect end-game states instantly:
-* **Sheep Victory:** Triggered immediately when the Sheep's Y-coordinate equals `0` (the top row).
-* **Wolf Victory (The Trapping Algorithm):** This was the most complex logic. The game calculates all 4 potential moves for the sheep; if all 4 result in either a collision or an out-of-bounds error, the Wolves are declared winners.
+The project now includes desktop and browser versions, an AI opponent with multiple difficulty levels, saved games and persistent game statistics.
 
-### 3. The AI Integration (PvE)
-I implemented the game loop that handles the Single Player experience.
-* **Turn Management:** The system enforces the "Sheep Starts First" rule.
-* **The AI Handoff:** When the user (Sheep) finishes a move, my logic locks user input, passes the board state to the AI function to calculate the optimal Wolf move, updates the board, and then unlocks user input again.
+## Stack
+Python · FastAPI · PostgreSQL · SQLAlchemy · Alembic · React · TypeScript · Vite · pytest
 
-## Logic Snippet
-Here is a simplified representation of the movement validation logic I implemented:
+Deployed with Render for the API and Netlify for the frontend.
+
+### Why this stack
+The game logic was already written in Python, so I kept Python at the centre of the project instead of rewriting working logic in another language.
+
+FastAPI provides the API layer between the game engine and the web application. It also gives me a clear path towards WebSockets for online multiplayer.
+
+The frontend uses React and TypeScript with Vite. TypeScript was particularly useful for keeping API responses, game states and component data consistent while the project grew.
+
+The first database version used SQLite. I later moved to PostgreSQL and now use it in both development and production, with SQLAlchemy for database access and Alembic for schema migrations.
+
+## Architecture
+
+### One source of truth for the game rules
+The biggest architectural change was separating the rules from Pygame.
+
+The original project mixed game state, rules and interface code. I moved the rules into a pure Python engine that has no dependency on Pygame, React or FastAPI.
+
+The desktop game, API and tests now use the same engine. The web frontend does not implement its own version of the rules.
 
 ```python
-def is_move_legal(piece, current_pos, target_pos, board_state):
-    # 1. Check if target is inside the 8x8 board
-    if not (0 <= target_pos.x < 8 and 0 <= target_pos.y < 8):
-        return False
+@dataclass(frozen=True)
+class GameState:
+    sheep: Pos
+    wolves: Tuple[Pos, ...]
+    turn: str
 
-    # 2. Check if the move is a valid diagonal step
-    dx = target_pos.x - current_pos.x
-    dy = target_pos.y - current_pos.y
+def apply_move(state: GameState, move: Move) -> GameState:
+    if move not in legal_moves(state):
+        raise ValueError(f"Illegal move: {move}")
 
-    if abs(dx) != 1 or abs(dy) != 1:
-        return False # Must move exactly one square diagonally
-
-    # 3. Check for specific unit constraints
-    if piece.type == "WOLF" and dy < 0:
-        return False # Wolves cannot move backwards
-
-    # 4. Check collision
-    if board_state[target_pos] is not None:
-        return False # Tile is occupied
-
-    return True
+    # Return a new state instead of changing the existing one
 ```
-## Challenges & Solutions
-**Challenge:** Handling the four wolves as a single "Player." 
 
-**Solution:** In the standard turn logic, a player usually moves "their piece." Since the Wolf player has 4 pieces, I had to create a two-step selection state:
+Game states are immutable. Instead of modifying the current state, a move produces a new one.
 
-1. Select a specific Wolf unit.
+This makes the engine easier to test and allows the AI to simulate possible moves without changing the actual game.
 
-2. Validate if that specific wolf has legal moves available before locking in the selection.
+### Server-authoritative game state
+The frontend sends the player's intended move, not a modified board.
 
-## Learnings
-This project deepened my understanding of ` Object-Oriented Programming`  in Python, specifically how to separate Game Logic (The Rules) from Game Rendering (The UI), ensuring that the code is clean, testable, and modular.
+```json
+{
+  "from": [2, 4],
+  "to": [3, 3]
+}
+```
+
+The server checks the move against the game engine before updating the state. Illegal moves are rejected instead of being trusted because they came from the client.
+
+This also provides the foundation for multiplayer: both players can send actions while the server remains responsible for the actual game state.
+
+### AI opponent
+The AI uses minimax with alpha-beta pruning.
+
+A pathfinding algorithm such as A* would find an efficient route through a fixed environment, but Wolf & Sheep is adversarial: every move changes what the other player can do next. Minimax allows the AI to evaluate moves while accounting for the opponent's possible responses.
+
+Difficulty changes how far the AI searches. Easy mode uses simpler decisions, while higher difficulties search further ahead.
+
+The evaluation function scores possible states based on factors such as the sheep's progress across the board and the wolves' ability to restrict its movement.
+
+### Database design
+Game history is stored using a relational structure built around games, players and moves rather than storing the entire match in a single database row.
+
+Statistics are calculated from that game history instead of being duplicated in a separate statistics table.
+
+This keeps the recorded games as the source of truth. Caching or precomputed statistics can be added later if performance makes them necessary.
+
+## Testing and development
+The project currently has 31 pytest tests covering the game engine, AI, database and API.
+
+Database changes are managed through Alembic migrations, keeping schema changes versioned alongside the application code.
+
+Development is organised using a feature branch for each major change, with tagged milestones for completed versions.
+
+The frontend and backend are deployed separately and communicate over HTTPS. CORS is restricted to the frontend's allowed origin.
+
+## In progress
+The next stage is adding user accounts and online multiplayer.
+
+Authentication will use Argon2 password hashing and HTTP-only session cookies.
+
+Multiplayer will use WebSockets while keeping the existing server-authoritative architecture. Players send their moves to the server, the server validates them using the same Python engine, and the resulting game state is broadcast to both players.

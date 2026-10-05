@@ -1,0 +1,226 @@
+---
+/**
+ * A word spread across the full width, letter by letter, with a photo set
+ * in an oval between two of its letters. It enters as one tight word; then
+ * the photo opens at the seam and pushes the letters apart to the edges.
+ * Annotations sit above like figure labels in a book.
+ */
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+
+interface Props {
+    word: string;
+    image: ImageMetadata;
+    alt: string;
+    /** the photo goes before the letter at this index */
+    insertAt: number;
+    /** focal point for the oval crop, e.g. "46% 45%" */
+    focus?: string;
+    figLeft?: string;
+    figRight?: string;
+    figRightHref?: string;
+}
+
+const { word, image, alt, insertAt, focus = "50% 50%", figLeft, figRight, figRightHref } = Astro.props;
+const letters = [...word];
+---
+
+<div class="spread" data-spread>
+    {
+        (figLeft || figRight) && (
+            <div class="spread__figs mono wrap">
+                <span>{figLeft}</span>
+                {figRight && (figRightHref ? <a href={figRightHref} class="link">{figRight}</a> : <span>{figRight}</span>)}
+            </div>
+        )
+    }
+    <p class="spread__word wrap" aria-label={word}>
+        {
+            letters.map((letter, i) => (
+                <>
+                    {i === insertAt && (
+                        <span class="spread__photo" data-spread-photo>
+                            <Image
+                                src={image}
+                                alt={alt}
+                                widths={[300, 600, 900]}
+                                sizes="(min-width: 900px) 16vw, 28vw"
+                                style={`object-position: ${focus}`}
+                            />
+                        </span>
+                    )}
+                    <span class="spread__letter" data-spread-letter data-side={i < insertAt ? "left" : "right"} aria-hidden="true">
+                        {letter}
+                    </span>
+                </>
+            ))
+        }
+    </p>
+</div>
+
+<script>
+    import { gsap } from "gsap";
+
+    // Play once the page is actually visible (after the loading screen, if any)
+    const whenVisible = (play: () => void) => {
+        if (document.documentElement.classList.contains("is-loading")) {
+            window.addEventListener("loader:done", play, { once: true });
+        } else {
+            play();
+        }
+    };
+
+    const setUp = () =>
+        document.querySelectorAll<HTMLElement>("[data-spread]").forEach((spread) => {
+            const word = spread.querySelector<HTMLElement>(".spread__word")!;
+            const photo = spread.querySelector<HTMLElement>("[data-spread-photo]")!;
+            const letters = [...spread.querySelectorAll<HTMLElement>("[data-spread-letter]")];
+            const firstRight = letters.findIndex((l) => l.dataset.side === "right");
+
+            // The CSS layout is the end state (spread across the page). Work out
+            // where every letter sits when the word is set tight and centred, and
+            // where the seam between the two halves falls.
+            const box = word.getBoundingClientRect();
+            const widths = letters.map((l) => l.getBoundingClientRect().width);
+            const total = widths.reduce((a, b) => a + b, 0);
+            let cursor = box.left + (box.width - total) / 2;
+            let seam = cursor;
+            const offsets = letters.map((l, i) => {
+                if (i === firstRight) seam = cursor;
+                const packed = cursor;
+                cursor += widths[i];
+                return packed - l.getBoundingClientRect().left;
+            });
+            const p = photo.getBoundingClientRect();
+            const photoOffset = seam - (p.left + p.width / 2);
+
+            // start: one tight word, the photo a dot at the seam
+            gsap.set(letters, { x: (i) => offsets[i], yPercent: 60, autoAlpha: 0 });
+            gsap.set(photo, { x: photoOffset, scale: 0 });
+            gsap.set(word, { visibility: "visible" });
+
+            const tl = gsap
+                .timeline({ paused: true })
+                // the word rises in, letter by letter
+                .to(letters, { yPercent: 0, autoAlpha: 1, duration: 0.9, ease: "expo.out", stagger: 0.05 })
+                // the photo opens at the seam and pushes the letters apart
+                .to(photo, { x: 0, scale: 1, duration: 1.5, ease: "expo.inOut" }, "+=0.3")
+                .from(photo.querySelector("img"), { scale: 1.6, duration: 1.8, ease: "expo.out" }, "<")
+                .to(letters, { x: 0, duration: 1.5, ease: "expo.inOut" }, "<");
+
+            tl.eventCallback("onComplete", () => addHover(spread));
+            whenVisible(() => tl.play());
+        });
+
+    const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+
+    // Hover: letters ripple towards the cursor; the photo leans towards it too
+    function addHover(spread: HTMLElement) {
+        if (!finePointer.matches) return;
+        const word = spread.querySelector<HTMLElement>(".spread__word")!;
+        const letters = [...spread.querySelectorAll<HTMLElement>("[data-spread-letter]")];
+        const photo = spread.querySelector<HTMLElement>("[data-spread-photo]")!;
+        const photoImg = photo.querySelector("img")!;
+
+        const lifts = letters.map((l) => ({
+            y: gsap.quickTo(l, "y", { duration: 0.5, ease: "power3" }),
+            r: gsap.quickTo(l, "rotation", { duration: 0.6, ease: "power3" }),
+        }));
+        const RANGE = 220; // px around the cursor that reacts
+
+        word.addEventListener("pointermove", (e) => {
+            letters.forEach((l, i) => {
+                const b = l.getBoundingClientRect();
+                const dx = e.clientX - (b.left + b.width / 2);
+                const pull = Math.max(0, 1 - Math.abs(dx) / RANGE); // 1 under the cursor, 0 far away
+                lifts[i].y(-pull * 0.18 * b.height);
+                lifts[i].r(pull * Math.sign(dx) * 6);
+            });
+        });
+        word.addEventListener("pointerleave", () => lifts.forEach((l) => (l.y(0), l.r(0))));
+
+        // the oval drifts a little towards the cursor, the picture inside the other way
+        const photoX = gsap.quickTo(photo, "x", { duration: 0.7, ease: "power3" });
+        const photoY = gsap.quickTo(photo, "y", { duration: 0.7, ease: "power3" });
+        const imgX = gsap.quickTo(photoImg, "x", { duration: 0.9, ease: "power3" });
+        const imgY = gsap.quickTo(photoImg, "y", { duration: 0.9, ease: "power3" });
+
+        photo.addEventListener("pointerenter", () =>
+            gsap.to(photo, { scale: 1.08, rotate: -3, duration: 0.6, ease: "power3.out" }),
+        );
+        photo.addEventListener("pointermove", (e) => {
+            const b = photo.getBoundingClientRect();
+            const nx = (e.clientX - (b.left + b.width / 2)) / b.width; // -0.5 … 0.5
+            const ny = (e.clientY - (b.top + b.height / 2)) / b.height;
+            photoX(nx * 24);
+            photoY(ny * 24);
+            imgX(-nx * 14);
+            imgY(-ny * 14);
+        });
+        photo.addEventListener("pointerleave", () => {
+            gsap.to(photo, { scale: 1, rotate: 0, duration: 0.8, ease: "elastic.out(1, 0.5)" });
+            photoX(0);
+            photoY(0);
+            imgX(0);
+            imgY(0);
+        });
+    }
+
+    // letter widths depend on the webfont, so measure once it has loaded
+    gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", (ctx) => {
+        document.fonts.ready.then(ctx.add(setUp));
+    });
+</script>
+
+<style>
+    .spread__figs {
+        display: flex;
+        justify-content: space-between;
+        gap: var(--gutter);
+        margin-bottom: clamp(12px, 2vw, 24px);
+        font-size: var(--fs-mono);
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+
+    .spread__word {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 0;
+        font-size: clamp(2.75rem, 1rem + 11vw, 13rem);
+        font-weight: 800;
+        line-height: 0.8;
+        letter-spacing: -0.04em;
+        text-transform: uppercase;
+    }
+
+    .spread__letter {
+        display: inline-block;
+    }
+
+    /* the script reveals the word once it has packed the letters together */
+    @media (prefers-reduced-motion: no-preference) {
+        :global(html.js) .spread__word {
+            visibility: hidden;
+        }
+    }
+
+    .spread__photo {
+        display: block;
+        flex: none;
+        width: clamp(72px, 14vw, 240px);
+        aspect-ratio: 3 / 4;
+        overflow: hidden;
+        border-radius: 50%;
+    }
+
+    .spread__photo :global(img) {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        /* slight bleed so the hover shift never reveals an edge */
+        scale: 1.12;
+    }
+</style>
