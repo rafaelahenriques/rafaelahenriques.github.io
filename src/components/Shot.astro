@@ -1,0 +1,47 @@
+---
+/**
+ * A screenshot in a case study: wipes in on scroll (data-reveal-img), opens
+ * in the Lightbox on click, with an optional one-line caption under it.
+ */
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import { fullSize } from "../lib/images";
+
+interface Props {
+    img: ImageMetadata;
+    alt: string;
+    caption?: string;
+    sizes?: string;
+    eager?: boolean;
+}
+
+const { img, alt, caption, sizes = "(min-width: 900px) 55vw, 100vw", eager = false } = Astro.props;
+const full = await fullSize(img);
+---
+
+<figure class="shot">
+    <div class="shot__frame" data-reveal-img>
+        <button type="button" class="zoom-btn" data-zoom={full} data-caption={caption ?? alt} aria-label={`View larger: ${alt}`}>
+            <Image quality={90} src={img} alt={alt} widths={[800, 1400, 2000]} sizes={sizes} loading={eager ? "eager" : "lazy"} />
+        </button>
+    </div>
+    {caption && <figcaption class="mono muted">{caption}</figcaption>}
+</figure>
+
+<style>
+    .shot {
+        display: grid;
+        gap: 12px;
+        margin: 0;
+    }
+
+    .shot__frame {
+        overflow: hidden;
+        box-shadow: var(--media-shadow);
+    }
+
+    .shot :global(img) {
+        width: 100%;
+        height: auto;
+    }
+</style>
