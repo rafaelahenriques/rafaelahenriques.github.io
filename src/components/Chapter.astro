@@ -26,6 +26,9 @@ const hasMedia = Astro.slots.has("media");
     data-side={side}
     data-wide={wide ? "" : undefined}
     data-media={hasMedia ? "" : undefined}
+    data-chapter
+    data-num={num}
+    data-title={title}
 >
     <div class="row chapter__head">
         <span class="row__label mono muted">{num}</span>
