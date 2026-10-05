@@ -7,7 +7,7 @@
  */
 import Base from "../../layouts/BaseLayout.astro";
 import { Image } from "astro:assets";
-import { getEntry, render } from "astro:content";
+import { getEntry } from "astro:content";
 import { pad } from "../../lib/content";
 import { fullSize } from "../../lib/images";
 import Lightbox from "../../components/Lightbox.astro";
@@ -21,7 +21,6 @@ import winScreen from "../../content/projects/wolf-sheep/winscreen.png";
 import statistics from "../../content/projects/wolf-sheep/statistics.png";
 
 const project = (await getEntry("projects", "wolf-sheep"))!;
-const { Content } = await render(project);
 const { title, description, role, year, category, tech, context, order, media } = project.data;
 
 const links = [
@@ -82,6 +81,28 @@ const screens = await Promise.all(
 
 const heroFull = await fullSize(mainGame);
 
+// The text in index.md, split at its ## headings so each part becomes a
+// section of the page, between the visuals
+const textParts = (project.rendered?.html ?? "")
+    .split(/(?=<h2[\s>])/)
+    .map((chunk) => {
+        const heading = chunk.match(/^<h2[^>]*>([\s\S]*?)<\/h2>/);
+        return heading ? { title: heading[1].trim(), html: chunk.slice(heading[0].length) } : null;
+    })
+    .filter((part) => part !== null);
+const textOf = (title: string) => textParts.find((p) => p.title === title);
+const id = (title: string) => "ws-" + title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
+const origin = textOf("Origin");
+const theGame = textOf("The game");
+// after the screens, in this order; any new ## section in index.md follows them
+const placed = ["Origin", "The game"];
+const later = ["Stack", "Architecture", "Testing and development", "In progress"];
+const rest = [
+    ...later.map(textOf).filter((p) => p !== undefined),
+    ...textParts.filter((p) => !placed.includes(p.title) && !later.includes(p.title)),
+];
+
 // Starting position, as in the game: four wolves on the top row, the sheep bottom left
 const pieces = [
     { id: "w1", kind: "wolf", r: 0, c: 1 },
@@ -133,6 +154,18 @@ const pieces = [
             </figure>
         </section>
 
+        <!-- ORIGIN -->
+        {
+            origin && (
+                <section class="section wrap" aria-labelledby={id(origin.title)}>
+                    <div class="row">
+                        <h2 id={id(origin.title)} class="row__label mono muted">{origin.title}</h2>
+                        <div class="row__body prose ws-text" set:html={origin.html} />
+                    </div>
+                </section>
+            )
+        }
+
         <!-- NUMBERS -->
         <section class="section wrap" aria-label="In numbers">
             <ul class="ws-stats">
@@ -147,13 +180,14 @@ const pieces = [
             </ul>
         </section>
 
-        <!-- HOW IT PLAYS: a live board replaying a short match -->
+        <!-- THE GAME, beside a live board replaying a short match -->
         <section class="section wrap" aria-labelledby="ws-play">
             <div class="row ws-play">
-                <h2 id="ws-play" class="row__label mono muted">How it plays</h2>
+                <h2 id="ws-play" class="row__label mono muted">The game</h2>
                 <div class="row__body ws-play__body">
                     <div class="ws-play__text">
                         <p class="ws-statement" data-split>One sheep. Four wolves. Get through, or get trapped.</p>
+                        {theGame && <div class="prose ws-text ws-play__copy" set:html={theGame.html} />}
                         <ol class="ws-rules">
                             {
                                 gameRules.map((r, i) => (
@@ -239,15 +273,17 @@ const pieces = [
             </ol>
         </section>
 
-        <!-- CASE STUDY TEXT (index.md) -->
-        <section class="section wrap" aria-label="Case study">
-            <div class="row">
-                <p class="row__label mono muted">Case study</p>
-                <div class="row__body prose" data-reveal>
-                    <Content />
-                </div>
-            </div>
-        </section>
+        <!-- STACK, ARCHITECTURE, TESTING, IN PROGRESS -->
+        {
+            rest.map((part) => (
+                <section class="section wrap" aria-labelledby={id(part.title)}>
+                    <div class="row">
+                        <h2 id={id(part.title)} class="row__label mono muted">{part.title}</h2>
+                        <div class="row__body prose ws-text" set:html={part.html} />
+                    </div>
+                </section>
+            ))
+        }
 
         <!-- TRY IT -->
         {
@@ -381,6 +417,14 @@ const pieces = [
                 scrollTrigger: { trigger: hero, start: "top top+=80", end: "bottom top", scrub: true },
             });
         }
+
+        // the text arrives paragraph by paragraph, like the rest of the page
+        gsap.set(".ws-text > *", { autoAlpha: 0, y: 24 });
+        ScrollTrigger.batch(".ws-text > *", {
+            start: "top 92%",
+            once: true,
+            onEnter: (els) => gsap.to(els, { autoAlpha: 1, y: 0, duration: 1, ease: "expo.out", stagger: 0.06 }),
+        });
 
         // numbers count up once
         document.querySelectorAll<HTMLElement>("[data-count]").forEach((el) => {
@@ -712,6 +756,10 @@ const pieces = [
         font-weight: 800;
         line-height: 0.9;
         letter-spacing: -0.05em;
+    }
+
+    .ws-play__copy {
+        margin-top: clamp(24px, 3vw, 40px);
     }
 
     /* --- WALKTHROUGH --- */
