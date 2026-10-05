@@ -1,15 +1,17 @@
 ---
 /**
- * Wolf & Sheep case study. A custom page (customPage in the content entry)
- * so the game can be shown playing: a live board that replays a short match,
- * counters, the walkthrough opening up on scroll and the screens stacking
- * in the order a player meets them. The long text stays in index.md.
+ * Wolf & Sheep case study. One continuous story in three parts (the project,
+ * how it's built, what's next). Each chapter pairs a ## section of index.md
+ * with the visual it explains: a live board, the walkthrough, two diagrams
+ * drawn in HTML and the game's own screens. Every screenshot zooms.
  */
 import Base from "../../layouts/BaseLayout.astro";
 import { Image } from "astro:assets";
 import { getEntry } from "astro:content";
 import { pad } from "../../lib/content";
 import { fullSize } from "../../lib/images";
+import Chapter from "../../components/Chapter.astro";
+import Shot from "../../components/Shot.astro";
 import Lightbox from "../../components/Lightbox.astro";
 import NextProject from "../../components/NextProject.astro";
 
@@ -21,86 +23,47 @@ import winScreen from "../../content/projects/wolf-sheep/winscreen.png";
 import statistics from "../../content/projects/wolf-sheep/statistics.png";
 
 const project = (await getEntry("projects", "wolf-sheep"))!;
-const { title, description, role, year, category, tech, context, order, media } = project.data;
+const { title, description, role, year, category, context, order, media } = project.data;
+
+const repos = {
+    mine: media?.repo,
+    original: "https://github.com/rafaelahenriques/Wolf-and-Sheep-Game",
+};
 
 const links = [
-    { label: "Play the game", href: media?.live },
-    { label: "Code — my rebuild", href: media?.repo },
-    { label: "Code — university group project", href: "https://github.com/rafaelahenriques/Wolf-and-Sheep-Game" },
+    { href: media?.live, title: "Play the game", note: "Live in the browser" },
+    { href: repos.mine, title: "My version on GitHub", note: "Individual, rebuilt after the course" },
+    { href: repos.original, title: "Original group project on GitHub", note: "University, Python + Pygame" },
 ].filter((l) => l.href);
 
-const stats = [
-    { value: 31, label: "pytest tests across engine, AI, database and API" },
-    { value: 3, label: "AI difficulty levels, from one minimax search" },
-    { value: 1, label: "rule engine shared by desktop, API and tests" },
-    { value: 2, label: "deploys: FastAPI on Render, React on Netlify" },
-];
-
-const gameRules = [
-    "Pieces move one square diagonally.",
-    "The sheep moves forward and backward.",
-    "The wolves can only move forward.",
-    "The sheep wins by reaching the other side.",
-    "The wolves win by trapping the sheep.",
-];
-
-const screens = await Promise.all(
-    [
-        {
-            img: startScreen,
-            title: "Start",
-            text: "Player vs computer, player vs player and online multiplayer (in progress). Saved games and statistics sit in the two circles.",
-        },
-        {
-            img: difficulty,
-            title: "Difficulty",
-            text: "Easy, medium or hard. Each level changes how far ahead the minimax search looks before the wolves move.",
-        },
-        {
-            img: mainGame,
-            title: "The board",
-            text: "Turn, mode, difficulty and move count on the left; save and quit on the right. The board only shows what the server says is legal.",
-        },
-        {
-            img: rules,
-            title: "Rules",
-            text: "The help button opens the rules from any screen, so nobody has to leave a game to check them.",
-        },
-        {
-            img: winScreen,
-            title: "Game over",
-            text: "The board dims and the result takes over, with one click to play again or go back to the menu.",
-        },
-        {
-            img: statistics,
-            title: "Statistics",
-            text: "Calculated from the stored game history in PostgreSQL: games played, win rate, average moves and wins per difficulty.",
-        },
-    ].map(async (s) => ({ ...s, full: await fullSize(s.img) })),
+// index.md split at its ## headings; each part is one chapter's text
+const parts = new Map(
+    (project.rendered?.html ?? "").split(/(?=<h2[\s>])/).flatMap((chunk) => {
+        const heading = chunk.match(/^<h2[^>]*>([\s\S]*?)<\/h2>/);
+        return heading ? [[heading[1].trim(), chunk.slice(heading[0].length)] as [string, string]] : [];
+    }),
 );
+const text = (heading: string) => parts.get(heading);
+const placed = [
+    "Origin",
+    "The game",
+    "Stack",
+    "One source of truth for the game rules",
+    "Server-authoritative game state",
+    "AI opponent",
+    "Database design",
+    "Testing and development",
+    "In progress",
+];
+// a new ## section added to index.md later still shows up, after the others
+const extra = [...parts.keys()].filter((heading) => !placed.includes(heading));
 
 const heroFull = await fullSize(mainGame);
 
-// The text in index.md, split at its ## headings so each part becomes a
-// section of the page, between the visuals
-const textParts = (project.rendered?.html ?? "")
-    .split(/(?=<h2[\s>])/)
-    .map((chunk) => {
-        const heading = chunk.match(/^<h2[^>]*>([\s\S]*?)<\/h2>/);
-        return heading ? { title: heading[1].trim(), html: chunk.slice(heading[0].length) } : null;
-    })
-    .filter((part) => part !== null);
-const textOf = (title: string) => textParts.find((p) => p.title === title);
-const id = (title: string) => "ws-" + title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-
-const origin = textOf("Origin");
-const theGame = textOf("The game");
-// after the screens, in this order; any new ## section in index.md follows them
-const placed = ["Origin", "The game"];
-const later = ["Stack", "Architecture", "Testing and development", "In progress"];
-const rest = [
-    ...later.map(textOf).filter((p) => p !== undefined),
-    ...textParts.filter((p) => !placed.includes(p.title) && !later.includes(p.title)),
+const testing = [
+    { value: 31, label: "pytest tests" },
+    { value: 4, label: "layers covered: engine, AI, database, API" },
+    { value: 2, label: "separate deploys: API on Render, frontend on Netlify" },
 ];
 
 // Starting position, as in the game: four wolves on the top row, the sheep bottom left
@@ -126,16 +89,17 @@ const pieces = [
                     <div><dt class="muted">Year</dt><dd>{year}</dd></div>
                     <div><dt class="muted">Role</dt><dd>{role}</dd></div>
                     <div><dt class="muted">Context</dt><dd>{context}</dd></div>
-                    <div><dt class="muted">Stack</dt><dd>{tech?.join(", ")}</dd></div>
                 </dl>
                 <div class="row__body">
                     <p class="lead ws-lead" data-split>{description}</p>
-                    <ul class="ws-links mono" data-reveal>
+                    <ul class="ws-links" data-reveal>
                         {
                             links.map((l) => (
                                 <li>
-                                    <a href={l.href} class="link" target="_blank" rel="noopener">
-                                        {l.label} ↗
+                                    <a href={l.href} target="_blank" rel="noopener">
+                                        <span class="ws-links__title">{l.title}</span>
+                                        <span class="ws-links__note mono muted">{l.note}</span>
+                                        <span class="ws-links__arrow" aria-hidden="true">↗</span>
                                     </a>
                                 </li>
                             ))
@@ -148,93 +112,66 @@ const pieces = [
         <!-- HERO -->
         <section class="wrap ws-hero" aria-label="The game board">
             <figure data-reveal-img data-ws-hero>
-                <button type="button" class="zoom-btn" data-zoom={heroFull} data-zoom-single data-caption="The board, mid-game against the computer" aria-label="View larger: the game board">
+                <button type="button" class="zoom-btn" data-zoom={heroFull} data-zoom-single data-caption="The board, at the start of a game against the computer" aria-label="View larger: the game board">
                     <Image quality={90} src={mainGame} alt="Wolf & Sheep game screen: an 8 by 8 board with four purple wolves on the top row and the sheep in the bottom corner" widths={[1000, 1600, 2400]} sizes="100vw" loading="eager" />
                 </button>
             </figure>
         </section>
 
-        <!-- ORIGIN -->
-        {
-            origin && (
-                <section class="section wrap" aria-labelledby={id(origin.title)}>
-                    <div class="row">
-                        <h2 id={id(origin.title)} class="row__label mono muted">{origin.title}</h2>
-                        <div class="row__body prose ws-text" set:html={origin.html} />
-                    </div>
-                </section>
-            )
-        }
+        <!-- ============ PART 1: THE PROJECT ============ -->
+        <div class="ws-part-wrap wrap" data-reveal>
+            <div class="ws-part">
+                <span class="mono muted">Part 1</span>
+                <span class="ws-part__title">The project</span>
+                <span class="mono muted">01—03</span>
+            </div>
+        </div>
 
-        <!-- NUMBERS -->
-        <section class="section wrap" aria-label="In numbers">
-            <ul class="ws-stats">
-                {
-                    stats.map((s) => (
-                        <li class="ws-stat" data-reveal>
-                            <span class="ws-stat__value" data-count={s.value}>{s.value}</span>
-                            <span class="ws-stat__label muted">{s.label}</span>
-                        </li>
-                    ))
-                }
-            </ul>
-        </section>
+        <Chapter id="ws-origin" num="01" title="Origin" html={text("Origin")}>
+            <div class="ws-versions" slot="media" data-ws-versions>
+                <a class="ws-version" href={repos.original} target="_blank" rel="noopener">
+                    <span class="mono muted">Before</span>
+                    <strong>University group project</strong>
+                    <span class="muted">Python and Pygame. My part: the board, the main game file, the menu and the code structure.</span>
+                    <span class="ws-version__link mono">Original code on GitHub ↗</span>
+                </a>
+                <span class="ws-versions__arrow" aria-hidden="true">→</span>
+                <a class="ws-version ws-version--now" href={repos.mine} target="_blank" rel="noopener">
+                    <span class="mono">After</span>
+                    <strong>My individual version</strong>
+                    <span>A pure Python engine, a minimax AI, a FastAPI backend, a React web client and PostgreSQL, deployed.</span>
+                    <span class="ws-version__link mono">My code on GitHub ↗</span>
+                </a>
+            </div>
+        </Chapter>
 
-        <!-- THE GAME, beside a live board replaying a short match -->
-        <section class="section wrap" aria-labelledby="ws-play">
-            <div class="row ws-play">
-                <h2 id="ws-play" class="row__label mono muted">The game</h2>
-                <div class="row__body ws-play__body">
-                    <div class="ws-play__text">
-                        <p class="ws-statement" data-split>One sheep. Four wolves. Get through, or get trapped.</p>
-                        {theGame && <div class="prose ws-text ws-play__copy" set:html={theGame.html} />}
-                        <ol class="ws-rules">
-                            {
-                                gameRules.map((r, i) => (
-                                    <li data-reveal>
-                                        <span class="mono muted">{pad(i + 1)}</span>
-                                        {r}
-                                    </li>
-                                ))
-                            }
-                        </ol>
-                    </div>
-
-                    <figure class="ws-demo" data-reveal>
-                        <div class="ws-demo__status">
-                            <p class="ws-demo__turn"><span data-ws-turn>Your turn…</span><span class="muted" data-ws-side>-Sheep</span></p>
-                            <p class="mono muted">vs Computer · Medium · Moves <span data-ws-moves>0</span></p>
-                        </div>
-                        <div class="ws-board" data-ws-board aria-hidden="true">
-                            {Array.from({ length: 64 }, (_, i) => <span class="ws-cell" data-dark={(Math.floor(i / 8) + (i % 8)) % 2 === 1 ? "" : undefined} />)}
-                            {
-                                pieces.map((p) => (
-                                    <span class={`ws-piece ws-piece--${p.kind}`} data-piece={p.id} style={`--r:${p.r};--c:${p.c}`}>
-                                        <i />
-                                    </span>
-                                ))
-                            }
-                            <div class="ws-board__win" data-ws-win>
-                                <strong>You win!</strong>
-                                <span>The sheep slipped through.</span>
-                            </div>
-                        </div>
-                        <figcaption class="mono muted">
-                            A replayed match against the computer. Dots mark the moves the engine allows.
-                        </figcaption>
-                    </figure>
+        <Chapter id="ws-game" num="02" title="The game" html={text("The game")} side="left">
+            <figure class="ws-demo" slot="media">
+                <div class="ws-demo__status">
+                    <p class="ws-demo__turn"><span data-ws-turn>Your turn…</span><span class="muted" data-ws-side>-Sheep</span></p>
+                    <p class="mono muted">vs Computer · Medium · Moves <span data-ws-moves>0</span></p>
                 </div>
-            </div>
-        </section>
+                <div class="ws-board" data-ws-board aria-hidden="true">
+                    {Array.from({ length: 64 }, (_, i) => <span class="ws-cell" data-dark={(Math.floor(i / 8) + (i % 8)) % 2 === 1 ? "" : undefined} />)}
+                    {
+                        pieces.map((p) => (
+                            <span class={`ws-piece ws-piece--${p.kind}`} data-piece={p.id} style={`--r:${p.r};--c:${p.c}`}>
+                                <i />
+                            </span>
+                        ))
+                    }
+                    <div class="ws-board__win" data-ws-win>
+                        <strong>You win!</strong>
+                        <span>The sheep slipped through.</span>
+                    </div>
+                </div>
+                <figcaption class="mono muted">
+                    A replayed match against the computer. Dots mark the moves the engine allows.
+                </figcaption>
+            </figure>
+        </Chapter>
 
-        <!-- WALKTHROUGH -->
-        <section class="section wrap" aria-labelledby="ws-walkthrough">
-            <div class="row">
-                <h2 id="ws-walkthrough" class="row__label mono muted">Walkthrough</h2>
-                <p class="row__body ws-statement ws-statement--small" data-split>
-                    From the menu to a win, in the browser version.
-                </p>
-            </div>
+        <Chapter id="ws-walkthrough" num="03" title="Walkthrough" wide>
             <div class="ws-video" data-ws-video>
                 <iframe
                     src="https://player.vimeo.com/video/1233170503?badge=0&autopause=0&dnt=1"
@@ -243,61 +180,117 @@ const pieces = [
                     allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
                     referrerpolicy="strict-origin-when-cross-origin"></iframe>
             </div>
-        </section>
+        </Chapter>
 
-        <!-- SCREENS: cards stack in the order a player meets them -->
-        <section class="section wrap" aria-labelledby="ws-screens">
-            <div class="row">
-                <h2 id="ws-screens" class="row__label mono muted">The screens</h2>
-                <p class="row__body ws-statement ws-statement--small" data-split>
-                    One visual language for every screen: black, white and one purple.
-                </p>
+        <!-- ============ PART 2: HOW IT'S BUILT ============ -->
+        <div class="ws-part-wrap wrap" data-reveal>
+            <div class="ws-part">
+                <span class="mono muted">Part 2</span>
+                <span class="ws-part__title">How it's built</span>
+                <span class="mono muted">04—09</span>
             </div>
-            <ol class="ws-stack">
+        </div>
+
+        <Chapter id="ws-stack" num="04" title="Stack" html={text("Stack")}>
+            <figure class="ws-diagram" slot="media">
+                <div class="ws-arch" data-ws-arch>
+                    <div class="ws-node" style="grid-area: desk"><strong>Desktop game</strong><span>Pygame</span></div>
+                    <div class="ws-node" style="grid-area: web"><strong>Web client</strong><span>React · TypeScript · Vite</span><em>Netlify</em></div>
+                    <div class="ws-node" style="grid-area: api"><strong>API</strong><span>FastAPI</span><em>Render</em></div>
+                    <div class="ws-node" style="grid-area: db"><strong>Database</strong><span>PostgreSQL · SQLAlchemy · Alembic</span></div>
+                    <div class="ws-node ws-node--core" style="grid-area: engine"><strong>Game engine</strong><span>Pure Python: the rules, written once</span></div>
+                </div>
+                <figcaption class="mono muted">
+                    One engine at the centre. The desktop game uses it directly; the web client reaches it through the API.
+                </figcaption>
+            </figure>
+        </Chapter>
+
+        <Chapter id="ws-rules" num="05" title="One source of truth for the game rules" html={text("One source of truth for the game rules")} side="left">
+            <Shot slot="media" img={rules} alt="The rules overlay in the game" caption="The rules a player reads here are enforced in one place: the Python engine." />
+        </Chapter>
+
+        <Chapter id="ws-server" num="06" title="Server-authoritative game state" html={text("Server-authoritative game state")}>
+            <figure class="ws-diagram" slot="media">
+                <ol class="ws-flow" data-ws-flow>
+                    <li class="ws-flow__step">
+                        <span class="mono muted">Browser</span>
+                        <strong>Sends the move it wants</strong>
+                        <code class="mono">{"{ from: [2, 4], to: [3, 3] }"}</code>
+                    </li>
+                    <li class="ws-flow__step">
+                        <span class="mono muted">Server</span>
+                        <strong>Checks it with the engine</strong>
+                        <code class="mono">legal_moves(state)</code>
+                    </li>
+                    <li class="ws-flow__outcomes">
+                        <div class="ws-flow__step ws-flow__step--ok">
+                            <span class="mono">✓ Legal</span>
+                            <strong>State updated</strong>
+                        </div>
+                        <div class="ws-flow__step">
+                            <span class="mono muted">✕ Illegal</span>
+                            <strong>Rejected</strong>
+                        </div>
+                    </li>
+                </ol>
+                <figcaption class="mono muted">The client never sends a board, only an intention.</figcaption>
+            </figure>
+        </Chapter>
+
+        <Chapter id="ws-ai" num="07" title="AI opponent" html={text("AI opponent")} side="left">
+            <Shot slot="media" img={difficulty} alt="The difficulty screen with easy, medium and hard" caption="Three levels. The higher the difficulty, the further ahead the search looks." />
+        </Chapter>
+
+        <Chapter id="ws-database" num="08" title="Database design" html={text("Database design")}>
+            <Shot slot="media" img={statistics} alt="The statistics screen: games played, win rate, average moves and wins per difficulty" caption="Every number on this screen is calculated from the stored game history." />
+        </Chapter>
+
+        <Chapter id="ws-testing" num="09" title="Testing and development" html={text("Testing and development")} side="left">
+            <ul class="ws-stats" slot="media">
                 {
-                    screens.map((s, i) => (
-                        <li class="ws-card">
-                            <div class="ws-card__inner" data-ws-card>
-                                <div class="ws-card__text">
-                                    <span class="mono muted">{pad(i + 1)} / {pad(screens.length)}</span>
-                                    <h3>{s.title}</h3>
-                                    <p class="muted">{s.text}</p>
-                                </div>
-                                <button type="button" class="zoom-btn ws-card__img" data-zoom={s.full} data-caption={s.title} aria-label={`View larger: ${s.title}`}>
-                                    <Image quality={90} src={s.img} alt={`${s.title} screen`} widths={[900, 1400, 2000]} sizes="(min-width: 900px) 70vw, 100vw" />
-                                </button>
-                            </div>
+                    testing.map((s) => (
+                        <li class="ws-stat" data-reveal>
+                            <span class="ws-stat__value" data-count={s.value}>{s.value}</span>
+                            <span class="ws-stat__label muted">{s.label}</span>
                         </li>
                     ))
                 }
-            </ol>
-        </section>
+            </ul>
+        </Chapter>
 
-        <!-- STACK, ARCHITECTURE, TESTING, IN PROGRESS -->
-        {
-            rest.map((part) => (
-                <section class="section wrap" aria-labelledby={id(part.title)}>
-                    <div class="row">
-                        <h2 id={id(part.title)} class="row__label mono muted">{part.title}</h2>
-                        <div class="row__body prose ws-text" set:html={part.html} />
-                    </div>
-                </section>
-            ))
-        }
+        <!-- ============ PART 3: WHAT'S NEXT ============ -->
+        <div class="ws-part-wrap wrap" data-reveal>
+            <div class="ws-part">
+                <span class="mono muted">Part 3</span>
+                <span class="ws-part__title">What's next</span>
+                <span class="mono muted">{extra.length ? `10—${pad(10 + extra.length)}` : "10"}</span>
+            </div>
+        </div>
 
-        <!-- TRY IT -->
-        {
-            media?.live && (
-                <section class="section wrap ws-last" aria-label="Play">
-                    <a href={media.live} class="ws-cta row" target="_blank" rel="noopener">
-                        <span class="row__label mono muted">Try it yourself</span>
-                        <span class="row__body ws-cta__title">
-                            Play Wolf &amp; Sheep <span class="ws-cta__arrow" aria-hidden="true">↗</span>
-                        </span>
-                    </a>
-                </section>
-            )
-        }
+        <Chapter id="ws-next" num="10" title="In progress" html={text("In progress")}>
+            <Shot slot="media" img={startScreen} alt="The start screen with player vs computer, player vs player and online multiplayer" caption="Online multiplayer already has its place on the start screen." />
+        </Chapter>
+
+        {extra.map((heading, i) => <Chapter id={`ws-extra-${i}`} num={pad(11 + i)} title={heading} html={text(heading)} />)}
+
+        <!-- PLAY -->
+        <Chapter id="ws-play" num="↗" title="Try it yourself" side="left">
+            <ul class="ws-links ws-links--end">
+                {
+                    links.map((l) => (
+                        <li>
+                            <a href={l.href} target="_blank" rel="noopener">
+                                <span class="ws-links__title">{l.title}</span>
+                                <span class="ws-links__note mono muted">{l.note}</span>
+                                <span class="ws-links__arrow" aria-hidden="true">↗</span>
+                            </a>
+                        </li>
+                    ))
+                }
+            </ul>
+            <Shot slot="media" img={winScreen} alt="The game-over screen: You win! The sheep slipped through." caption="The sheep slipped through." />
+        </Chapter>
     </article>
 
     <NextProject current="wolf-sheep" />
@@ -418,27 +411,26 @@ const pieces = [
             });
         }
 
-        // the text arrives paragraph by paragraph, like the rest of the page
-        gsap.set(".ws-text > *", { autoAlpha: 0, y: 24 });
-        ScrollTrigger.batch(".ws-text > *", {
+        // chapter text arrives paragraph by paragraph
+        gsap.set(".chapter__prose > *", { autoAlpha: 0, y: 24 });
+        ScrollTrigger.batch(".chapter__prose > *", {
             start: "top 92%",
             once: true,
             onEnter: (els) => gsap.to(els, { autoAlpha: 1, y: 0, duration: 1, ease: "expo.out", stagger: 0.06 }),
         });
 
-        // numbers count up once
-        document.querySelectorAll<HTMLElement>("[data-count]").forEach((el) => {
-            const counter = { n: 0 };
-            el.textContent = "0";
-            gsap.to(counter, {
-                n: Number(el.dataset.count),
-                duration: 1.6,
+        // origin: before, then the arrow, then after
+        const versions = document.querySelector<HTMLElement>("[data-ws-versions]");
+        if (versions) {
+            gsap.from(versions.children, {
+                autoAlpha: 0,
+                x: -24,
+                duration: 0.9,
                 ease: "expo.out",
-                snap: { n: 1 },
-                onUpdate: () => (el.textContent = String(counter.n)),
-                scrollTrigger: { trigger: el, start: "top 90%", once: true },
+                stagger: 0.18,
+                scrollTrigger: { trigger: versions, start: "top 85%", once: true },
             });
-        });
+        }
 
         // board: squares cascade in diagonally, then the match plays while it's on screen
         const board = document.querySelector<HTMLElement>("[data-ws-board]");
@@ -477,19 +469,41 @@ const pieces = [
             );
         }
 
-        // screens: each card sinks back as the next one slides over it
-        const cards = gsap.utils.toArray<HTMLElement>("[data-ws-card]");
-        cards.slice(0, -1).forEach((card, i) => {
-            gsap.to(card, {
-                scale: 0.9,
-                opacity: 0.35,
-                ease: "none",
-                scrollTrigger: {
-                    trigger: cards[i + 1].parentElement,
-                    start: "top bottom",
-                    end: "top top+=96",
-                    scrub: true,
-                },
+        // stack: the engine first, then everything that connects to it
+        const arch = document.querySelector<HTMLElement>("[data-ws-arch]");
+        if (arch) {
+            const core = arch.querySelector(".ws-node--core");
+            const others = arch.querySelectorAll(".ws-node:not(.ws-node--core)");
+            gsap.timeline({ scrollTrigger: { trigger: arch, start: "top 80%", toggleActions: "play none none none" } })
+                .from(core, { autoAlpha: 0, scale: 0.9, duration: 0.8, ease: "expo.out" })
+                .from(others, { autoAlpha: 0, y: 16, "--draw": 0, duration: 0.8, ease: "expo.out", stagger: 0.12 }, "-=0.3");
+        }
+
+        // server: the move travels down, step by step, to its outcome
+        const flow = document.querySelector<HTMLElement>("[data-ws-flow]");
+        if (flow) {
+            gsap.from(flow.querySelectorAll(".ws-flow__step"), {
+                autoAlpha: 0,
+                y: 20,
+                "--draw": 0,
+                duration: 0.8,
+                ease: "expo.out",
+                stagger: 0.25,
+                scrollTrigger: { trigger: flow, start: "top 80%", once: true },
+            });
+        }
+
+        // numbers count up once
+        document.querySelectorAll<HTMLElement>("[data-count]").forEach((el) => {
+            const counter = { n: 0 };
+            el.textContent = "0";
+            gsap.to(counter, {
+                n: Number(el.dataset.count),
+                duration: 1.6,
+                ease: "expo.out",
+                snap: { n: 1 },
+                onUpdate: () => (el.textContent = String(counter.n)),
+                scrollTrigger: { trigger: el, start: "top 90%", once: true },
             });
         });
     });
@@ -504,6 +518,7 @@ const pieces = [
         --ws-dark: #1b1b1a;
         --ws-light: #ececea;
         overflow-x: clip;
+        padding-bottom: var(--section);
     }
 
     /* --- INTRO --- */
@@ -536,13 +551,44 @@ const pieces = [
         max-width: 34ch;
     }
 
+    /* links: what each one is, spelled out */
     .ws-links {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px 28px;
-        margin: 32px 0 0;
+        max-width: 640px;
+        margin: clamp(32px, 4vw, 48px) 0 0;
         padding: 0;
         list-style: none;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .ws-links a {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 2px 16px;
+        padding-block: 14px;
+        border-top: 1px solid var(--line);
+    }
+
+    .ws-links__title {
+        font-size: var(--fs-body);
+    }
+
+    .ws-links__note {
+        grid-row: 2;
+    }
+
+    .ws-links__arrow {
+        grid-row: 1 / span 2;
+        align-self: center;
+        transition: transform 0.5s var(--ease);
+    }
+
+    .ws-links a:hover .ws-links__arrow,
+    .ws-links a:focus-visible .ws-links__arrow {
+        transform: translate(4px, -4px);
+    }
+
+    .ws-links--end {
+        margin-top: 0;
     }
 
     /* --- HERO --- */
@@ -559,88 +605,113 @@ const pieces = [
         height: auto;
     }
 
-    /* --- NUMBERS --- */
+    /* --- PART DIVIDERS --- */
 
-    .ws-stats {
+    .ws-part-wrap {
+        margin-top: var(--section);
+    }
+
+    .ws-part {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: auto 1fr auto;
+        align-items: baseline;
         gap: var(--gutter);
-        margin: 0;
-        padding: 0;
-        list-style: none;
-    }
-
-    .ws-stat {
-        display: grid;
-        gap: 10px;
-        align-content: start;
         padding-top: 14px;
-        border-top: 1px solid var(--line);
+        border-top: 1px solid var(--text);
     }
 
-    .ws-stat__value {
-        font-size: var(--fs-display);
-        font-weight: 500;
-        line-height: 0.85;
-        letter-spacing: -0.06em;
-        font-variant-numeric: tabular-nums;
-    }
-
-    .ws-stat__label {
-        max-width: 24ch;
-        font-size: var(--fs-small);
-    }
-
-    @media (min-width: 900px) {
-        .ws-stats {
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-        }
-    }
-
-    /* --- HOW IT PLAYS --- */
-
-    .ws-statement {
-        margin: 0;
-        max-width: 18ch;
-        font-size: var(--fs-h2);
-        font-weight: 500;
-        line-height: 1;
-        letter-spacing: -0.04em;
-    }
-
-    .ws-statement--small {
-        max-width: 24ch;
+    .ws-part__title {
         font-size: var(--fs-lead);
         line-height: 1.1;
         letter-spacing: -0.03em;
     }
 
-    .ws-play__body {
-        display: grid;
-        gap: clamp(40px, 6vw, 80px);
+    @media (min-width: 900px) {
+        .ws-part {
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+        }
+
+        .ws-part > :first-child {
+            grid-column: 1 / span 3;
+        }
+
+        .ws-part__title {
+            grid-column: 4 / span 7;
+        }
+
+        .ws-part > :last-child {
+            grid-column: 11 / -1;
+            text-align: right;
+        }
     }
 
-    .ws-rules {
-        margin: clamp(28px, 4vw, 48px) 0 0;
-        padding: 0;
-        list-style: none;
-        border-bottom: 1px solid var(--line);
+    /* the first chapter of a part sits closer to its divider */
+    .ws-part-wrap + :global(.chapter) {
+        padding-top: clamp(40px, 6vw, 80px);
     }
 
-    .ws-rules li {
+    /* --- 01 ORIGIN: before → after --- */
+
+    .ws-versions {
         display: grid;
-        grid-template-columns: 2.5rem 1fr;
-        align-items: baseline;
-        padding-block: 12px;
-        border-top: 1px solid var(--line);
+        gap: 12px;
+    }
+
+    .ws-version {
+        display: grid;
+        gap: 8px;
+        align-content: start;
+        padding: clamp(16px, 2vw, 24px);
+        border: 1px solid var(--line);
+        transition: border-color 0.4s var(--ease);
+    }
+
+    .ws-version:hover,
+    .ws-version:focus-visible {
+        border-color: var(--text);
+    }
+
+    .ws-version strong {
+        font-size: var(--fs-lead);
+        font-weight: 500;
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+    }
+
+    .ws-version > span:not(.mono) {
+        font-size: var(--fs-small);
+    }
+
+    .ws-version--now {
+        background: var(--text);
+        color: var(--bg);
+        border-color: var(--text);
+    }
+
+    .ws-version__link {
+        margin-top: 8px;
+    }
+
+    .ws-versions__arrow {
+        justify-self: center;
+        font-family: var(--mono);
+        color: var(--muted);
+        transform: rotate(90deg);
     }
 
     @media (min-width: 1100px) {
-        .ws-play__body {
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            align-items: start;
+        .ws-versions {
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            align-items: stretch;
+        }
+
+        .ws-versions__arrow {
+            align-self: center;
+            transform: none;
         }
     }
+
+    /* --- 02 THE GAME: live board --- */
 
     .ws-demo {
         display: grid;
@@ -659,7 +730,6 @@ const pieces = [
         display: flex;
         flex-wrap: wrap;
         gap: 0 10px;
-        margin: 0;
         font-size: var(--fs-lead);
         line-height: 1.1;
         letter-spacing: -0.03em;
@@ -758,15 +828,10 @@ const pieces = [
         letter-spacing: -0.05em;
     }
 
-    .ws-play__copy {
-        margin-top: clamp(24px, 3vw, 40px);
-    }
-
-    /* --- WALKTHROUGH --- */
+    /* --- 03 WALKTHROUGH --- */
 
     .ws-video {
         position: relative;
-        margin-top: clamp(32px, 5vw, 64px);
         aspect-ratio: 1 / 0.5642;
         background: var(--ws-dark);
     }
@@ -779,91 +844,164 @@ const pieces = [
         border: 0;
     }
 
-    /* --- SCREENS --- */
+    /* --- DIAGRAMS (04 stack, 06 server) --- */
 
-    .ws-stack {
-        margin: clamp(32px, 5vw, 64px) 0 0;
+    .ws-diagram {
+        display: grid;
+        gap: 16px;
+        margin: 0;
+    }
+
+    .ws-node,
+    .ws-flow__step {
+        --draw: 1;
+        position: relative;
+        display: grid;
+        gap: 4px;
+        align-content: start;
+        padding: clamp(10px, 1.4vw, 18px);
+        border: 1px solid var(--line);
+        background: var(--bg);
+        font-size: var(--fs-small);
+    }
+
+    .ws-node strong,
+    .ws-flow__step strong {
+        font-size: var(--fs-body);
+        font-weight: 500;
+        letter-spacing: -0.01em;
+    }
+
+    .ws-node span,
+    .ws-node em {
+        color: var(--muted);
+        font-style: normal;
+    }
+
+    .ws-node em {
+        font-family: var(--mono);
+        font-size: var(--fs-mono);
+        text-transform: uppercase;
+    }
+
+    .ws-node--core {
+        background: var(--text);
+        color: var(--bg);
+        border-color: var(--text);
+    }
+
+    .ws-node--core span {
+        color: inherit;
+        opacity: 0.7;
+    }
+
+    /* 04: clients on top, the engine underneath, the database beside the API */
+    .ws-arch {
+        --gap: clamp(20px, 3vw, 36px);
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-areas:
+            "desk web ."
+            "desk api db"
+            "engine engine .";
+        gap: var(--gap) clamp(12px, 1.6vw, 20px);
+    }
+
+    /* connector lines, drawn in by animating --draw */
+    .ws-node::after,
+    .ws-node::before {
+        content: "";
+        position: absolute;
+        pointer-events: none;
+    }
+
+    .ws-node[style*="desk"]::after,
+    .ws-node[style*="web"]::after,
+    .ws-node[style*="api"]::after {
+        left: 50%;
+        top: 100%;
+        height: var(--gap);
+        border-left: 1px solid var(--text);
+        transform: scaleY(var(--draw));
+        transform-origin: top;
+    }
+
+    .ws-node[style*="db"]::before {
+        top: 50%;
+        right: 100%;
+        width: clamp(12px, 1.6vw, 20px);
+        border-top: 1px solid var(--text);
+        transform: scaleX(var(--draw));
+        transform-origin: right;
+    }
+
+    /* 06: one move, top to bottom */
+    .ws-flow {
+        --gap: clamp(20px, 3vw, 32px);
+        display: grid;
+        gap: var(--gap);
+        margin: 0;
         padding: 0;
         list-style: none;
     }
 
-    .ws-card {
-        position: sticky;
-        top: calc(var(--header-h) + 16px);
-        padding-bottom: clamp(24px, 4vw, 48px);
+    .ws-flow > .ws-flow__step::after {
+        content: "↓";
+        position: absolute;
+        left: 50%;
+        top: calc(100% + var(--gap) / 2);
+        translate: -50% -50%;
+        font-family: var(--mono);
+        color: var(--muted);
+        opacity: var(--draw);
     }
 
-    .ws-card__inner {
+    .ws-flow__step code {
+        margin-top: 6px;
+        font-size: var(--fs-mono);
+        text-transform: none;
+        color: var(--muted);
+    }
+
+    .ws-flow__outcomes {
         display: grid;
-        gap: 16px var(--gutter);
-        padding: clamp(14px, 1.6vw, 24px);
-        border: 1px solid var(--line);
-        background: var(--bg);
-        transform-origin: 50% 0%;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: clamp(12px, 1.6vw, 20px);
     }
 
-    .ws-card__text {
+    .ws-flow__step--ok {
+        border-color: var(--text);
+    }
+
+    /* --- 09 TESTING: numbers --- */
+
+    .ws-stats {
         display: grid;
-        gap: 8px;
-        align-content: start;
-    }
-
-    .ws-card__text h3 {
+        gap: var(--gutter);
         margin: 0;
-        font-size: var(--fs-lead);
-        font-weight: 500;
-        line-height: 1.1;
-        letter-spacing: -0.03em;
+        padding: 0;
+        list-style: none;
     }
 
-    .ws-card__text p {
-        margin: 0;
-        max-width: 36ch;
-        font-size: var(--fs-small);
+    .ws-stat {
+        display: grid;
+        grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+        align-items: end;
+        gap: var(--gutter);
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
     }
 
-    /* never taller than the screen, so a whole card stays in view */
-    .ws-card__img {
-        justify-self: end;
-        width: min(100%, calc((100svh - var(--header-h) - 120px) * 1.85));
-    }
-
-    .ws-card__img :global(img) {
-        width: 100%;
-        height: auto;
-    }
-
-    @media (min-width: 900px) {
-        .ws-card__inner {
-            grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
-        }
-    }
-
-    /* --- TRY IT --- */
-
-    .ws-last {
-        padding-bottom: var(--section);
-    }
-
-    .ws-cta {
-        border-bottom: 1px solid var(--line);
-        padding-bottom: 14px;
-    }
-
-    .ws-cta__title {
+    .ws-stat__value {
         font-size: var(--fs-display);
         font-weight: 500;
-        line-height: 0.95;
-        letter-spacing: -0.055em;
+        line-height: 0.85;
+        letter-spacing: -0.06em;
+        font-variant-numeric: tabular-nums;
     }
 
-    .ws-cta__arrow {
-        display: inline-block;
-        transition: transform 0.6s var(--ease);
-    }
-
-    .ws-cta:hover .ws-cta__arrow,
-    .ws-cta:focus-visible .ws-cta__arrow {
-        transform: translate(0.12em, -0.12em);
+    .ws-stat__label {
+        max-width: 24ch;
+        font-size: var(--fs-small);
     }
 </style>

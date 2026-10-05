@@ -65,8 +65,11 @@ function fadeReveals() {
 function imageReveals() {
     document.querySelectorAll<HTMLElement>("[data-reveal-img]").forEach((el) => {
         const img = el.querySelector("img");
+        // plays once without killing its trigger: a timeline trigger that kills
+        // itself during another trigger's first refresh (page loaded mid-scroll)
+        // breaks ScrollTrigger's refresh loop
         const tl = gsap.timeline({
-            scrollTrigger: { trigger: el, start: "top 88%", once: true },
+            scrollTrigger: { trigger: el, start: "top 88%", toggleActions: "play none none none" },
         });
         tl.fromTo(
             el,
