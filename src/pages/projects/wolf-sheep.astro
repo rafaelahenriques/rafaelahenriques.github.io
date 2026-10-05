@@ -1,0 +1,821 @@
+---
+/**
+ * Wolf & Sheep case study. A custom page (customPage in the content entry)
+ * so the game can be shown playing: a live board that replays a short match,
+ * counters, the walkthrough opening up on scroll and the screens stacking
+ * in the order a player meets them. The long text stays in index.md.
+ */
+import Base from "../../layouts/BaseLayout.astro";
+import { Image } from "astro:assets";
+import { getEntry, render } from "astro:content";
+import { pad } from "../../lib/content";
+import { fullSize } from "../../lib/images";
+import Lightbox from "../../components/Lightbox.astro";
+import NextProject from "../../components/NextProject.astro";
+
+import mainGame from "../../content/projects/wolf-sheep/maingame.png";
+import startScreen from "../../content/projects/wolf-sheep/startscreen.png";
+import difficulty from "../../content/projects/wolf-sheep/difficulty.png";
+import rules from "../../content/projects/wolf-sheep/rules.png";
+import winScreen from "../../content/projects/wolf-sheep/winscreen.png";
+import statistics from "../../content/projects/wolf-sheep/statistics.png";
+
+const project = (await getEntry("projects", "wolf-sheep"))!;
+const { Content } = await render(project);
+const { title, description, role, year, category, tech, context, order, media } = project.data;
+
+const links = [
+    { label: "Play the game", href: media?.live },
+    { label: "Code — my rebuild", href: media?.repo },
+    { label: "Code — university group project", href: "https://github.com/rafaelahenriques/Wolf-and-Sheep-Game" },
+].filter((l) => l.href);
+
+const stats = [
+    { value: 31, label: "pytest tests across engine, AI, database and API" },
+    { value: 3, label: "AI difficulty levels, from one minimax search" },
+    { value: 1, label: "rule engine shared by desktop, API and tests" },
+    { value: 2, label: "deploys: FastAPI on Render, React on Netlify" },
+];
+
+const gameRules = [
+    "Pieces move one square diagonally.",
+    "The sheep moves forward and backward.",
+    "The wolves can only move forward.",
+    "The sheep wins by reaching the other side.",
+    "The wolves win by trapping the sheep.",
+];
+
+const screens = await Promise.all(
+    [
+        {
+            img: startScreen,
+            title: "Start",
+            text: "Player vs computer, player vs player and online multiplayer (in progress). Saved games and statistics sit in the two circles.",
+        },
+        {
+            img: difficulty,
+            title: "Difficulty",
+            text: "Easy, medium or hard. Each level changes how far ahead the minimax search looks before the wolves move.",
+        },
+        {
+            img: mainGame,
+            title: "The board",
+            text: "Turn, mode, difficulty and move count on the left; save and quit on the right. The board only shows what the server says is legal.",
+        },
+        {
+            img: rules,
+            title: "Rules",
+            text: "The help button opens the rules from any screen, so nobody has to leave a game to check them.",
+        },
+        {
+            img: winScreen,
+            title: "Game over",
+            text: "The board dims and the result takes over, with one click to play again or go back to the menu.",
+        },
+        {
+            img: statistics,
+            title: "Statistics",
+            text: "Calculated from the stored game history in PostgreSQL: games played, win rate, average moves and wins per difficulty.",
+        },
+    ].map(async (s) => ({ ...s, full: await fullSize(s.img) })),
+);
+
+const heroFull = await fullSize(mainGame);
+
+// Starting position, as in the game: four wolves on the top row, the sheep bottom left
+const pieces = [
+    { id: "w1", kind: "wolf", r: 0, c: 1 },
+    { id: "w2", kind: "wolf", r: 0, c: 3 },
+    { id: "w3", kind: "wolf", r: 0, c: 5 },
+    { id: "w4", kind: "wolf", r: 0, c: 7 },
+    { id: "s", kind: "sheep", r: 7, c: 0 },
+];
+---
+
+<Base title={title} description={description}>
+    <article class="ws">
+        <!-- INTRO -->
+        <header class="page-head wrap">
+            <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
+            <p class="ws-kicker mono muted" data-reveal>{pad(order ?? 1)} — {category}</p>
+            <h1 class="display ws-title" data-split>{title}</h1>
+
+            <div class="row ws-intro">
+                <dl class="row__label ws-facts mono" data-reveal>
+                    <div><dt class="muted">Year</dt><dd>{year}</dd></div>
+                    <div><dt class="muted">Role</dt><dd>{role}</dd></div>
+                    <div><dt class="muted">Context</dt><dd>{context}</dd></div>
+                    <div><dt class="muted">Stack</dt><dd>{tech?.join(", ")}</dd></div>
+                </dl>
+                <div class="row__body">
+                    <p class="lead ws-lead" data-split>{description}</p>
+                    <ul class="ws-links mono" data-reveal>
+                        {
+                            links.map((l) => (
+                                <li>
+                                    <a href={l.href} class="link" target="_blank" rel="noopener">
+                                        {l.label} ↗
+                                    </a>
+                                </li>
+                            ))
+                        }
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <!-- HERO -->
+        <section class="wrap ws-hero" aria-label="The game board">
+            <figure data-reveal-img data-ws-hero>
+                <button type="button" class="zoom-btn" data-zoom={heroFull} data-zoom-single data-caption="The board, mid-game against the computer" aria-label="View larger: the game board">
+                    <Image quality={90} src={mainGame} alt="Wolf & Sheep game screen: an 8 by 8 board with four purple wolves on the top row and the sheep in the bottom corner" widths={[1000, 1600, 2400]} sizes="100vw" loading="eager" />
+                </button>
+            </figure>
+        </section>
+
+        <!-- NUMBERS -->
+        <section class="section wrap" aria-label="In numbers">
+            <ul class="ws-stats">
+                {
+                    stats.map((s) => (
+                        <li class="ws-stat" data-reveal>
+                            <span class="ws-stat__value" data-count={s.value}>{s.value}</span>
+                            <span class="ws-stat__label muted">{s.label}</span>
+                        </li>
+                    ))
+                }
+            </ul>
+        </section>
+
+        <!-- HOW IT PLAYS: a live board replaying a short match -->
+        <section class="section wrap" aria-labelledby="ws-play">
+            <div class="row ws-play">
+                <h2 id="ws-play" class="row__label mono muted">How it plays</h2>
+                <div class="row__body ws-play__body">
+                    <div class="ws-play__text">
+                        <p class="ws-statement" data-split>One sheep. Four wolves. Get through, or get trapped.</p>
+                        <ol class="ws-rules">
+                            {
+                                gameRules.map((r, i) => (
+                                    <li data-reveal>
+                                        <span class="mono muted">{pad(i + 1)}</span>
+                                        {r}
+                                    </li>
+                                ))
+                            }
+                        </ol>
+                    </div>
+
+                    <figure class="ws-demo" data-reveal>
+                        <div class="ws-demo__status">
+                            <p class="ws-demo__turn"><span data-ws-turn>Your turn…</span><span class="muted" data-ws-side>-Sheep</span></p>
+                            <p class="mono muted">vs Computer · Medium · Moves <span data-ws-moves>0</span></p>
+                        </div>
+                        <div class="ws-board" data-ws-board aria-hidden="true">
+                            {Array.from({ length: 64 }, (_, i) => <span class="ws-cell" data-dark={(Math.floor(i / 8) + (i % 8)) % 2 === 1 ? "" : undefined} />)}
+                            {
+                                pieces.map((p) => (
+                                    <span class={`ws-piece ws-piece--${p.kind}`} data-piece={p.id} style={`--r:${p.r};--c:${p.c}`}>
+                                        <i />
+                                    </span>
+                                ))
+                            }
+                            <div class="ws-board__win" data-ws-win>
+                                <strong>You win!</strong>
+                                <span>The sheep slipped through.</span>
+                            </div>
+                        </div>
+                        <figcaption class="mono muted">
+                            A replayed match against the computer. Dots mark the moves the engine allows.
+                        </figcaption>
+                    </figure>
+                </div>
+            </div>
+        </section>
+
+        <!-- WALKTHROUGH -->
+        <section class="section wrap" aria-labelledby="ws-walkthrough">
+            <div class="row">
+                <h2 id="ws-walkthrough" class="row__label mono muted">Walkthrough</h2>
+                <p class="row__body ws-statement ws-statement--small" data-split>
+                    From the menu to a win, in the browser version.
+                </p>
+            </div>
+            <div class="ws-video" data-ws-video>
+                <iframe
+                    src="https://player.vimeo.com/video/1233170503?badge=0&autopause=0&dnt=1"
+                    title="Wolf & Sheep — walkthrough"
+                    loading="lazy"
+                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            </div>
+        </section>
+
+        <!-- SCREENS: cards stack in the order a player meets them -->
+        <section class="section wrap" aria-labelledby="ws-screens">
+            <div class="row">
+                <h2 id="ws-screens" class="row__label mono muted">The screens</h2>
+                <p class="row__body ws-statement ws-statement--small" data-split>
+                    One visual language for every screen: black, white and one purple.
+                </p>
+            </div>
+            <ol class="ws-stack">
+                {
+                    screens.map((s, i) => (
+                        <li class="ws-card">
+                            <div class="ws-card__inner" data-ws-card>
+                                <div class="ws-card__text">
+                                    <span class="mono muted">{pad(i + 1)} / {pad(screens.length)}</span>
+                                    <h3>{s.title}</h3>
+                                    <p class="muted">{s.text}</p>
+                                </div>
+                                <button type="button" class="zoom-btn ws-card__img" data-zoom={s.full} data-caption={s.title} aria-label={`View larger: ${s.title}`}>
+                                    <Image quality={90} src={s.img} alt={`${s.title} screen`} widths={[900, 1400, 2000]} sizes="(min-width: 900px) 70vw, 100vw" />
+                                </button>
+                            </div>
+                        </li>
+                    ))
+                }
+            </ol>
+        </section>
+
+        <!-- CASE STUDY TEXT (index.md) -->
+        <section class="section wrap" aria-label="Case study">
+            <div class="row">
+                <p class="row__label mono muted">Case study</p>
+                <div class="row__body prose" data-reveal>
+                    <Content />
+                </div>
+            </div>
+        </section>
+
+        <!-- TRY IT -->
+        {
+            media?.live && (
+                <section class="section wrap ws-last" aria-label="Play">
+                    <a href={media.live} class="ws-cta row" target="_blank" rel="noopener">
+                        <span class="row__label mono muted">Try it yourself</span>
+                        <span class="row__body ws-cta__title">
+                            Play Wolf &amp; Sheep <span class="ws-cta__arrow" aria-hidden="true">↗</span>
+                        </span>
+                    </a>
+                </section>
+            )
+        }
+    </article>
+
+    <NextProject current="wolf-sheep" />
+    <Lightbox />
+</Base>
+
+<script>
+    import { gsap } from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    type Pos = [number, number];
+
+    // The replayed match: sheep and computer alternate until the sheep breaks through
+    const MATCH: [string, Pos][] = [
+        ["s", [6, 1]],
+        ["w2", [1, 2]],
+        ["s", [5, 2]],
+        ["w1", [1, 0]],
+        ["s", [4, 3]],
+        ["w3", [1, 4]],
+        ["s", [3, 4]],
+        ["w1", [2, 1]],
+        ["s", [2, 5]],
+        ["w3", [2, 3]],
+        ["s", [1, 6]],
+        ["w1", [3, 0]],
+        ["s", [0, 5]],
+    ];
+
+    /** Build the looping match timeline for one board. */
+    function playMatch(board: HTMLElement) {
+        const root = board.closest<HTMLElement>(".ws-demo")!;
+        const turn = root.querySelector<HTMLElement>("[data-ws-turn]")!;
+        const side = root.querySelector<HTMLElement>("[data-ws-side]")!;
+        const moves = root.querySelector<HTMLElement>("[data-ws-moves]")!;
+        const win = board.querySelector<HTMLElement>("[data-ws-win]")!;
+        const pieces = [...board.querySelectorAll<HTMLElement>("[data-piece]")];
+        const byId = Object.fromEntries(pieces.map((p) => [p.dataset.piece!, p]));
+
+        // Current positions, read from the markup's starting square
+        const pos: Record<string, Pos> = Object.fromEntries(
+            pieces.map((p) => [p.dataset.piece!, [Number(p.style.getPropertyValue("--r")), Number(p.style.getPropertyValue("--c"))]]),
+        );
+        const at = ([r, c]: Pos) => ({ x: `${c * 100}%`, y: `${r * 100}%` });
+        const occupied = (r: number, c: number) => Object.values(pos).some(([pr, pc]) => pr === r && pc === c);
+
+        // Same rules as the engine: the sheep moves any diagonal, onto an empty square
+        const sheepMoves = (): Pos[] => {
+            const [r, c] = pos.s;
+            return ([[-1, -1], [-1, 1], [1, -1], [1, 1]] as Pos[])
+                .map(([dr, dc]) => [r + dr, c + dc] as Pos)
+                .filter(([nr, nc]) => nr >= 0 && nr < 8 && nc >= 0 && nc < 8 && !occupied(nr, nc));
+        };
+
+        const say = (t: string, s: string, n: number) => () => {
+            turn.textContent = t;
+            side.textContent = s;
+            moves.textContent = String(n);
+        };
+
+        const start = Object.fromEntries(pieces.map((p) => [p.dataset.piece!, [...pos[p.dataset.piece!]] as Pos]));
+        // CSS places the pieces for no-JS; GSAP owns the transform from here
+        pieces.forEach((p) => {
+            p.style.transform = "none";
+            gsap.set(p, at(pos[p.dataset.piece!]));
+        });
+
+        const tl = gsap.timeline({ repeat: -1, repeatDelay: 0.4, paused: true, defaults: { ease: "power3.inOut" } });
+        tl.call(say("Your turn…", "-Sheep", 0))
+            .set(win, { autoAlpha: 0 })
+            .set(board, { "--dim": 0 })
+            .fromTo(pieces, { autoAlpha: 0, scale: 0.4 }, { autoAlpha: 1, scale: 1, duration: 0.6, ease: "back.out(2)", stagger: 0.08 });
+
+        MATCH.forEach(([id, to], i) => {
+            const isSheep = id === "s";
+            if (isSheep) {
+                // show the legal squares first, as the board does in the game
+                const dots = sheepMoves().map(([r, c]) => {
+                    const dot = document.createElement("span");
+                    dot.className = "ws-hint";
+                    gsap.set(dot, { ...at([r, c]), autoAlpha: 0, scale: 0 });
+                    board.append(dot);
+                    return dot;
+                });
+                tl.to(dots, { autoAlpha: 1, scale: 1, duration: 0.3, ease: "back.out(3)", stagger: 0.05 }, "+=0.35");
+                tl.to(byId[id], { ...at(to), duration: 0.6 }, "+=0.35");
+                tl.to(dots, { autoAlpha: 0, scale: 0, duration: 0.25 }, "<");
+            } else {
+                tl.call(say("Computer…", "-Wolves thinking", i), undefined, "+=0.2");
+                tl.to(byId[id], { ...at(to), duration: 0.6 }, "+=0.55");
+            }
+            tl.call(isSheep ? say("Computer…", "-Wolves", i + 1) : say("Your turn…", "-Sheep", i + 1));
+            pos[id] = to;
+        });
+
+        // the sheep reached the top row: the board dims and the result takes over
+        tl.call(say("Game over", "-Sheep wins", MATCH.length))
+            .to(board, { "--dim": 1, duration: 0.6, ease: "power2.out" }, "+=0.2")
+            .fromTo(win, { autoAlpha: 0, scale: 0.85 }, { autoAlpha: 1, scale: 1, duration: 0.7, ease: "expo.out" }, "<0.1")
+            .to([...pieces, win], { autoAlpha: 0, duration: 0.4, ease: "power2.in" }, "+=2.2")
+            // back to the starting squares, unseen
+            .set(pieces, { x: (_: number, el: HTMLElement) => at(start[el.dataset.piece!]).x, y: (_: number, el: HTMLElement) => at(start[el.dataset.piece!]).y });
+
+        return tl;
+    }
+
+    gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
+        // hero: the screen settles back slightly as you scroll past it
+        const hero = document.querySelector<HTMLElement>("[data-ws-hero]");
+        if (hero) {
+            gsap.to(hero, {
+                scale: 0.94,
+                yPercent: 6,
+                ease: "none",
+                scrollTrigger: { trigger: hero, start: "top top+=80", end: "bottom top", scrub: true },
+            });
+        }
+
+        // numbers count up once
+        document.querySelectorAll<HTMLElement>("[data-count]").forEach((el) => {
+            const counter = { n: 0 };
+            el.textContent = "0";
+            gsap.to(counter, {
+                n: Number(el.dataset.count),
+                duration: 1.6,
+                ease: "expo.out",
+                snap: { n: 1 },
+                onUpdate: () => (el.textContent = String(counter.n)),
+                scrollTrigger: { trigger: el, start: "top 90%", once: true },
+            });
+        });
+
+        // board: squares cascade in diagonally, then the match plays while it's on screen
+        const board = document.querySelector<HTMLElement>("[data-ws-board]");
+        if (board) {
+            const cells = board.querySelectorAll<HTMLElement>(".ws-cell");
+            const match = playMatch(board);
+            const intro = gsap.timeline({ paused: true, onComplete: () => match.play() });
+            intro.from(cells, {
+                scale: 0,
+                duration: 0.5,
+                ease: "back.out(2)",
+                stagger: { grid: [8, 8], from: "start", amount: 0.8 },
+            });
+            ScrollTrigger.create({
+                trigger: board,
+                start: "top 75%",
+                end: "bottom top",
+                onEnter: () => (intro.progress() < 1 ? intro.play() : match.play()),
+                onEnterBack: () => (intro.progress() < 1 ? intro.play() : match.play()),
+                onLeave: () => match.pause(),
+                onLeaveBack: () => match.pause(),
+            });
+        }
+
+        // walkthrough: the frame opens out to full width
+        const video = document.querySelector<HTMLElement>("[data-ws-video]");
+        if (video) {
+            gsap.fromTo(
+                video,
+                { clipPath: "inset(0% 12% 0% 12%)" },
+                {
+                    clipPath: "inset(0% 0% 0% 0%)",
+                    ease: "none",
+                    scrollTrigger: { trigger: video, start: "top bottom", end: "center center", scrub: true },
+                },
+            );
+        }
+
+        // screens: each card sinks back as the next one slides over it
+        const cards = gsap.utils.toArray<HTMLElement>("[data-ws-card]");
+        cards.slice(0, -1).forEach((card, i) => {
+            gsap.to(card, {
+                scale: 0.9,
+                opacity: 0.35,
+                ease: "none",
+                scrollTrigger: {
+                    trigger: cards[i + 1].parentElement,
+                    start: "top bottom",
+                    end: "top top+=96",
+                    scrub: true,
+                },
+            });
+        });
+    });
+
+    document.fonts.ready.then(() => ScrollTrigger.refresh());
+</script>
+
+<style>
+    .ws {
+        --ws-wolf: #521c48;
+        --ws-sheep: #b4c6e2;
+        --ws-dark: #1b1b1a;
+        --ws-light: #ececea;
+        overflow-x: clip;
+    }
+
+    /* --- INTRO --- */
+
+    .ws-kicker {
+        margin: 24px 0 0;
+    }
+
+    .ws-title {
+        max-width: 10ch;
+        font-size: clamp(3rem, 1rem + 8vw, 9.5rem);
+    }
+
+    .ws-intro {
+        margin-top: clamp(32px, 5vw, 64px);
+    }
+
+    .ws-facts {
+        display: grid;
+        gap: 14px;
+        align-content: start;
+        margin: 0;
+    }
+
+    .ws-facts dd {
+        margin: 2px 0 0;
+    }
+
+    .ws-lead {
+        max-width: 34ch;
+    }
+
+    .ws-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 28px;
+        margin: 32px 0 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    /* --- HERO --- */
+
+    .ws-hero figure {
+        margin: 0;
+        overflow: hidden;
+        transform-origin: 50% 0%;
+        box-shadow: var(--media-shadow);
+    }
+
+    .ws-hero :global(img) {
+        width: 100%;
+        height: auto;
+    }
+
+    /* --- NUMBERS --- */
+
+    .ws-stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--gutter);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .ws-stat {
+        display: grid;
+        gap: 10px;
+        align-content: start;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+    }
+
+    .ws-stat__value {
+        font-size: var(--fs-display);
+        font-weight: 500;
+        line-height: 0.85;
+        letter-spacing: -0.06em;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .ws-stat__label {
+        max-width: 24ch;
+        font-size: var(--fs-small);
+    }
+
+    @media (min-width: 900px) {
+        .ws-stats {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+    }
+
+    /* --- HOW IT PLAYS --- */
+
+    .ws-statement {
+        margin: 0;
+        max-width: 18ch;
+        font-size: var(--fs-h2);
+        font-weight: 500;
+        line-height: 1;
+        letter-spacing: -0.04em;
+    }
+
+    .ws-statement--small {
+        max-width: 24ch;
+        font-size: var(--fs-lead);
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+    }
+
+    .ws-play__body {
+        display: grid;
+        gap: clamp(40px, 6vw, 80px);
+    }
+
+    .ws-rules {
+        margin: clamp(28px, 4vw, 48px) 0 0;
+        padding: 0;
+        list-style: none;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .ws-rules li {
+        display: grid;
+        grid-template-columns: 2.5rem 1fr;
+        align-items: baseline;
+        padding-block: 12px;
+        border-top: 1px solid var(--line);
+    }
+
+    @media (min-width: 1100px) {
+        .ws-play__body {
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            align-items: start;
+        }
+    }
+
+    .ws-demo {
+        display: grid;
+        gap: 16px;
+        margin: 0;
+        width: 100%;
+        max-width: 560px;
+    }
+
+    .ws-demo__status {
+        display: grid;
+        gap: 4px;
+    }
+
+    .ws-demo__turn {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0 10px;
+        margin: 0;
+        font-size: var(--fs-lead);
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+    }
+
+    .ws-demo__status p {
+        margin: 0;
+    }
+
+    .ws-board {
+        --dim: 0;
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        aspect-ratio: 1;
+        background: var(--ws-light);
+        overflow: hidden;
+    }
+
+    .ws-cell {
+        background: var(--ws-light);
+    }
+
+    .ws-cell[data-dark] {
+        background: var(--ws-dark);
+    }
+
+    /* the game-over shade, faded in through --dim */
+    .ws-board::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        background: rgba(20, 20, 19, 0.78);
+        opacity: var(--dim);
+        pointer-events: none;
+    }
+
+    .ws-piece,
+    .ws-board :global(.ws-hint) {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+        display: grid;
+        place-items: center;
+        width: 12.5%;
+        height: 12.5%;
+        /* starting square without JS; GSAP replaces this */
+        transform: translate(calc(var(--c) * 100%), calc(var(--r) * 100%));
+    }
+
+    .ws-piece i {
+        display: block;
+        width: 70%;
+        height: 70%;
+    }
+
+    .ws-piece--sheep i {
+        border-radius: 50%;
+        background: var(--ws-sheep);
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+    }
+
+    .ws-piece--wolf i {
+        width: 84%;
+        height: 72%;
+        background: var(--ws-wolf);
+        clip-path: polygon(50% 0, 100% 100%, 0 100%);
+    }
+
+    .ws-board :global(.ws-hint)::before {
+        content: "";
+        width: 26%;
+        height: 26%;
+        border-radius: 50%;
+        background: var(--ws-sheep);
+    }
+
+    .ws-board__win {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        display: grid;
+        place-content: center;
+        gap: 10px;
+        color: #f3f1ec;
+        text-align: center;
+        visibility: hidden;
+    }
+
+    .ws-board__win strong {
+        font-size: clamp(2.5rem, 1.5rem + 4vw, 4.75rem);
+        font-weight: 800;
+        line-height: 0.9;
+        letter-spacing: -0.05em;
+    }
+
+    /* --- WALKTHROUGH --- */
+
+    .ws-video {
+        position: relative;
+        margin-top: clamp(32px, 5vw, 64px);
+        aspect-ratio: 1 / 0.5642;
+        background: var(--ws-dark);
+    }
+
+    .ws-video iframe {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+
+    /* --- SCREENS --- */
+
+    .ws-stack {
+        margin: clamp(32px, 5vw, 64px) 0 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .ws-card {
+        position: sticky;
+        top: calc(var(--header-h) + 16px);
+        padding-bottom: clamp(24px, 4vw, 48px);
+    }
+
+    .ws-card__inner {
+        display: grid;
+        gap: 16px var(--gutter);
+        padding: clamp(14px, 1.6vw, 24px);
+        border: 1px solid var(--line);
+        background: var(--bg);
+        transform-origin: 50% 0%;
+    }
+
+    .ws-card__text {
+        display: grid;
+        gap: 8px;
+        align-content: start;
+    }
+
+    .ws-card__text h3 {
+        margin: 0;
+        font-size: var(--fs-lead);
+        font-weight: 500;
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+    }
+
+    .ws-card__text p {
+        margin: 0;
+        max-width: 36ch;
+        font-size: var(--fs-small);
+    }
+
+    /* never taller than the screen, so a whole card stays in view */
+    .ws-card__img {
+        justify-self: end;
+        width: min(100%, calc((100svh - var(--header-h) - 120px) * 1.85));
+    }
+
+    .ws-card__img :global(img) {
+        width: 100%;
+        height: auto;
+    }
+
+    @media (min-width: 900px) {
+        .ws-card__inner {
+            grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+        }
+    }
+
+    /* --- TRY IT --- */
+
+    .ws-last {
+        padding-bottom: var(--section);
+    }
+
+    .ws-cta {
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 14px;
+    }
+
+    .ws-cta__title {
+        font-size: var(--fs-display);
+        font-weight: 500;
+        line-height: 0.95;
+        letter-spacing: -0.055em;
+    }
+
+    .ws-cta__arrow {
+        display: inline-block;
+        transition: transform 0.6s var(--ease);
+    }
+
+    .ws-cta:hover .ws-cta__arrow,
+    .ws-cta:focus-visible .ws-cta__arrow {
+        transform: translate(0.12em, -0.12em);
+    }
+</style>

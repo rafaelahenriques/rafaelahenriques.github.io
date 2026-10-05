@@ -16,10 +16,16 @@ scope:
   - 31 pytest tests across engine, AI, database and API
   - Deployed on Render (API) and Netlify (frontend)
 media:
-  screenshot: "./wolfsheepmenu.png"
+  repo: "https://github.com/rafaelahenriques/Wolf-and-Sheep-Game-main"
+  live: "https://wolfandsheepgame.netlify.app"
+  video: "https://vimeo.com/1233170503"
+  screenshot: "./maingame.png"
   gallery:
-    - "./wolfsheepmenu.png"
+    - "./maingame.png"
+    - "./startscreen.png"
+    - "./statistics.png"
 tags: ["Full-stack", "Python", "API", "Game Logic"]
+customPage: true
 ---
 
 ## Origin

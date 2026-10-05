@@ -232,6 +232,11 @@ main {
     border-top: 1px solid var(--line);
 }
 
+/* let wide children (code blocks) scroll instead of stretching the column */
+.row > * {
+    min-width: 0;
+}
+
 @media (min-width: 900px) {
     .row {
         grid-template-columns: repeat(12, minmax(0, 1fr));
