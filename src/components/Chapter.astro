@@ -3,20 +3,35 @@
  * One chapter of a case study: number and title, then the text beside the
  * visual it explains. The visual (slot "media") stays in view while longer
  * text scrolls past it; side="left" puts it on the left for rhythm.
- * `html` is a rendered part of the project's markdown; the default slot adds
- * anything after it. wide stacks text and visual full width (e.g. a video).
+ *
+ * `html` is a rendered part of the project's markdown. One paragraph of it
+ * (`lead`, the first by default) is shown as the summary; when the rest is
+ * long, it folds under "Read more" so the page stays easy to scan. The
+ * default slot adds anything after the text. wide stacks text and visual
+ * full width (e.g. a video).
  */
+import { pad } from "../lib/content";
+
 interface Props {
     id: string;
-    num: string;
+    num: number;
     title: string;
     html?: string;
+    lead?: number;
     side?: "left" | "right";
     wide?: boolean;
 }
 
-const { id, num, title, html, side = "right", wide = false } = Astro.props;
+const { id, num, title, html = "", lead = 0, side = "right", wide = false } = Astro.props;
 const hasMedia = Astro.slots.has("media");
+
+const paragraphs = [...html.matchAll(/<p>[\s\S]*?<\/p>/g)];
+const pick = paragraphs[lead] ?? paragraphs[0];
+const leadHtml = pick?.[0];
+const restHtml = pick ? html.slice(0, pick.index) + html.slice(pick.index! + pick[0].length) : html;
+const restLength = restHtml.replace(/<[^>]+>/g, "").trim().length;
+// a sentence or two reads fine in place; anything longer folds away
+const fold = restLength > 280;
 ---
 
 <section
@@ -27,16 +42,31 @@ const hasMedia = Astro.slots.has("media");
     data-wide={wide ? "" : undefined}
     data-media={hasMedia ? "" : undefined}
     data-chapter
-    data-num={num}
+    data-num={pad(num)}
     data-title={title}
 >
     <div class="row chapter__head">
-        <span class="row__label mono muted">{num}</span>
+        <span class="row__label mono muted">{pad(num)}</span>
         <h2 id={`${id}-title`} class="row__body chapter__title" data-split>{title}</h2>
     </div>
     <div class="chapter__grid">
         <div class="chapter__text">
-            {html && <div class="prose chapter__prose" set:html={html} />}
+            {leadHtml && <div class="chapter__lead" data-reveal set:html={leadHtml} />}
+            {restLength > 0 && !fold && <div class="prose chapter__prose chapter__rest" data-reveal set:html={restHtml} />}
+            {
+                fold && (
+                    <details class="chapter__more" data-more>
+                        <summary class="mono" data-reveal>
+                            <span class="chapter__more-open">Read more</span>
+                            <span class="chapter__more-close">Read less</span>
+                            <span class="chapter__more-arrow" aria-hidden="true">↓</span>
+                        </summary>
+                        <div class="chapter__more-body" data-more-body>
+                            <div class="prose chapter__prose" set:html={restHtml} />
+                        </div>
+                    </details>
+                )
+            }
             <slot />
         </div>
         {
@@ -48,6 +78,61 @@ const hasMedia = Astro.slots.has("media");
         }
     </div>
 </section>
+
+<script>
+    import { gsap } from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    // "Read more": the fold opens and closes smoothly instead of jumping
+    document.querySelectorAll<HTMLDetailsElement>("[data-more]").forEach((details) => {
+        const summary = details.querySelector("summary")!;
+        const body = details.querySelector<HTMLElement>("[data-more-body]")!;
+        let busy = false;
+
+        // the page below moved: re-measure every scroll animation
+        const settle = () => {
+            busy = false;
+            ScrollTrigger.refresh();
+        };
+
+        summary.addEventListener("click", (e) => {
+            if (reduceMotion.matches) {
+                requestAnimationFrame(() => ScrollTrigger.refresh());
+                return; // native toggle
+            }
+            e.preventDefault();
+            if (busy) return;
+            busy = true;
+
+            if (details.open) {
+                gsap.to(body, {
+                    height: 0,
+                    autoAlpha: 0,
+                    duration: 0.5,
+                    ease: "power3.inOut",
+                    onComplete: () => {
+                        details.open = false;
+                        gsap.set(body, { clearProps: "all" });
+                        settle();
+                    },
+                });
+            } else {
+                details.open = true;
+                gsap.timeline({ onComplete: settle })
+                    .from(body, { height: 0, duration: 0.6, ease: "power3.inOut", clearProps: "height" })
+                    .from(
+                        body.querySelectorAll(".chapter__prose > *"),
+                        { autoAlpha: 0, y: 16, duration: 0.6, ease: "expo.out", stagger: 0.05 },
+                        0.15,
+                    );
+            }
+        });
+    });
+</script>
 
 <style>
     .chapter {
@@ -65,8 +150,8 @@ const hasMedia = Astro.slots.has("media");
 
     .chapter__grid {
         display: grid;
-        gap: clamp(28px, 4vw, 48px) var(--gutter);
-        margin-top: clamp(28px, 4vw, 56px);
+        gap: clamp(32px, 5vw, 64px) var(--gutter);
+        margin-top: clamp(32px, 5vw, 64px);
     }
 
     /* on phones the visual comes first, then the explanation */
@@ -79,9 +164,70 @@ const hasMedia = Astro.slots.has("media");
         min-width: 0;
     }
 
-    /* the markdown's own spacing starts flush with the column */
+    /* the summary: one paragraph, set larger than the detail */
+    .chapter__lead :global(p) {
+        margin: 0;
+        max-width: 32ch;
+        font-size: clamp(1.25rem, 1rem + 0.9vw, 1.75rem);
+        line-height: 1.25;
+        letter-spacing: -0.02em;
+    }
+
+    .chapter__rest {
+        margin-top: 1.2em;
+    }
+
     .chapter__prose > :global(:first-child) {
         margin-top: 0;
+    }
+
+    /* --- Read more --- */
+
+    .chapter__more {
+        margin-top: clamp(24px, 3vw, 36px);
+    }
+
+    .chapter__more > summary {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid currentColor;
+        cursor: pointer;
+        list-style: none;
+    }
+
+    .chapter__more > summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .chapter__more-close,
+    .chapter__more[open] .chapter__more-open {
+        display: none;
+    }
+
+    .chapter__more[open] .chapter__more-close {
+        display: inline;
+    }
+
+    .chapter__more-arrow {
+        transition: transform 0.5s var(--ease);
+    }
+
+    .chapter__more > summary:hover .chapter__more-arrow {
+        transform: translateY(3px);
+    }
+
+    .chapter__more[open] .chapter__more-arrow {
+        transform: rotate(180deg);
+    }
+
+    .chapter__more-body {
+        overflow: hidden;
+    }
+
+    .chapter__more-body > .chapter__prose {
+        padding-top: clamp(24px, 3vw, 36px);
     }
 
     @media (min-width: 900px) {
