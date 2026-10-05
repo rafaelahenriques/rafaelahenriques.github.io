@@ -372,8 +372,13 @@ main {
  */
 
 /* Text keeps a reading measure; images, phone rows and video use the full column */
-.prose > :where(p, ul, ol, h2, h3, blockquote, pre) {
+.prose > :where(p, ul, ol, h2, h3, blockquote) {
     max-width: 62ch;
+}
+
+/* code gets the full column so less of it scrolls sideways */
+.prose > pre {
+    max-width: 100%;
 }
 
 .prose > * + * {
@@ -442,8 +447,19 @@ main {
 }
 
 .prose h3 {
-    margin-top: 1.8em;
-    font-size: var(--fs-body);
+    margin-top: 2em;
+    font-size: var(--fs-lead);
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+}
+
+.prose h2 + h3 {
+    margin-top: 0.8em;
+}
+
+.prose h3 + * {
+    margin-top: 0.6em;
 }
 
 .prose ul,
