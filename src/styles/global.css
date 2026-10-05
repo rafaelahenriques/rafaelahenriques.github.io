@@ -504,10 +504,35 @@ main {
     font-size: 0.85em;
 }
 
+/* Code reads as part of the text: page colours, set off by rules, not a box */
 .prose pre {
-    padding: 16px;
+    --astro-code-foreground: var(--text);
+    --astro-code-background: transparent;
+    --astro-code-token-keyword: var(--text);
+    --astro-code-token-function: var(--text);
+    --astro-code-token-constant: var(--text);
+    --astro-code-token-parameter: var(--text);
+    --astro-code-token-punctuation: var(--muted);
+    --astro-code-token-string: var(--muted);
+    --astro-code-token-string-expression: var(--muted);
+    --astro-code-token-comment: var(--muted);
+    --astro-code-token-link: var(--text);
+
+    margin-block: 1.6em;
+    padding: 18px 0;
     overflow-x: auto;
-    border: 1px solid var(--line);
+    border-block: 1px solid var(--line);
+    line-height: 1.6;
+}
+
+.prose pre[data-language]::before {
+    content: attr(data-language);
+    display: block;
+    margin-bottom: 12px;
+    color: var(--muted);
+    font-size: var(--fs-mono);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
 }
 
 .prose blockquote {
