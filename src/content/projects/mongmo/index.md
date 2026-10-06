@@ -3,6 +3,7 @@ title: "Mongmo"
 section: featured
 order: 2
 category: "Mobile"
+types: ["mobile", "fullstack"]
 year: "2026"
 tech: ["Expo", "React Native", "TypeScript", "Supabase", "PostgreSQL", "TanStack Query", "Zustand"]
 role: "Design & development"

@@ -261,80 +261,9 @@ main {
 }
 
 /*
- * 5.0 INDEX LIST (work, journal)
+ * 5.0 MEDIA
  * -------------------
  */
-
-.index {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    border-bottom: 1px solid var(--line);
-}
-
-.index__item {
-    border-top: 1px solid var(--line);
-}
-
-.index__link {
-    display: grid;
-    grid-template-columns: 2.5rem 1fr auto;
-    align-items: baseline;
-    gap: var(--gutter);
-    padding-block: clamp(14px, 1.6vw, 22px);
-    transition:
-        opacity 0.3s var(--ease),
-        padding 0.5s var(--ease);
-}
-
-.index__title {
-    font-size: var(--fs-lead);
-    line-height: 1.1;
-    letter-spacing: -0.03em;
-}
-
-.index__meta {
-    display: none;
-}
-
-/* dim siblings on hover */
-.index:hover .index__link {
-    opacity: 0.35;
-}
-
-.index .index__link:hover,
-.index .index__link:focus-visible {
-    opacity: 1;
-    padding-left: 12px;
-}
-
-@media (min-width: 900px) {
-    .index__link {
-        grid-template-columns: repeat(12, minmax(0, 1fr));
-    }
-
-    .index__num {
-        grid-column: 1 / span 1;
-    }
-
-    .index__title {
-        grid-column: 2 / span 6;
-    }
-
-    .index__meta {
-        display: block;
-        grid-column: 8 / span 4;
-    }
-
-    .index__year {
-        grid-column: 12 / span 1;
-        text-align: right;
-    }
-}
-
-.index__year {
-    white-space: nowrap;
-}
 
 /* an image that opens in the case-study lightbox (Lightbox.astro) */
 .zoom-btn {
@@ -349,26 +278,6 @@ main {
 
 .zoom-btn img {
     display: block;
-}
-
-/* hover image that follows the cursor over index lists (animations.ts) */
-.cursor-preview {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 40;
-    width: clamp(220px, 22vw, 360px);
-    aspect-ratio: 4 / 3;
-    overflow: hidden;
-    pointer-events: none;
-    visibility: hidden;
-    box-shadow: var(--media-shadow);
-}
-
-.cursor-preview img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
 }
 
 /*

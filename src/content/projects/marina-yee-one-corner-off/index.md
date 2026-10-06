@@ -4,6 +4,7 @@ section: featured
 order: 4
 status: in-progress
 category: "Creative Development"
+types: ["web", "interactive"]
 year: "2026"
 tech: ["JavaScript", "GSAP", "Vite", "HTML/CSS"]
 context: "Devine (Howest) — Dress to Impress, for MoMu Antwerp"
