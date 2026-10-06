@@ -15,7 +15,7 @@ const skills = (await getCollection("skills")).sort((a, b) => {
 const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-minded"];
 ---
 
-<Base title="About" description="Rafaela Henriques, an Angolan-Portuguese developer studying Digital Design & Development at Howest in Belgium.">
+<Base title="About" description="Rafaela Henriques, an Angolan-Portuguese developer based in Belgium, studying Digital Design & Development at Howest: Creative Development major, Experience Design minor.">
     <!-- HEADER: name on the left, portrait on the right -->
     <header class="page-head wrap about-head">
         <div class="about-head__title">
@@ -46,37 +46,32 @@ const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-mind
             <p class="row__label mono muted">Profile</p>
             <div class="row__body">
                 <p class="lead about-lead" data-split>
-                    I’m Rafaela, an Angolan-Portuguese developer currently
-                    studying Digital Design &amp; Development at Howest in Belgium.
+                    I’m Rafaela, an Angolan-Portuguese developer based in Belgium,
+                    currently studying Digital Design &amp; Development at Howest,
+                    majoring in Creative Development and minoring in Experience
+                    Design.
                 </p>
                 <div class="about__columns" data-reveal>
                     <p>
-                        I’ve spent much of my life moving between countries,
-                        cultures and ways of thinking. Growing up in Angola,
-                        living in Portugal and later moving to Belgium taught me
-                        to adapt quickly, question what I already know and stay
-                        open to different ways of approaching a problem.
+                        I’m always looking to learn, improve, and understand things
+                        more deeply. I’m not someone who likes to stay comfortable
+                        with what I already know. I want to keep pushing myself and
+                        become better at what I do. That mindset is what led me to
+                        move to Belgium on my own and challenge myself beyond what I
+                        was used to.
                     </p>
                     <p>
-                        I’m ambitious and deeply curious. I like understanding how
-                        things work, but I’m rarely satisfied with knowing only my
-                        part of the process. That curiosity took me from game
-                        development into full-stack development, and it is also
-                        why I chose an education that exposed me to design,
-                        research and user experience. I want to understand the
-                        whole process, not just the code I’m responsible for.
-                    </p>
-                    <p>
-                        I’m drawn to unfamiliar environments and difficult
-                        problems because that is where I learn the most. Whether
-                        it is a new country, technology or way of working, I would
-                        rather be challenged than stay with what I already know.
+                        Development is where I feel most at home: building, solving
+                        problems, and turning ideas into something real. But I also
+                        care about how people experience what I create. That’s why
+                        the combination of Creative Development and Experience
+                        Design feels so natural to me.
                     </p>
                 </div>
                 <p class="about-closing" data-split>
-                    Ultimately, I want to become the kind of developer who can
-                    move comfortably between technology, people and ideas — and
-                    eventually use everything I learn to build something of my own.
+                    Ultimately, I want to become an excellent developer and build
+                    something of my own. Something I believe in, and something that
+                    genuinely brings value to others.
                 </p>
             </div>
         </div>
@@ -212,24 +207,25 @@ const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-mind
     /* --- PROFILE --- */
 
     .about-lead {
-        max-width: 30ch;
+        max-width: 34ch;
     }
 
-    /* the story flows down two columns, so three paragraphs stay balanced */
+    /* two paragraphs side by side: why I push myself, why dev + experience */
     .about__columns {
+        display: grid;
+        gap: 1em var(--gutter);
         margin-top: clamp(32px, 4vw, 56px);
         max-width: 60rem;
         color: var(--muted);
     }
 
     .about__columns p {
-        margin: 0 0 1em;
+        margin: 0;
     }
 
     @media (min-width: 900px) {
         .about__columns {
-            columns: 2;
-            column-gap: var(--gutter);
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
     }
 
