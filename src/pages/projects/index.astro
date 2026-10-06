@@ -1,339 +1,271 @@
 ---
+/**
+ * All projects. A moving strip of every project's images, a big title, then
+ * one list that can be shown two ways: rows (big titles, thumbnail on the
+ * right) or a staggered grid. Switching layout morphs the items into place
+ * and filtering glides them (GSAP Flip). The filter is kept in the URL hash
+ * (/projects/#web), the layout in localStorage.
+ */
 import Base from "../../layouts/BaseLayout.astro";
 import { Picture, getImage } from "astro:assets";
-import type { ImageMetadata } from "astro";
-import { getFeatured, getOtherWork, pad, slugOf } from "../../lib/content";
+import { getProjects, pad, slugOf, PROJECT_TYPES } from "../../lib/content";
 
-const projects = await getFeatured();
-const otherWork = await getOtherWork();
+const projects = await getProjects();
 
-const previewOf = async (screenshot?: ImageMetadata) =>
-    screenshot ? (await getImage({ src: screenshot, width: 720, format: "webp" })).src : undefined;
+const items = projects.map((p, i) => ({
+    p,
+    num: pad(i + 1),
+    href: `/projects/${slugOf(p)}/`,
+    types: p.data.types,
+    inProgress: p.data.status === "in-progress",
+    image: p.data.media?.screenshot,
+}));
 
-const rows = await Promise.all(
-    projects.map(async (p, i) => ({
-        p,
-        i,
-        num: pad(p.data.order ?? i + 1),
-        href: `/projects/${slugOf(p)}/`,
-        inProgress: p.data.status === "in-progress",
-        tech: p.data.tech ?? [],
-        preview: await previewOf(p.data.media?.screenshot),
+const filters = [
+    { key: "all", label: "All", count: projects.length },
+    ...PROJECT_TYPES.map((t) => ({
+        key: t.key as string,
+        label: t.label as string,
+        count: projects.filter((p) => (p.data.types as string[]).includes(t.key)).length,
     })),
+].filter((f) => f.count > 0);
+
+// The strip: every project's images, taken round-robin so neighbours differ
+const STRIP_H = 360;
+const galleries = items.map((it) => (it.p.data.media?.gallery ?? [it.image]).filter((img) => img !== undefined));
+const depth = Math.max(...galleries.map((g) => g.length));
+const strip = await Promise.all(
+    Array.from({ length: depth }, (_, round) => items.map((it, i) => ({ it, img: galleries[i][round] })))
+        .flat()
+        .filter((s) => s.img !== undefined)
+        .map(async ({ it, img }) => ({
+            src: (await getImage({ src: img!, height: STRIP_H, format: "webp", quality: 80 })).src,
+            width: Math.round((img!.width * STRIP_H) / img!.height),
+            num: it.num,
+            title: it.p.data.title,
+            href: it.href,
+        })),
 );
-
-const others = await Promise.all(
-    otherWork.map(async (p) => ({
-        p,
-        href: `/projects/${slugOf(p)}/`,
-        preview: await previewOf(p.data.media?.screenshot),
-    })),
-);
-
-// Stack facet: every technology with how many projects use it, most used first
-const techCounts = new Map<string, number>();
-rows.forEach((r) => r.tech.forEach((t) => techCounts.set(t, (techCounts.get(t) ?? 0) + 1)));
-const stack = [...techCounts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-
-const columns = [
-    { key: "index", label: "No." },
-    { key: "title", label: "Project" },
-    { key: "type", label: "Category" },
-    { key: "stack", label: "Stack" },
-    { key: "year", label: "Year" },
-];
 ---
 
-<Base title="Projects" description="Rafaela Henriques — selected projects.">
-    <header class="page-head wrap">
-        <p class="mono muted" data-reveal>Featured ({pad(projects.length)}) · Other work ({pad(otherWork.length)})</p>
-        <h1 class="display" data-split>Selected work</h1>
-        <p class="lead page-lead" data-split data-split-delay="0.2">
-            Four projects across full-stack, mobile, backend &amp; data and
-            creative development — plus smaller experiments.
+<Base title="Projects" description="Rafaela Henriques — all projects: web, mobile and full-stack apps, games and interactive work, branding and UI design.">
+    <!-- STRIP: every project's images, drifting past -->
+    <div class="strip" data-strip aria-label="Project images">
+        <div class="strip__track" data-strip-track>
+            {
+                strip.map((s) => (
+                    <a href={s.href} class="strip__item" aria-label={s.title}>
+                        <img src={s.src} width={s.width} height={STRIP_H} alt="" loading="eager" draggable="false" />
+                        <span class="strip__label mono">
+                            [{s.num}] <span class="strip__name">{s.title}</span>
+                        </span>
+                    </a>
+                ))
+            }
+        </div>
+    </div>
+
+    <!-- TITLE -->
+    <header class="wrap ph">
+        <h1 class="ph__title" data-split>Projects<sup class="ph__count mono">({pad(projects.length)})</sup></h1>
+        <p class="ph__desc" data-reveal>
+            Apps, games, interactive stories and brand work. Some finished,
+            some still in progress.
         </p>
     </header>
 
-    <section class="wrap" aria-label="Projects" data-projects>
-        <div class="toolbar" data-reveal>
-            <div class="row">
-                <p class="row__label mono muted">View</p>
-                <div class="row__body filters mono" role="group" aria-label="View">
-                    <button type="button" class="text-button link" data-view="grid" aria-pressed="true">Grid</button>
-                    <button type="button" class="text-button link" data-view="table" aria-pressed="false">Table</button>
-                </div>
-            </div>
-            <div class="row">
-                <p class="row__label mono muted">Stack</p>
-                <div class="row__body filters mono" role="group" aria-label="Filter by technology">
-                    <button type="button" class="text-button link" data-tech="all" aria-pressed="true">Any</button>
-                    {
-                        stack.map(([tech, count]) => (
-                            <button type="button" class="text-button link" data-tech={tech} aria-pressed="false">
-                                {tech}<sup class="toolbar__count">{count}</sup>
-                            </button>
-                        ))
-                    }
-                </div>
-            </div>
-            <p class="toolbar__summary mono muted" aria-live="polite" data-summary>
-                Showing {projects.length} of {projects.length}
-            </p>
-        </div>
-
-        <!-- GRID VIEW -->
-        <ul class="work-grid" data-view-panel="grid">
+    <!-- CONTROLS: filter + layout -->
+    <div class="wrap pc" data-reveal>
+        <div class="pc__filters" role="group" aria-label="Filter projects" data-filters>
             {
-                rows.map(({ p, i, num, href, inProgress, tech }) => {
-                    const screenshot = p.data.media?.screenshot;
-                    return (
-                        <li
-                            class="work-grid__item"
-                            data-item
-                            data-tech-list={JSON.stringify(tech)}
-                            data-col={i % 3}
-                        >
-                            <a href={href} class="work-card">
-                                {screenshot && (
-                                    <div class="work-card__media" data-reveal-img>
-                                        <Picture
-                                            src={screenshot}
-                                            alt=""
-                                            formats={["avif", "webp"]}
-                                            widths={[480, 800, 1200]}
-                                            sizes="(min-width: 900px) 33vw, 100vw"
-                                            loading={i < 3 ? "eager" : "lazy"}
-                                        />
-                                    </div>
-                                )}
-                                <div class="work-card__caption mono" data-reveal>
-                                    <span class="muted">{num}</span>
-                                    <span>
-                                        <span class="work-card__title">{p.data.title}</span>
-                                        <span class="work-card__meta muted">
-                                            {p.data.category}
-                                            {inProgress && <span class="status">In progress</span>}
-                                        </span>
-                                    </span>
-                                    <span class="muted">{p.data.year}</span>
-                                </div>
-                            </a>
-                        </li>
-                    );
-                })
+                filters.map((f) => (
+                    <button type="button" class="pill mono" data-filter={f.key} aria-pressed={String(f.key === "all")}>
+                        {f.label}
+                        <span class="pill__count">{pad(f.count)}</span>
+                    </button>
+                ))
+            }
+        </div>
+        <div class="pc__layout mono" role="group" aria-label="Display as">
+            <button type="button" class="pc__layout-btn" data-layout="list" aria-pressed="true">List</button>
+            <button type="button" class="pc__layout-btn" data-layout="grid" aria-pressed="false">Grid</button>
+        </div>
+    </div>
+
+    <!-- THE PROJECTS -->
+    <section class="wrap" aria-label="All projects">
+        <ul class="works" data-works data-layout="list">
+            {
+                items.map((it, i) => (
+                    <li class="work" data-item data-types={it.types.join(" ")} data-col={i % 3}>
+                        <a href={it.href} class="work__link">
+                            <span class="work__num mono">{it.num}</span>
+                            <span class="work__title">{it.p.data.title}</span>
+                            <span class="work__meta mono">
+                                {it.p.data.category}
+                                {it.inProgress && <span class="status">In progress</span>}
+                            </span>
+                            <span class="work__year mono">{it.p.data.year}</span>
+                            {it.image && (
+                                <span class="work__media">
+                                    <Picture
+                                        src={it.image}
+                                        alt=""
+                                        formats={["avif", "webp"]}
+                                        widths={[320, 640, 1000]}
+                                        sizes="(min-width: 900px) 33vw, 50vw"
+                                        loading={i < 3 ? "eager" : "lazy"}
+                                    />
+                                </span>
+                            )}
+                        </a>
+                    </li>
+                ))
             }
         </ul>
-
-        <!-- TABLE VIEW -->
-        <div class="work-table" data-view-panel="table" hidden>
-            <table data-preview-list>
-                <caption class="visually-hidden">Projects, sortable by column</caption>
-                <thead class="mono">
-                    <tr>
-                        {
-                            columns.map((c) => (
-                                <th scope="col" class={`col-${c.key}`} aria-sort={c.key === "index" ? "ascending" : "none"}>
-                                    <button type="button" class="text-button" data-sort={c.key}>
-                                        {c.label}
-                                        <span class="sort-arrow" aria-hidden="true" />
-                                    </button>
-                                </th>
-                            ))
-                        }
-                    </tr>
-                </thead>
-                <tbody data-rows>
-                    {
-                        rows.map(({ p, i, num, href, inProgress, tech, preview }) => (
-                            <tr
-                                data-item
-                                data-tech-list={JSON.stringify(tech)}
-                                data-sort-index={i}
-                                data-sort-title={p.data.title}
-                                data-sort-type={p.data.category ?? ""}
-                                data-sort-stack={tech.join(", ")}
-                                data-sort-year={p.data.year ?? ""}
-                                data-preview-src={preview}
-                            >
-                                <td class="col-index mono muted">{num}</td>
-                                <td class="col-title">
-                                    <a href={href} class="work-table__link">{p.data.title}</a>
-                                    <span class="work-table__role mono muted">
-                                        {inProgress ? <span class="status">In progress</span> : p.data.role}
-                                    </span>
-                                </td>
-                                <td class="col-type mono">{p.data.category}</td>
-                                <td class="col-stack mono">
-                                    <ul class="work-table__stack">
-                                        {tech.map((t) => (
-                                            <li>
-                                                <button type="button" class="text-button link" data-tech-chip={t}>
-                                                    {t}
-                                                </button>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </td>
-                                <td class="col-year mono">{p.data.year}</td>
-                            </tr>
-                        ))
-                    }
-                </tbody>
-            </table>
-        </div>
-
-        <p class="work-empty mono muted" data-empty hidden>No projects match these filters.</p>
-    </section>
-
-    <section class="section wrap" aria-labelledby="other-work">
-        <div class="row">
-            <h2 id="other-work" class="row__label mono muted">Other work / Experiments</h2>
-            <ul class="row__body other-list" data-preview-list>
-                {
-                    others.map(({ p, href, preview }) => (
-                        <li data-reveal>
-                            <a href={href} class="other-list__link" data-preview-src={preview}>
-                                <span class="other-list__title">{p.data.title}</span>
-                                <span class="mono muted">{p.data.category}</span>
-                                <span class="mono muted other-list__year">{p.data.year}</span>
-                            </a>
-                        </li>
-                    ))
-                }
-            </ul>
-        </div>
+        <p class="works__empty mono muted" data-empty hidden>Nothing here yet.</p>
+        <p class="visually-hidden" aria-live="polite" data-filter-status></p>
     </section>
 </Base>
 
 <script>
     import { gsap } from "gsap";
+    import { Flip } from "gsap/Flip";
     import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-    gsap.registerPlugin(ScrollTrigger);
+    gsap.registerPlugin(Flip, ScrollTrigger);
 
-    type View = "grid" | "table";
-    type SortKey = "index" | "title" | "type" | "stack" | "year";
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const root = document.querySelector<HTMLElement>("[data-projects]")!;
-    const panels = root.querySelectorAll<HTMLElement>("[data-view-panel]");
-    const gridItems = [...root.querySelectorAll<HTMLElement>(".work-grid [data-item]")];
-    const tbody = root.querySelector<HTMLElement>("[data-rows]")!;
-    const tableRows = [...tbody.querySelectorAll<HTMLTableRowElement>("[data-item]")];
-    const summary = root.querySelector<HTMLElement>("[data-summary]")!;
-    const empty = root.querySelector<HTMLElement>("[data-empty]")!;
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    /* --- STRIP: an endless drift that speeds up with scrolling, stops on hover --- */
+    const strip = document.querySelector<HTMLElement>("[data-strip]");
+    const track = strip?.querySelector<HTMLElement>("[data-strip-track]");
+    if (strip && track && !reduceMotion) {
+        // a second copy so the loop never shows a gap
+        [...track.children].forEach((child) => {
+            const copy = child.cloneNode(true) as HTMLElement;
+            copy.setAttribute("aria-hidden", "true");
+            copy.tabIndex = -1;
+            track.append(copy);
+        });
+        strip.classList.add("is-moving");
 
-    const state = {
-        tech: "all",
-        view: "grid" as View,
-        sort: "index" as SortKey,
-        dir: 1,
+        let loop: gsap.core.Tween | null = null;
+        const build = () => {
+            const progress = loop?.progress() ?? 0;
+            loop?.kill();
+            const half = track.scrollWidth / 2;
+            loop = gsap.fromTo(track, { x: 0 }, { x: -half, duration: half / 45, ease: "none", repeat: -1 });
+            loop.progress(progress);
+        };
+        // widths are known once the images have their size
+        Promise.all([...track.querySelectorAll("img")].map((img) => img.decode().catch(() => {}))).then(build);
+        window.addEventListener("resize", () => build());
+
+        let hovering = false;
+        strip.addEventListener("pointerenter", () => {
+            hovering = true;
+            if (loop) gsap.to(loop, { timeScale: 0, duration: 0.6, ease: "power2.out", overwrite: true });
+        });
+        strip.addEventListener("pointerleave", () => {
+            hovering = false;
+            if (loop) gsap.to(loop, { timeScale: 1, duration: 0.8, ease: "power2.in", overwrite: true });
+        });
+        ScrollTrigger.create({
+            onUpdate(self) {
+                if (!loop || hovering) return;
+                const boost = 1 + Math.min(Math.abs(self.getVelocity()) / 250, 6);
+                gsap.timeline()
+                    .to(loop, { timeScale: boost, duration: 0.2, overwrite: true })
+                    .to(loop, { timeScale: 1, duration: 1.2, ease: "power2.out" });
+            },
+        });
+    }
+
+    /* --- FILTER + LAYOUT --- */
+    const list = document.querySelector<HTMLElement>("[data-works]")!;
+    const items = [...list.querySelectorAll<HTMLElement>("[data-item]")];
+    const filterButtons = [...document.querySelectorAll<HTMLButtonElement>("[data-filter]")];
+    const layoutButtons = [...document.querySelectorAll<HTMLButtonElement>("[data-layout]")];
+    const status = document.querySelector<HTMLElement>("[data-filter-status]")!;
+    const empty = document.querySelector<HTMLElement>("[data-empty]")!;
+    const keys = filterButtons.map((b) => b.dataset.filter!);
+    const targets = () => [...items, ...list.querySelectorAll<HTMLElement>(".work__media")];
+
+    let filter = "all";
+
+    /** Animate whatever changed between `state` and now. */
+    const morph = (state: Flip.FlipState) => {
+        if (reduceMotion) {
+            ScrollTrigger.refresh();
+            return;
+        }
+        Flip.from(state, {
+            duration: 0.75,
+            ease: "power3.inOut",
+            nested: true,
+            absolute: true,
+            stagger: 0.025,
+            onEnter: (els) =>
+                gsap.fromTo(els, { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.6, ease: "power3.out", delay: 0.2 }),
+            onLeave: (els) => gsap.to(els, { autoAlpha: 0, y: -12, duration: 0.3, ease: "power2.in" }),
+            onComplete: () => ScrollTrigger.refresh(),
+        });
     };
 
-    const press = (selector: string, active: string) =>
-        root.querySelectorAll<HTMLButtonElement>(`[${selector}]`).forEach((b) =>
-            b.setAttribute("aria-pressed", String(b.getAttribute(selector) === active)),
-        );
+    function applyFilter(key: string, animate = true) {
+        filter = keys.includes(key) ? key : "all";
+        filterButtons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.filter === filter)));
+        // on phones the row scrolls sideways: keep the active filter in view
+        const active = filterButtons.find((b) => b.dataset.filter === filter)!;
+        const row = active.parentElement!;
+        if (row.scrollWidth > row.clientWidth) {
+            row.scrollTo({ left: active.offsetLeft - row.offsetLeft - 16, behavior: animate && !reduceMotion ? "smooth" : "auto" });
+        }
 
-    const matches = (item: HTMLElement) => {
-        const tech: string[] = JSON.parse(item.dataset.techList ?? "[]");
-        return state.tech === "all" || tech.includes(state.tech);
-    };
-
-    function applyFilters() {
-        press("data-tech", state.tech);
-
-        // data-col drives the grid's staggered offsets, so renumber visible items
+        const state = Flip.getState(targets());
+        // data-col drives the grid's staggered offsets, so renumber what's left
         let col = 0;
-        gridItems.forEach((item) => {
-            item.hidden = !matches(item);
-            if (!item.hidden) item.dataset.col = String(col++ % 3);
+        items.forEach((item) => {
+            const show = filter === "all" || (item.dataset.types ?? "").split(" ").includes(filter);
+            item.hidden = !show;
+            if (show) item.dataset.col = String(col++ % 3);
         });
-        tableRows.forEach((row) => (row.hidden = !matches(row)));
 
-        const shown = gridItems.filter((i) => !i.hidden).length;
-        const filter = state.tech !== "all" ? ` · built with ${state.tech}` : "";
-        summary.textContent = `Showing ${shown} of ${gridItems.length}${filter}`;
+        const shown = items.filter((i) => !i.hidden).length;
+        status.textContent = `Showing ${shown} of ${items.length} projects`;
         empty.hidden = shown > 0;
-        ScrollTrigger.refresh();
+        history.replaceState(null, "", filter === "all" ? location.pathname : `#${filter}`);
+        if (animate) morph(state);
+        else ScrollTrigger.refresh();
     }
 
-    function applySort() {
-        const attr = `sort${state.sort[0].toUpperCase()}${state.sort.slice(1)}`;
-        const value = (row: HTMLElement) => row.dataset[attr] ?? "";
-        const numeric = state.sort === "index" || state.sort === "year";
-        tableRows
-            .sort((a, b) => {
-                const cmp = numeric
-                    ? Number(value(a)) - Number(value(b))
-                    : value(a).localeCompare(value(b));
-                // tie-break on original order so sorting is stable
-                return cmp * state.dir || Number(a.dataset.sortIndex) - Number(b.dataset.sortIndex);
-            })
-            .forEach((row) => tbody.append(row));
-
-        root.querySelectorAll<HTMLElement>("th").forEach((th) => {
-            const key = th.querySelector<HTMLElement>("[data-sort]")?.dataset.sort;
-            th.setAttribute(
-                "aria-sort",
-                key === state.sort ? (state.dir === 1 ? "ascending" : "descending") : "none",
-            );
-        });
-    }
-
-    function applyView(view: View, animate = true) {
-        state.view = view;
-        press("data-view", view);
-        panels.forEach((p) => (p.hidden = p.dataset.viewPanel !== view));
+    function applyLayout(layout: string, animate = true) {
+        if (layout !== "list" && layout !== "grid") return;
+        layoutButtons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.layout === layout)));
+        if (list.dataset.layout === layout) return;
+        const state = Flip.getState(targets());
+        list.dataset.layout = layout;
         try {
-            localStorage.setItem("projects-view", view);
+            localStorage.setItem("projects-layout", layout);
         } catch {}
-        ScrollTrigger.refresh();
-
-        if (animate && view === "table" && !reduceMotion.matches) {
-            gsap.from(tableRows.filter((r) => !r.hidden), {
-                autoAlpha: 0,
-                y: 16,
-                duration: 0.7,
-                ease: "expo.out",
-                stagger: 0.05,
-                clearProps: "all",
-            });
-        }
+        if (animate) morph(state);
+        else ScrollTrigger.refresh();
     }
 
-    root.addEventListener("click", (e) => {
-        const target = (e.target as HTMLElement).closest<HTMLButtonElement>("button");
-        if (!target) return;
-        const { tech, techChip, view, sort } = target.dataset;
-
-        if (tech) state.tech = tech;
-        // clicking a stack cell toggles that technology as the filter
-        if (techChip) state.tech = state.tech === techChip ? "all" : techChip;
-        if (tech || techChip) applyFilters();
-
-        if (view) applyView(view as View);
-
-        if (sort) {
-            state.dir = state.sort === sort ? -state.dir : 1;
-            state.sort = sort as SortKey;
-            applySort();
-        }
-    });
+    filterButtons.forEach((b) => b.addEventListener("click", () => applyFilter(b.dataset.filter!)));
+    layoutButtons.forEach((b) => b.addEventListener("click", () => applyLayout(b.dataset.layout!)));
+    window.addEventListener("hashchange", () => applyFilter(location.hash.slice(1) || "all"));
 
     let saved: string | null = null;
     try {
-        saved = localStorage.getItem("projects-view");
+        saved = localStorage.getItem("projects-layout");
     } catch {}
-    if (saved === "table") applyView("table", false);
+    if (saved) applyLayout(saved, false);
+    applyFilter(location.hash.slice(1) || "all", false);
 </script>
 
 <style>
-    .page-lead {
-        margin-top: clamp(24px, 3vw, 40px);
-        max-width: 32ch;
-    }
-
     .visually-hidden {
         position: absolute;
         width: 1px;
@@ -343,86 +275,269 @@ const columns = [
         white-space: nowrap;
     }
 
-    /* --- TOOLBAR --- */
+    /* --- STRIP --- */
 
-    .toolbar {
-        margin-bottom: clamp(40px, 6vw, 80px);
+    .strip {
+        --strip-h: clamp(110px, 13vw, 190px);
+        margin-top: clamp(16px, 2vw, 28px);
+        overflow-x: auto;
+        scrollbar-width: none;
     }
 
-    .toolbar__line {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        gap: 12px var(--gutter);
-    }
-
-    .toolbar__count {
-        margin-left: 2px;
-        font-size: 0.75em;
-        vertical-align: super;
-        line-height: 0;
-    }
-
-    .toolbar__summary {
-        margin: 0;
-        padding-top: 14px;
-        border-top: 1px solid var(--line);
-    }
-
-    .work-empty {
-        padding-block: 40px;
-    }
-
-    [data-item][hidden],
-    [data-view-panel][hidden] {
+    .strip::-webkit-scrollbar {
         display: none;
     }
 
-    /* --- GRID VIEW --- */
+    /* once it drifts on its own, nothing to scroll by hand */
+    .strip.is-moving {
+        overflow: hidden;
+    }
 
-    .work-grid {
+    .strip__track {
+        display: flex;
+        gap: clamp(10px, 1.2vw, 16px);
+        width: max-content;
+        padding-inline: var(--gutter);
+    }
+
+    .strip.is-moving .strip__track {
+        padding-inline: 0;
+    }
+
+    .strip__item {
         display: grid;
-        grid-template-columns: 1fr;
-        gap: clamp(40px, 6vw, 96px) var(--gutter);
-        list-style: none;
+        gap: 6px;
+        flex: none;
+    }
+
+    .strip__item img {
+        width: auto;
+        height: var(--strip-h);
+        object-fit: cover;
+        background: var(--line);
+        transition: transform 0.6s var(--ease);
+    }
+
+    .strip__item:hover img {
+        transform: translateY(-4px);
+    }
+
+    .strip__label {
+        display: flex;
+        gap: 6px;
+        overflow: hidden;
+        white-space: nowrap;
+        color: var(--muted);
+    }
+
+    /* the name appears next to the number on hover */
+    .strip__name {
+        color: var(--text);
+        opacity: 0;
+        transform: translateY(100%);
+        transition:
+            opacity 0.4s var(--ease),
+            transform 0.4s var(--ease);
+    }
+
+    .strip__item:hover .strip__name,
+    .strip__item:focus-visible .strip__name {
+        opacity: 1;
+        transform: none;
+    }
+
+    /* --- TITLE --- */
+
+    .ph {
+        display: grid;
+        gap: 24px var(--gutter);
+        padding-block: clamp(40px, 6vw, 96px) clamp(32px, 4vw, 56px);
+    }
+
+    .ph__title {
         margin: 0;
-        padding: 0;
+        font-size: clamp(3.5rem, 0.5rem + 12.5vw, 13rem);
+        font-weight: 800;
+        line-height: 0.82;
+        letter-spacing: -0.045em;
+        text-transform: uppercase;
     }
 
-    .work-card {
+    .ph__count {
+        margin-left: 0.15em;
+        font-size: var(--fs-mono);
+        font-weight: 500;
+        letter-spacing: 0.02em;
+        vertical-align: top;
+        line-height: 1;
+    }
+
+    .ph__desc {
+        max-width: 30ch;
+        margin: 0;
+        color: var(--muted);
+    }
+
+    @media (min-width: 900px) {
+        .ph {
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+            align-items: end;
+        }
+
+        .ph__title {
+            grid-column: 1 / span 9;
+        }
+
+        .ph__desc {
+            grid-column: 10 / -1;
+            padding-bottom: 0.6em;
+        }
+    }
+
+    /* --- CONTROLS --- */
+
+    .pc {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px var(--gutter);
+        padding-bottom: clamp(24px, 3vw, 40px);
+    }
+
+    .pc__filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .pill {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 8px;
+        padding: 8px 14px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: none;
+        color: var(--text);
+        cursor: pointer;
+        transition:
+            background-color 0.35s var(--ease),
+            color 0.35s var(--ease),
+            border-color 0.35s var(--ease);
+    }
+
+    .pill:hover {
+        border-color: var(--text);
+    }
+
+    .pill[aria-pressed="true"] {
+        background: var(--text);
+        border-color: var(--text);
+        color: var(--bg);
+    }
+
+    .pill__count {
+        opacity: 0.55;
+    }
+
+    .pc__layout {
+        display: flex;
+        gap: 16px;
+    }
+
+    .pc__layout-btn {
+        padding: 0 0 2px;
+        border: 0;
+        border-bottom: 1px solid transparent;
+        background: none;
+        color: var(--muted);
+        font: inherit;
+        text-transform: inherit;
+        letter-spacing: inherit;
+        cursor: pointer;
+        transition:
+            color 0.3s var(--ease),
+            border-color 0.3s var(--ease);
+    }
+
+    .pc__layout-btn:hover,
+    .pc__layout-btn[aria-pressed="true"] {
+        color: var(--text);
+    }
+
+    .pc__layout-btn[aria-pressed="true"] {
+        border-color: currentColor;
+    }
+
+    /* on phones the filters scroll sideways on one line */
+    @media (max-width: 719px) {
+        .pc__filters {
+            flex-wrap: nowrap;
+            width: calc(100% + 2 * var(--gutter));
+            margin-inline: calc(-1 * var(--gutter));
+            padding-inline: var(--gutter);
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .pc__filters::-webkit-scrollbar {
+            display: none;
+        }
+
+        .pill {
+            flex: none;
+        }
+
+        .pc__layout {
+            order: -1;
+            margin-left: auto;
+        }
+    }
+
+    /* --- THE PROJECTS --- */
+
+    [data-item][hidden] {
+        display: none;
+    }
+
+    .works {
+        margin: 0;
+        padding: 0 0 var(--section);
+        list-style: none;
+    }
+
+    .works__empty {
+        padding-block: 40px;
+    }
+
+    .work__link {
+        display: grid;
+    }
+
+    .work__media {
         display: block;
-    }
-
-    .work-card__media {
-        aspect-ratio: 4 / 5;
         overflow: hidden;
         background: var(--line);
     }
 
-    /* <Picture> renders outside this component's scope, hence :global */
-    .work-card__media :global(img) {
+    .work__media :global(img) {
+        display: block;
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform 1.2s var(--ease);
+        transition: transform 1s var(--ease);
     }
 
-    .work-card:hover .work-card__media :global(img) {
-        transform: scale(1.04);
+    .work__link:hover .work__media :global(img) {
+        transform: scale(1.05);
     }
 
-    .work-card__caption {
-        display: grid;
-        grid-template-columns: 2.5rem 1fr auto;
-        gap: var(--gutter);
-        margin-top: 12px;
-    }
-
-    .work-card__meta {
+    .work__meta {
         display: flex;
         flex-wrap: wrap;
         gap: 4px 10px;
-        margin-top: 4px;
+        color: var(--muted);
     }
 
     .status {
@@ -440,180 +555,158 @@ const columns = [
         border-radius: 50%;
     }
 
-    /* --- OTHER WORK --- */
-
-    .other-list {
-        margin: 0;
-        padding: 0;
-        list-style: none;
+    .work__num,
+    .work__year {
+        color: var(--muted);
     }
 
-    .other-list li + li {
-        border-top: 1px solid var(--line);
+    /* LIST: big uppercase titles between rules, thumbnail on the right */
+    .works[data-layout="list"] {
+        border-bottom: 1px solid var(--text);
     }
 
-    .other-list__link {
+    .works[data-layout="list"] .work {
+        border-top: 1px solid var(--text);
+    }
+
+    .works[data-layout="list"] .work__link {
+        grid-template-columns: minmax(0, 1fr) clamp(88px, 24vw, 120px);
+        grid-template-areas:
+            "num   media"
+            "title media"
+            "meta  media";
+        align-items: start;
+        gap: 8px var(--gutter);
+        padding-block: clamp(16px, 2vw, 24px);
+        transition: opacity 0.4s var(--ease);
+    }
+
+    .works[data-layout="list"] .work__num {
+        grid-area: num;
+    }
+
+    .works[data-layout="list"] .work__title {
+        grid-area: title;
+        font-size: clamp(1.6rem, 0.9rem + 3vw, 3.75rem);
+        line-height: 0.95;
+        letter-spacing: -0.03em;
+        text-transform: uppercase;
+        transition: transform 0.6s var(--ease);
+    }
+
+    .works[data-layout="list"] .work__meta {
+        grid-area: meta;
+        margin-top: 6px;
+    }
+
+    .works[data-layout="list"] .work__year {
+        display: none;
+    }
+
+    .works[data-layout="list"] .work__media {
+        grid-area: media;
+        aspect-ratio: 4 / 5;
+    }
+
+    /* hovering a row: it steps forward, the others step back */
+    .works[data-layout="list"]:hover .work__link {
+        opacity: 0.4;
+    }
+
+    .works[data-layout="list"] .work__link:hover,
+    .works[data-layout="list"] .work__link:focus-visible {
+        opacity: 1;
+    }
+
+    .works[data-layout="list"] .work__link:hover .work__title {
+        transform: translateX(12px);
+    }
+
+    @media (min-width: 900px) {
+        .works[data-layout="list"] .work__link {
+            grid-template-columns: 4rem minmax(0, 1fr) minmax(0, 16rem) 4rem clamp(120px, 11vw, 170px);
+            grid-template-areas: "num title meta year media";
+            align-items: center;
+        }
+
+        .works[data-layout="list"] .work__num {
+            align-self: start;
+            padding-top: 0.4em;
+        }
+
+        .works[data-layout="list"] .work__meta {
+            margin-top: 0;
+        }
+
+        .works[data-layout="list"] .work__year {
+            display: block;
+            grid-area: year;
+            text-align: right;
+        }
+    }
+
+    /* GRID: staggered cards, image first */
+    .works[data-layout="grid"] {
         display: grid;
-        grid-template-columns: 1fr auto;
+        gap: clamp(40px, 6vw, 96px) var(--gutter);
+    }
+
+    .works[data-layout="grid"] .work__link {
+        grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+        grid-template-areas:
+            "media media media"
+            "num   title year"
+            ".     meta  meta";
         gap: 4px var(--gutter);
-        padding-block: 14px;
-        transition: padding 0.5s var(--ease);
     }
 
-    .other-list li:first-child .other-list__link {
-        padding-top: 0;
+    .works[data-layout="grid"] .work__media {
+        grid-area: media;
+        aspect-ratio: 4 / 5;
+        margin-bottom: 8px;
     }
 
-    .other-list__link:hover {
-        padding-left: 12px;
+    .works[data-layout="grid"] .work__num {
+        grid-area: num;
     }
 
-    .other-list__title {
-        grid-column: 1 / -1;
-        font-size: var(--fs-body);
+    .works[data-layout="grid"] .work__title {
+        grid-area: title;
+        font-family: var(--mono);
+        font-size: var(--fs-mono);
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
     }
 
-    .other-list__year {
-        text-align: right;
-    }
-
-    .work-card:hover .work-card__title {
+    .works[data-layout="grid"] .work__link:hover .work__title {
         text-decoration: underline;
         text-underline-offset: 0.2em;
     }
 
-    /* Staggered editorial grid: 3 columns, middle/right columns dropped */
+    .works[data-layout="grid"] .work__meta {
+        grid-area: meta;
+    }
+
+    .works[data-layout="grid"] .work__year {
+        grid-area: year;
+    }
+
     @media (min-width: 900px) {
-        .work-grid {
+        .works[data-layout="grid"] {
             grid-template-columns: repeat(3, minmax(0, 1fr));
             align-items: start;
         }
 
-        .work-grid__item[data-col="1"] {
+        .works[data-layout="grid"] .work[data-col="1"] {
             margin-top: 22vh;
         }
 
-        .work-grid__item[data-col="2"] {
+        .works[data-layout="grid"] .work[data-col="2"] {
             margin-top: 8vh;
         }
 
-        .work-grid__item[data-col="1"] .work-card__media {
+        .works[data-layout="grid"] .work[data-col="1"] .work__media {
             aspect-ratio: 3 / 4;
-        }
-    }
-
-    /* --- TABLE VIEW --- */
-
-    .work-table table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .work-table th {
-        padding: 0 12px 12px 0;
-        text-align: left;
-        font-weight: 500;
-        color: var(--muted);
-        border-bottom: 1px solid var(--line);
-    }
-
-    .work-table th button:hover,
-    .work-table th[aria-sort="ascending"],
-    .work-table th[aria-sort="descending"] {
-        color: var(--text);
-    }
-
-    .sort-arrow::after {
-        margin-left: 4px;
-    }
-
-    th[aria-sort="ascending"] .sort-arrow::after {
-        content: "↑";
-    }
-
-    th[aria-sort="descending"] .sort-arrow::after {
-        content: "↓";
-    }
-
-    .work-table td {
-        padding: 18px 12px 18px 0;
-        vertical-align: baseline;
-        border-bottom: 1px solid var(--line);
-    }
-
-    .work-table tbody tr {
-        transition: opacity 0.3s var(--ease);
-    }
-
-    .work-table tbody:hover tr {
-        opacity: 0.4;
-    }
-
-    .work-table tbody tr:hover,
-    .work-table tbody tr:focus-within {
-        opacity: 1;
-    }
-
-    .work-table__link {
-        display: block;
-        font-size: var(--fs-lead);
-        line-height: 1.1;
-        letter-spacing: -0.03em;
-    }
-
-    /* whole row is clickable through the title link */
-    .work-table tbody tr {
-        position: relative;
-    }
-
-    .work-table__link::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-    }
-
-    .work-table__role {
-        display: block;
-        margin-top: 6px;
-    }
-
-    .work-table__stack {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px 12px;
-        margin: 0;
-        padding: 0;
-        list-style: none;
-    }
-
-    /* chips sit above the row link so they stay clickable */
-    .work-table__stack button {
-        position: relative;
-        z-index: 1;
-    }
-
-    .col-index {
-        width: 3.5rem;
-    }
-
-    .col-year {
-        width: 4rem;
-        text-align: right;
-    }
-
-    .work-table th.col-year {
-        text-align: right;
-        padding-right: 0;
-    }
-
-    .work-table td.col-year {
-        padding-right: 0;
-    }
-
-    @media (max-width: 719px) {
-        .col-type,
-        .col-stack {
-            display: none;
         }
     }
 </style>

@@ -1,38 +1,11 @@
 ---
 import Base from "../layouts/BaseLayout.astro";
-import ProjectCarousel, { type Slide } from "../components/ProjectCarousel.astro";
-import WorkIndex from "../components/WorkIndex.astro";
+import ProjectDeck from "../components/ProjectDeck.astro";
 import SpreadName from "../components/SpreadName.astro";
 import babyPhoto from "../assets/me/rafaela-2006.jpg";
-import { getImage } from "astro:assets";
-import { getProjects, getFeatured, getOtherWork, slugOf } from "../lib/content";
+import { getFeatured } from "../lib/content";
 
-const projects = await getProjects();
 const featured = await getFeatured();
-const otherWork = await getOtherWork();
-
-// Carousel: gallery images (or the screenshot), taken round-robin across
-// projects so every project shows up and neighbours differ. 10 max.
-const CAROUSEL_SIZE = 10;
-const galleries = projects.map((p) =>
-    (p.data.media?.gallery ?? [p.data.media?.screenshot]).filter((img) => img !== undefined),
-);
-const depth = Math.max(...galleries.map((g) => g.length));
-const sources = Array.from({ length: depth }, (_, round) =>
-    projects.map((p, i) => ({ p, image: galleries[i][round] })),
-)
-    .flat()
-    .filter((s) => s.image !== undefined)
-    .slice(0, CAROUSEL_SIZE);
-
-const slides: Slide[] = await Promise.all(
-    sources.map(async ({ p, image }) => ({
-        src: (await getImage({ src: image!, width: 800, format: "webp" })).src,
-        title: p.data.title,
-        year: p.data.year,
-        href: `/projects/${slugOf(p)}/`,
-    })),
-);
 ---
 
 <Base title="Home" description="Rafaela Henriques — web developer. Selected projects.">
@@ -62,32 +35,14 @@ const slides: Slide[] = await Promise.all(
         </div>
     </section>
 
-    <ProjectCarousel slides={slides} />
-
-    <section class="section wrap" aria-labelledby="work">
-        <div class="section-head">
-            <h2 id="work" class="mono muted">Selected projects</h2>
-            <a href="/projects/" class="mono link">All projects</a>
-        </div>
-        <WorkIndex projects={featured} />
-        <p class="other-line mono muted" data-reveal>
-            Other work —
-            {
-                otherWork.map((p, i) => (
-                    <>
-                        <a href={`/projects/${slugOf(p)}/`} class="link">{p.data.title}</a>
-                        {i < otherWork.length - 1 && " · "}
-                    </>
-                ))
-            }
-        </p>
-    </section>
+    <!-- SELECTED PROJECTS: a deck of cards -->
+    <ProjectDeck projects={featured} />
 </Base>
 
 <style>
     /* first thing on the page: sits right under the header */
     .hello {
-        padding-block: clamp(40px, 7vw, 96px) clamp(64px, 9vw, 140px);
+        padding-top: clamp(40px, 7vw, 96px);
     }
 
     .hello__text {
@@ -106,17 +61,5 @@ const slides: Slide[] = await Promise.all(
         overflow: hidden;
         clip-path: inset(50%);
         white-space: nowrap;
-    }
-
-    .other-line {
-        margin-top: 18px;
-    }
-
-    .section-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        gap: var(--gutter);
-        margin-bottom: 14px;
     }
 </style>
