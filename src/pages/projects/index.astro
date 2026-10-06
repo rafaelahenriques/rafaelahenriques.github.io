@@ -1,99 +1,49 @@
 ---
+/**
+ * Every project in one staggered grid, filtered by discipline. Filtering
+ * glides the cards to their new places (GSAP Flip); the choice is kept in
+ * the URL hash so a filtered view can be linked (/projects/#design).
+ */
 import Base from "../../layouts/BaseLayout.astro";
-import { Picture, getImage } from "astro:assets";
-import type { ImageMetadata } from "astro";
-import { getFeatured, getOtherWork, pad, slugOf } from "../../lib/content";
+import { Picture } from "astro:assets";
+import { getProjects, pad, slugOf } from "../../lib/content";
 
-const projects = await getFeatured();
-const otherWork = await getOtherWork();
+const projects = await getProjects();
 
-const previewOf = async (screenshot?: ImageMetadata) =>
-    screenshot ? (await getImage({ src: screenshot, width: 720, format: "webp" })).src : undefined;
-
-const rows = await Promise.all(
-    projects.map(async (p, i) => ({
-        p,
-        i,
-        num: pad(p.data.order ?? i + 1),
-        href: `/projects/${slugOf(p)}/`,
-        inProgress: p.data.status === "in-progress",
-        tech: p.data.tech ?? [],
-        preview: await previewOf(p.data.media?.screenshot),
-    })),
-);
-
-const others = await Promise.all(
-    otherWork.map(async (p) => ({
-        p,
-        href: `/projects/${slugOf(p)}/`,
-        preview: await previewOf(p.data.media?.screenshot),
-    })),
-);
-
-// Stack facet: every technology with how many projects use it, most used first
-const techCounts = new Map<string, number>();
-rows.forEach((r) => r.tech.forEach((t) => techCounts.set(t, (techCounts.get(t) ?? 0) + 1)));
-const stack = [...techCounts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-
-const columns = [
-    { key: "index", label: "No." },
-    { key: "title", label: "Project" },
-    { key: "type", label: "Category" },
-    { key: "stack", label: "Stack" },
-    { key: "year", label: "Year" },
-];
+const filters = [
+    { key: "all", label: "All" },
+    { key: "development", label: "Development" },
+    { key: "design", label: "Design" },
+].map((f) => ({
+    ...f,
+    count: f.key === "all" ? projects.length : projects.filter((p) => p.data.discipline === f.key).length,
+}));
 ---
 
-<Base title="Projects" description="Rafaela Henriques — selected projects.">
-    <header class="page-head wrap">
-        <p class="mono muted" data-reveal>Featured ({pad(projects.length)}) · Other work ({pad(otherWork.length)})</p>
-        <h1 class="display" data-split>Selected work</h1>
-        <p class="lead page-lead" data-split data-split-delay="0.2">
-            Four projects across full-stack, mobile, backend &amp; data and
-            creative development — plus smaller experiments.
-        </p>
+<Base title="Projects" description="Rafaela Henriques — all projects, from full-stack and mobile apps to creative development and design.">
+    <header class="page-head wrap projects-head">
+        <h1 class="display" data-split>Projects</h1>
+        <div class="pf" role="group" aria-label="Filter projects" data-reveal data-filters>
+            {
+                filters.map((f) => (
+                    <button type="button" class="pf__btn" data-filter={f.key} aria-pressed={String(f.key === "all")}>
+                        <span class="pf__label">{f.label}</span>
+                        <sup class="pf__count mono">{pad(f.count)}</sup>
+                    </button>
+                ))
+            }
+            <span class="pf__line" aria-hidden="true" data-filter-line></span>
+        </div>
     </header>
 
-    <section class="wrap" aria-label="Projects" data-projects>
-        <div class="toolbar" data-reveal>
-            <div class="row">
-                <p class="row__label mono muted">View</p>
-                <div class="row__body filters mono" role="group" aria-label="View">
-                    <button type="button" class="text-button link" data-view="grid" aria-pressed="true">Grid</button>
-                    <button type="button" class="text-button link" data-view="table" aria-pressed="false">Table</button>
-                </div>
-            </div>
-            <div class="row">
-                <p class="row__label mono muted">Stack</p>
-                <div class="row__body filters mono" role="group" aria-label="Filter by technology">
-                    <button type="button" class="text-button link" data-tech="all" aria-pressed="true">Any</button>
-                    {
-                        stack.map(([tech, count]) => (
-                            <button type="button" class="text-button link" data-tech={tech} aria-pressed="false">
-                                {tech}<sup class="toolbar__count">{count}</sup>
-                            </button>
-                        ))
-                    }
-                </div>
-            </div>
-            <p class="toolbar__summary mono muted" aria-live="polite" data-summary>
-                Showing {projects.length} of {projects.length}
-            </p>
-        </div>
-
-        <!-- GRID VIEW -->
-        <ul class="work-grid" data-view-panel="grid">
+    <section class="wrap" aria-label="All projects">
+        <ul class="work-grid" data-grid>
             {
-                rows.map(({ p, i, num, href, inProgress, tech }) => {
+                projects.map((p, i) => {
                     const screenshot = p.data.media?.screenshot;
                     return (
-                        <li
-                            class="work-grid__item"
-                            data-item
-                            data-tech-list={JSON.stringify(tech)}
-                            data-col={i % 3}
-                        >
-                            <a href={href} class="work-card">
+                        <li class="work-grid__item" data-item data-discipline={p.data.discipline} data-col={i % 3}>
+                            <a href={`/projects/${slugOf(p)}/`} class="work-card">
                                 {screenshot && (
                                     <div class="work-card__media" data-reveal-img>
                                         <Picture
@@ -107,12 +57,12 @@ const columns = [
                                     </div>
                                 )}
                                 <div class="work-card__caption mono" data-reveal>
-                                    <span class="muted">{num}</span>
+                                    <span class="muted">{pad(i + 1)}</span>
                                     <span>
                                         <span class="work-card__title">{p.data.title}</span>
                                         <span class="work-card__meta muted">
                                             {p.data.category}
-                                            {inProgress && <span class="status">In progress</span>}
+                                            {p.data.status === "in-progress" && <span class="status">In progress</span>}
                                         </span>
                                     </span>
                                     <span class="muted">{p.data.year}</span>
@@ -123,217 +73,83 @@ const columns = [
                 })
             }
         </ul>
-
-        <!-- TABLE VIEW -->
-        <div class="work-table" data-view-panel="table" hidden>
-            <table data-preview-list>
-                <caption class="visually-hidden">Projects, sortable by column</caption>
-                <thead class="mono">
-                    <tr>
-                        {
-                            columns.map((c) => (
-                                <th scope="col" class={`col-${c.key}`} aria-sort={c.key === "index" ? "ascending" : "none"}>
-                                    <button type="button" class="text-button" data-sort={c.key}>
-                                        {c.label}
-                                        <span class="sort-arrow" aria-hidden="true" />
-                                    </button>
-                                </th>
-                            ))
-                        }
-                    </tr>
-                </thead>
-                <tbody data-rows>
-                    {
-                        rows.map(({ p, i, num, href, inProgress, tech, preview }) => (
-                            <tr
-                                data-item
-                                data-tech-list={JSON.stringify(tech)}
-                                data-sort-index={i}
-                                data-sort-title={p.data.title}
-                                data-sort-type={p.data.category ?? ""}
-                                data-sort-stack={tech.join(", ")}
-                                data-sort-year={p.data.year ?? ""}
-                                data-preview-src={preview}
-                            >
-                                <td class="col-index mono muted">{num}</td>
-                                <td class="col-title">
-                                    <a href={href} class="work-table__link">{p.data.title}</a>
-                                    <span class="work-table__role mono muted">
-                                        {inProgress ? <span class="status">In progress</span> : p.data.role}
-                                    </span>
-                                </td>
-                                <td class="col-type mono">{p.data.category}</td>
-                                <td class="col-stack mono">
-                                    <ul class="work-table__stack">
-                                        {tech.map((t) => (
-                                            <li>
-                                                <button type="button" class="text-button link" data-tech-chip={t}>
-                                                    {t}
-                                                </button>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </td>
-                                <td class="col-year mono">{p.data.year}</td>
-                            </tr>
-                        ))
-                    }
-                </tbody>
-            </table>
-        </div>
-
-        <p class="work-empty mono muted" data-empty hidden>No projects match these filters.</p>
-    </section>
-
-    <section class="section wrap" aria-labelledby="other-work">
-        <div class="row">
-            <h2 id="other-work" class="row__label mono muted">Other work / Experiments</h2>
-            <ul class="row__body other-list" data-preview-list>
-                {
-                    others.map(({ p, href, preview }) => (
-                        <li data-reveal>
-                            <a href={href} class="other-list__link" data-preview-src={preview}>
-                                <span class="other-list__title">{p.data.title}</span>
-                                <span class="mono muted">{p.data.category}</span>
-                                <span class="mono muted other-list__year">{p.data.year}</span>
-                            </a>
-                        </li>
-                    ))
-                }
-            </ul>
-        </div>
+        <p class="visually-hidden" aria-live="polite" data-filter-status></p>
     </section>
 </Base>
 
 <script>
     import { gsap } from "gsap";
+    import { Flip } from "gsap/Flip";
     import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-    gsap.registerPlugin(ScrollTrigger);
+    gsap.registerPlugin(Flip, ScrollTrigger);
 
-    type View = "grid" | "table";
-    type SortKey = "index" | "title" | "type" | "stack" | "year";
+    const items = [...document.querySelectorAll<HTMLElement>("[data-grid] [data-item]")];
+    const buttons = [...document.querySelectorAll<HTMLButtonElement>("[data-filter]")];
+    const line = document.querySelector<HTMLElement>("[data-filter-line]")!;
+    const status = document.querySelector<HTMLElement>("[data-filter-status]")!;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const keys = buttons.map((b) => b.dataset.filter!);
 
-    const root = document.querySelector<HTMLElement>("[data-projects]")!;
-    const panels = root.querySelectorAll<HTMLElement>("[data-view-panel]");
-    const gridItems = [...root.querySelectorAll<HTMLElement>(".work-grid [data-item]")];
-    const tbody = root.querySelector<HTMLElement>("[data-rows]")!;
-    const tableRows = [...tbody.querySelectorAll<HTMLTableRowElement>("[data-item]")];
-    const summary = root.querySelector<HTMLElement>("[data-summary]")!;
-    const empty = root.querySelector<HTMLElement>("[data-empty]")!;
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let current = "all";
 
-    const state = {
-        tech: "all",
-        view: "grid" as View,
-        sort: "index" as SortKey,
-        dir: 1,
+    /** The underline slides to sit under the active word. */
+    const moveLine = (animate: boolean) => {
+        const btn = buttons.find((b) => b.dataset.filter === current)!;
+        const word = btn.querySelector(".pf__label")!.getBoundingClientRect();
+        const box = line.parentElement!.getBoundingClientRect();
+        gsap.to(line, {
+            x: word.left - box.left,
+            width: word.width,
+            duration: animate && !reduceMotion ? 0.5 : 0,
+            ease: "power3.inOut",
+        });
     };
 
-    const press = (selector: string, active: string) =>
-        root.querySelectorAll<HTMLButtonElement>(`[${selector}]`).forEach((b) =>
-            b.setAttribute("aria-pressed", String(b.getAttribute(selector) === active)),
-        );
+    function apply(key: string, animate = true) {
+        current = keys.includes(key) ? key : "all";
+        buttons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.filter === current)));
+        moveLine(animate);
 
-    const matches = (item: HTMLElement) => {
-        const tech: string[] = JSON.parse(item.dataset.techList ?? "[]");
-        return state.tech === "all" || tech.includes(state.tech);
-    };
+        const state = Flip.getState(items);
 
-    function applyFilters() {
-        press("data-tech", state.tech);
-
-        // data-col drives the grid's staggered offsets, so renumber visible items
+        // data-col drives the staggered column offsets, so renumber what's left
         let col = 0;
-        gridItems.forEach((item) => {
-            item.hidden = !matches(item);
-            if (!item.hidden) item.dataset.col = String(col++ % 3);
+        items.forEach((item) => {
+            const show = current === "all" || item.dataset.discipline === current;
+            item.hidden = !show;
+            if (show) item.dataset.col = String(col++ % 3);
         });
-        tableRows.forEach((row) => (row.hidden = !matches(row)));
 
-        const shown = gridItems.filter((i) => !i.hidden).length;
-        const filter = state.tech !== "all" ? ` · built with ${state.tech}` : "";
-        summary.textContent = `Showing ${shown} of ${gridItems.length}${filter}`;
-        empty.hidden = shown > 0;
-        ScrollTrigger.refresh();
-    }
+        const shown = items.filter((i) => !i.hidden).length;
+        status.textContent = `Showing ${shown} of ${items.length} projects`;
+        history.replaceState(null, "", current === "all" ? location.pathname : `#${current}`);
 
-    function applySort() {
-        const attr = `sort${state.sort[0].toUpperCase()}${state.sort.slice(1)}`;
-        const value = (row: HTMLElement) => row.dataset[attr] ?? "";
-        const numeric = state.sort === "index" || state.sort === "year";
-        tableRows
-            .sort((a, b) => {
-                const cmp = numeric
-                    ? Number(value(a)) - Number(value(b))
-                    : value(a).localeCompare(value(b));
-                // tie-break on original order so sorting is stable
-                return cmp * state.dir || Number(a.dataset.sortIndex) - Number(b.dataset.sortIndex);
-            })
-            .forEach((row) => tbody.append(row));
-
-        root.querySelectorAll<HTMLElement>("th").forEach((th) => {
-            const key = th.querySelector<HTMLElement>("[data-sort]")?.dataset.sort;
-            th.setAttribute(
-                "aria-sort",
-                key === state.sort ? (state.dir === 1 ? "ascending" : "descending") : "none",
-            );
+        if (!animate || reduceMotion) {
+            ScrollTrigger.refresh();
+            return;
+        }
+        Flip.from(state, {
+            duration: 0.7,
+            ease: "power3.inOut",
+            absolute: true,
+            stagger: 0.03,
+            onEnter: (els) =>
+                gsap.fromTo(els, { autoAlpha: 0, scale: 0.94 }, { autoAlpha: 1, scale: 1, duration: 0.6, ease: "power3.out", delay: 0.2 }),
+            onLeave: (els) => gsap.to(els, { autoAlpha: 0, scale: 0.94, duration: 0.35, ease: "power2.in" }),
+            onComplete: () => ScrollTrigger.refresh(),
         });
     }
 
-    function applyView(view: View, animate = true) {
-        state.view = view;
-        press("data-view", view);
-        panels.forEach((p) => (p.hidden = p.dataset.viewPanel !== view));
-        try {
-            localStorage.setItem("projects-view", view);
-        } catch {}
-        ScrollTrigger.refresh();
+    buttons.forEach((b) => b.addEventListener("click", () => apply(b.dataset.filter!)));
+    window.addEventListener("hashchange", () => apply(location.hash.slice(1) || "all"));
+    window.addEventListener("resize", () => moveLine(false));
+    document.fonts.ready.then(() => moveLine(false));
 
-        if (animate && view === "table" && !reduceMotion.matches) {
-            gsap.from(tableRows.filter((r) => !r.hidden), {
-                autoAlpha: 0,
-                y: 16,
-                duration: 0.7,
-                ease: "expo.out",
-                stagger: 0.05,
-                clearProps: "all",
-            });
-        }
-    }
-
-    root.addEventListener("click", (e) => {
-        const target = (e.target as HTMLElement).closest<HTMLButtonElement>("button");
-        if (!target) return;
-        const { tech, techChip, view, sort } = target.dataset;
-
-        if (tech) state.tech = tech;
-        // clicking a stack cell toggles that technology as the filter
-        if (techChip) state.tech = state.tech === techChip ? "all" : techChip;
-        if (tech || techChip) applyFilters();
-
-        if (view) applyView(view as View);
-
-        if (sort) {
-            state.dir = state.sort === sort ? -state.dir : 1;
-            state.sort = sort as SortKey;
-            applySort();
-        }
-    });
-
-    let saved: string | null = null;
-    try {
-        saved = localStorage.getItem("projects-view");
-    } catch {}
-    if (saved === "table") applyView("table", false);
+    apply(location.hash.slice(1) || "all", false);
 </script>
 
 <style>
-    .page-lead {
-        margin-top: clamp(24px, 3vw, 40px);
-        max-width: 32ch;
-    }
-
     .visually-hidden {
         position: absolute;
         width: 1px;
@@ -343,50 +159,76 @@ const columns = [
         white-space: nowrap;
     }
 
-    /* --- TOOLBAR --- */
+    /* --- HEADER: the title, and the filter on its baseline --- */
 
-    .toolbar {
-        margin-bottom: clamp(40px, 6vw, 80px);
-    }
-
-    .toolbar__line {
+    .projects-head {
         display: flex;
         flex-wrap: wrap;
         justify-content: space-between;
-        gap: 12px var(--gutter);
+        align-items: flex-end;
+        gap: 24px var(--gutter);
     }
 
-    .toolbar__count {
-        margin-left: 2px;
-        font-size: 0.75em;
+    .projects-head .display {
+        margin: 0;
+    }
+
+    .pf {
+        position: relative;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px clamp(16px, 2.4vw, 32px);
+        padding-bottom: 10px;
+    }
+
+    .pf__btn {
+        padding: 0;
+        border: 0;
+        background: none;
+        color: var(--muted);
+        font: inherit;
+        font-size: var(--fs-lead);
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+        cursor: pointer;
+        transition: color 0.4s var(--ease);
+    }
+
+    .pf__btn:hover,
+    .pf__btn[aria-pressed="true"] {
+        color: var(--text);
+    }
+
+    .pf__count {
+        margin-left: 3px;
+        font-size: var(--fs-mono);
+        letter-spacing: 0.02em;
         vertical-align: super;
         line-height: 0;
     }
 
-    .toolbar__summary {
-        margin: 0;
-        padding-top: 14px;
-        border-top: 1px solid var(--line);
+    .pf__line {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 0;
+        height: 1px;
+        background: var(--text);
     }
 
-    .work-empty {
-        padding-block: 40px;
-    }
+    /* --- GRID --- */
 
-    [data-item][hidden],
-    [data-view-panel][hidden] {
+    [data-item][hidden] {
         display: none;
     }
-
-    /* --- GRID VIEW --- */
 
     .work-grid {
         display: grid;
         grid-template-columns: 1fr;
         gap: clamp(40px, 6vw, 96px) var(--gutter);
-        list-style: none;
         margin: 0;
-        padding: 0;
+        padding: 0 0 var(--section);
+        list-style: none;
     }
 
     .work-card {
@@ -425,6 +267,11 @@ const columns = [
         margin-top: 4px;
     }
 
+    .work-card:hover .work-card__title {
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+    }
+
     .status {
         display: inline-flex;
         align-items: center;
@@ -438,48 +285,6 @@ const columns = [
         height: 6px;
         border: 1px solid currentColor;
         border-radius: 50%;
-    }
-
-    /* --- OTHER WORK --- */
-
-    .other-list {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-    }
-
-    .other-list li + li {
-        border-top: 1px solid var(--line);
-    }
-
-    .other-list__link {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 4px var(--gutter);
-        padding-block: 14px;
-        transition: padding 0.5s var(--ease);
-    }
-
-    .other-list li:first-child .other-list__link {
-        padding-top: 0;
-    }
-
-    .other-list__link:hover {
-        padding-left: 12px;
-    }
-
-    .other-list__title {
-        grid-column: 1 / -1;
-        font-size: var(--fs-body);
-    }
-
-    .other-list__year {
-        text-align: right;
-    }
-
-    .work-card:hover .work-card__title {
-        text-decoration: underline;
-        text-underline-offset: 0.2em;
     }
 
     /* Staggered editorial grid: 3 columns, middle/right columns dropped */
@@ -499,121 +304,6 @@ const columns = [
 
         .work-grid__item[data-col="1"] .work-card__media {
             aspect-ratio: 3 / 4;
-        }
-    }
-
-    /* --- TABLE VIEW --- */
-
-    .work-table table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .work-table th {
-        padding: 0 12px 12px 0;
-        text-align: left;
-        font-weight: 500;
-        color: var(--muted);
-        border-bottom: 1px solid var(--line);
-    }
-
-    .work-table th button:hover,
-    .work-table th[aria-sort="ascending"],
-    .work-table th[aria-sort="descending"] {
-        color: var(--text);
-    }
-
-    .sort-arrow::after {
-        margin-left: 4px;
-    }
-
-    th[aria-sort="ascending"] .sort-arrow::after {
-        content: "↑";
-    }
-
-    th[aria-sort="descending"] .sort-arrow::after {
-        content: "↓";
-    }
-
-    .work-table td {
-        padding: 18px 12px 18px 0;
-        vertical-align: baseline;
-        border-bottom: 1px solid var(--line);
-    }
-
-    .work-table tbody tr {
-        transition: opacity 0.3s var(--ease);
-    }
-
-    .work-table tbody:hover tr {
-        opacity: 0.4;
-    }
-
-    .work-table tbody tr:hover,
-    .work-table tbody tr:focus-within {
-        opacity: 1;
-    }
-
-    .work-table__link {
-        display: block;
-        font-size: var(--fs-lead);
-        line-height: 1.1;
-        letter-spacing: -0.03em;
-    }
-
-    /* whole row is clickable through the title link */
-    .work-table tbody tr {
-        position: relative;
-    }
-
-    .work-table__link::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-    }
-
-    .work-table__role {
-        display: block;
-        margin-top: 6px;
-    }
-
-    .work-table__stack {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px 12px;
-        margin: 0;
-        padding: 0;
-        list-style: none;
-    }
-
-    /* chips sit above the row link so they stay clickable */
-    .work-table__stack button {
-        position: relative;
-        z-index: 1;
-    }
-
-    .col-index {
-        width: 3.5rem;
-    }
-
-    .col-year {
-        width: 4rem;
-        text-align: right;
-    }
-
-    .work-table th.col-year {
-        text-align: right;
-        padding-right: 0;
-    }
-
-    .work-table td.col-year {
-        padding-right: 0;
-    }
-
-    @media (max-width: 719px) {
-        .col-type,
-        .col-stack {
-            display: none;
         }
     }
 </style>
