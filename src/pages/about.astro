@@ -12,10 +12,10 @@ const skills = (await getCollection("skills")).sort((a, b) => {
     return byOrder || a.data.category.localeCompare(b.data.category);
 });
 
-const traits = ["Adaptable", "Hard-working", "Friendly", "Curious", "Observant", "Proactive"];
+const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-minded"];
 ---
 
-<Base title="About" description="About Rafaela Henriques, web developer.">
+<Base title="About" description="Rafaela Henriques, an Angolan-Portuguese developer based in Belgium, studying Digital Design & Development at Howest: Creative Development major, Experience Design minor.">
     <!-- HEADER: name on the left, portrait on the right -->
     <header class="page-head wrap about-head">
         <div class="about-head__title">
@@ -45,24 +45,34 @@ const traits = ["Adaptable", "Hard-working", "Friendly", "Curious", "Observant",
         <div class="row">
             <p class="row__label mono muted">Profile</p>
             <div class="row__body">
-                <p class="lead" data-split>
-                    I’m a web developer with a background in game development,
-                    studying Digital Design &amp; Development (Devine) at Howest.
-                    I build interfaces that feel sharp, fast and clear.
+                <p class="lead about-lead" data-split>
+                    I’m Rafaela, an Angolan-Portuguese developer based in Belgium,
+                    currently studying Digital Design &amp; Development at Howest,
+                    majoring in Creative Development and minoring in Experience
+                    Design.
                 </p>
                 <div class="about__columns" data-reveal>
                     <p>
-                        I’m Angolan and Portuguese, and that mix shows up in how
-                        I think about products: practical, direct, but still open
-                        to experimentation when it actually improves the
-                        experience.
+                        I’m always looking to learn, improve, and understand things
+                        more deeply. I’m not someone who likes to stay comfortable
+                        with what I already know. I want to keep pushing myself and
+                        become better at what I do. That mindset is what led me to
+                        move to Belgium on my own and challenge myself beyond what I
+                        was used to.
                     </p>
                     <p>
-                        I like working close to the front end: design tokens,
-                        responsive layouts, and interactions that feel
-                        intentional instead of noisy.
+                        Development is where I feel most at home: building, solving
+                        problems, and turning ideas into something real. But I also
+                        care about how people experience what I create. That’s why
+                        the combination of Creative Development and Experience
+                        Design feels so natural to me.
                     </p>
                 </div>
+                <p class="about-closing" data-split>
+                    Ultimately, I want to become an excellent developer and build
+                    something of my own. Something I believe in, and something that
+                    genuinely brings value to others.
+                </p>
             </div>
         </div>
     </section>
@@ -72,10 +82,10 @@ const traits = ["Adaptable", "Hard-working", "Friendly", "Curious", "Observant",
         <h2 id="traits" class="mono muted about-center-label">Traits</h2>
         <p class="caps about-traits__text" data-split>
             {
+                // the slash stays with the word before it, so no line starts with one
                 traits.map((t, i) => (
                     <>
-                        {t}
-                        {i < traits.length - 1 && <span class="about-traits__slash"> / </span>}
+                        <span class="about-traits__word">{t}{i < traits.length - 1 && <span class="about-traits__slash">{"\u00a0/"}</span>}</span>{" "}
                     </>
                 ))
             }
@@ -104,9 +114,10 @@ const traits = ["Adaptable", "Hard-working", "Friendly", "Curious", "Observant",
         <div class="row">
             <h2 id="availability" class="row__label mono muted">Availability</h2>
             <div class="row__body">
-                <p class="lead" data-split>
-                    Open for front-end focused roles, collaboration, and projects
-                    where design and development actually talk to each other.
+                <p class="lead about-availability" data-split>
+                    Open to software and web development internships in the UK,
+                    US and Europe, and to projects where I can ship real features
+                    as part of a team.
                 </p>
                 <div data-reveal>
                     <ContactLinks class="about__links mono" />
@@ -195,6 +206,11 @@ const traits = ["Adaptable", "Hard-working", "Friendly", "Curious", "Observant",
 
     /* --- PROFILE --- */
 
+    .about-lead {
+        max-width: 34ch;
+    }
+
+    /* two paragraphs side by side: why I push myself, why dev + experience */
     .about__columns {
         display: grid;
         gap: 1em var(--gutter);
@@ -203,10 +219,29 @@ const traits = ["Adaptable", "Hard-working", "Friendly", "Curious", "Observant",
         color: var(--muted);
     }
 
+    .about__columns p {
+        margin: 0;
+    }
+
     @media (min-width: 900px) {
         .about__columns {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
+    }
+
+    /* where it's all heading: set apart, in the text colour */
+    .about-closing {
+        max-width: 34ch;
+        margin: clamp(32px, 4vw, 56px) 0 0;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+        font-size: clamp(1.25rem, 1rem + 0.9vw, 1.75rem);
+        line-height: 1.25;
+        letter-spacing: -0.02em;
+    }
+
+    .about-availability {
+        max-width: 30ch;
     }
 
     /* --- TRAITS --- */
@@ -219,6 +254,10 @@ const traits = ["Adaptable", "Hard-working", "Friendly", "Curious", "Observant",
     .about-traits__text {
         max-width: 22ch;
         font-size: clamp(2rem, 1rem + 4.4vw, 5.5rem);
+    }
+
+    .about-traits__word {
+        white-space: nowrap;
     }
 
     .about-traits__slash {
