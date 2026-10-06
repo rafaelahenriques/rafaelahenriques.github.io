@@ -3,7 +3,7 @@ title: "Wolf & Sheep"
 section: featured
 order: 1
 category: "Full-stack"
-discipline: development
+types: ["web", "fullstack", "interactive"]
 year: "2026"
 tech: ["Python", "FastAPI", "PostgreSQL", "SQLAlchemy", "Alembic", "React", "TypeScript", "Vite", "pytest"]
 role: "Full-stack developer"

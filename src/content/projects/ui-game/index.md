@@ -2,7 +2,7 @@
 section: other
 order: 3
 category: "Game & Visual"
-discipline: design
+types: ["ui", "interactive"]
 title: "UI Game Assets"
 year: "2024"
 tech: ["Photoshop", "Graphic Tablet"]
