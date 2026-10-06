@@ -5,7 +5,6 @@ import { SplitText } from "gsap/SplitText";
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
 const MOTION = "(prefers-reduced-motion: no-preference)";
-const FINE_POINTER = "(hover: hover) and (pointer: fine)";
 
 /** Fade in the header items on load. */
 function introHeader() {
@@ -105,48 +104,6 @@ function codeReveals() {
     });
 }
 
-/** [data-preview-list] [data-preview-src]: image that follows the cursor. */
-function indexPreview() {
-    const links = document.querySelectorAll<HTMLElement>(
-        "[data-preview-list] [data-preview-src]",
-    );
-    if (!links.length) return;
-
-    const box = document.createElement("div");
-    box.className = "cursor-preview";
-    box.setAttribute("aria-hidden", "true");
-    const img = document.createElement("img");
-    img.alt = "";
-    box.append(img);
-    document.body.append(box);
-
-    gsap.set(box, { xPercent: -50, yPercent: -50, autoAlpha: 0, scale: 0.85 });
-    const xTo = gsap.quickTo(box, "x", { duration: 0.6, ease: "power3" });
-    const yTo = gsap.quickTo(box, "y", { duration: 0.6, ease: "power3" });
-    const onMove = (e: PointerEvent) => {
-        xTo(e.clientX);
-        yTo(e.clientY);
-    };
-    window.addEventListener("pointermove", onMove);
-
-    const show = (src: string) => {
-        img.src = src;
-        gsap.to(box, { autoAlpha: 1, scale: 1, duration: 0.5, ease: "power3" });
-    };
-    const hide = () =>
-        gsap.to(box, { autoAlpha: 0, scale: 0.85, duration: 0.35, ease: "power2" });
-
-    links.forEach((link) => {
-        link.addEventListener("pointerenter", () => show(link.dataset.previewSrc!));
-        link.addEventListener("pointerleave", hide);
-    });
-
-    return () => {
-        window.removeEventListener("pointermove", onMove);
-        box.remove();
-    };
-}
-
 export function initAnimations() {
     // While the loading screen is up, wait for it so the intro plays on a visible page
     let started = false;
@@ -175,8 +132,6 @@ function start() {
         // ctx.add keeps it inside this matchMedia context for cleanup.
         document.fonts.ready.then(ctx.add(splitReveals));
     });
-
-    mm.add(`${MOTION} and ${FINE_POINTER}`, indexPreview);
 
     // the page may have reflowed under the loader; re-measure every trigger
     ScrollTrigger.refresh();

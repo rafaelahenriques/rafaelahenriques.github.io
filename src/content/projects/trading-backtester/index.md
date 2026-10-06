@@ -4,6 +4,7 @@ section: featured
 order: 3
 status: in-progress
 category: "Backend & Data"
+discipline: development
 year: "2026"
 tech: ["Python", "PostgreSQL", "APIs", "Docker", "Testing"]
 description: "An engine that replays historical market data through a trading strategy, simulates the orders it would place and measures how that strategy would have performed."

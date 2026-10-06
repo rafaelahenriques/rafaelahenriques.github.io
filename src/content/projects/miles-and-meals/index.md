@@ -3,6 +3,7 @@ title: "Miles & Meals"
 section: other
 order: 1
 category: "UX & Branding"
+discipline: design
 year: "2026"
 tech: ["Brand identity", "Art direction", "App design"]
 role: "Brand identity & app design"

@@ -3,6 +3,7 @@ title: "ML5.js Pose Classifier"
 section: other
 order: 2
 category: "Machine Learning"
+discipline: development
 year: "2025"
 tech: ["ml5.js", "JavaScript", "Canvas"]
 context: "Creative Code 3 (Devine)"
