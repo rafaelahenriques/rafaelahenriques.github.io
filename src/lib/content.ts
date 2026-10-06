@@ -25,3 +25,14 @@ export async function getOtherWork(): Promise<ProjectEntry[]> {
 }
 
 export const pad = (n: number) => String(n).padStart(2, "0");
+
+/** Projects page filters, in display order. Projects list theirs in `types`. */
+export const PROJECT_TYPES = [
+    { key: "web", label: "Web" },
+    { key: "mobile", label: "Mobile" },
+    { key: "fullstack", label: "Full-stack & real-time" },
+    { key: "data", label: "Backend & data" },
+    { key: "interactive", label: "Games & interactive" },
+    { key: "branding", label: "Branding" },
+    { key: "ui", label: "UI & design" },
+] as const;
