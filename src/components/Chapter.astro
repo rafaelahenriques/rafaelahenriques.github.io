@@ -20,9 +20,11 @@ interface Props {
     lead?: number;
     side?: "left" | "right";
     wide?: boolean;
+    /** false keeps the whole text open (e.g. a short closing chapter) */
+    fold?: boolean;
 }
 
-const { id, num, title, html = "", lead = 0, side = "right", wide = false } = Astro.props;
+const { id, num, title, html = "", lead = 0, side = "right", wide = false, fold: canFold = true } = Astro.props;
 const hasMedia = Astro.slots.has("media");
 
 const paragraphs = [...html.matchAll(/<p>[\s\S]*?<\/p>/g)];
@@ -30,8 +32,9 @@ const pick = paragraphs[lead] ?? paragraphs[0];
 const leadHtml = pick?.[0];
 const restHtml = pick ? html.slice(0, pick.index) + html.slice(pick.index! + pick[0].length) : html;
 const restLength = restHtml.replace(/<[^>]+>/g, "").trim().length;
-// a sentence or two reads fine in place; anything longer folds away
-const fold = restLength > 280;
+// a sentence or two reads fine in place; anything longer folds away, as long
+// as there's a summary paragraph to show above the fold
+const fold = canFold && Boolean(leadHtml) && restLength > 280;
 ---
 
 <section
