@@ -1,0 +1,684 @@
+---
+/**
+ * Mongmo case study. Same shape as Wolf & Sheep: parts and numbered
+ * chapters, each ## section of index.md beside what it explains. Here that's
+ * mostly screen recordings of the app (PhoneVideo, on a white stage that
+ * matches the recordings), plus small diagrams drawn in HTML: the stack,
+ * which columns guests can read, a points ledger, the platform fallbacks and
+ * a dance meter you can try with the cursor.
+ */
+import Base from "../../layouts/BaseLayout.astro";
+import { Image } from "astro:assets";
+import { getEntry } from "astro:content";
+import { pad } from "../../lib/content";
+import Chapter from "../../components/Chapter.astro";
+import ChapterNav from "../../components/ChapterNav.astro";
+import PhoneVideo from "../../components/PhoneVideo.astro";
+import NextProject from "../../components/NextProject.astro";
+
+import login from "../../content/projects/mongmo/media/login.png";
+import openingPoster from "../../content/projects/mongmo/media/opening.jpg";
+import overviewPoster from "../../content/projects/mongmo/media/overview.jpg";
+import explorePoster from "../../content/projects/mongmo/media/explore.jpg";
+import orderingPoster from "../../content/projects/mongmo/media/ordering.jpg";
+import ownerPoster from "../../content/projects/mongmo/media/owner-orders.jpg";
+import createPoster from "../../content/projects/mongmo/media/create-popup.jpg";
+import challengePoster from "../../content/projects/mongmo/media/edit-challenge.jpg";
+
+const project = (await getEntry("projects", "mongmo"))!;
+const { title, description, role, year, category, context, order, tech } = project.data;
+
+// index.md split at its ## headings; each part is one chapter's text
+const parts = new Map(
+    (project.rendered?.html ?? "").split(/(?=<h2[\s>])/).flatMap((chunk) => {
+        const heading = chunk.match(/^<h2[^>]*>([\s\S]*?)<\/h2>/);
+        return heading ? [[heading[1].trim(), chunk.slice(heading[0].length)] as [string, string]] : [];
+    }),
+);
+const text = (heading: string) => parts.get(heading);
+const placed = [
+    "The project",
+    "Why an app instead of a website?",
+    "Stack",
+    "The client sends intent. The server decides the result.",
+    "Security beyond row-level security",
+    "A challenge system that can grow",
+    "Points are a ledger, not a balance",
+    "Geofenced pop-up discovery",
+    "Native features without tying the UI to one platform",
+    "Debugging the dance meter that never moved",
+    "What I'd improve next",
+    "Takeaway",
+];
+// headings come through HTML-escaped with curly quotes; compare on plain text
+const plain = (s: string) =>
+    s
+        .replace(/&#x27;|&#39;|’/g, "'")
+        .replace(/&#x26;|&amp;/g, "&");
+const byPlain = new Map([...parts].map(([k, v]) => [plain(k), v]));
+const t = (heading: string) => byPlain.get(heading) ?? text(heading);
+const extra = [...byPlain.keys()].filter((heading) => !placed.includes(heading));
+
+const ledger = [
+    { what: "Challenge · Rate the best dish", points: 20 },
+    { what: "Challenge · Latte art", points: 15 },
+    { what: "Challenge · Early riser", points: 20 },
+    { what: "Reward redeemed", points: -30 },
+];
+const balance = ledger.reduce((sum, row) => sum + row.points, 0);
+
+const columns = [
+    { name: "Title", guests: true },
+    { name: "Location", guests: true },
+    { name: "Date", guests: true },
+    { name: "QR token", guests: false, note: "Owners only, through a function that checks ownership" },
+];
+
+const platforms = [
+    { feature: "Calendar", ios: "System event sheet", android: "System event sheet", web: "Downloads an .ics file" },
+    { feature: "Icons", ios: "SF Symbols", android: "Lucide", web: "Lucide" },
+    { feature: "Haptics", ios: "Haptic feedback", android: "Haptic feedback", web: "Quietly off" },
+];
+---
+
+<Base title={title} description={description}>
+    <article class="mg">
+        <!-- INTRO -->
+        <header class="page-head wrap">
+            <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
+            <p class="mg-kicker mono muted" data-reveal>{pad(order ?? 2)} — {category}</p>
+            <h1 class="display mg-title" data-split>{title}</h1>
+
+            <div class="row mg-intro">
+                <dl class="row__label mg-facts mono" data-reveal>
+                    <div><dt class="muted">Year</dt><dd>{year}</dd></div>
+                    <div><dt class="muted">Role</dt><dd>{role}</dd></div>
+                    <div><dt class="muted">Context</dt><dd>{context}</dd></div>
+                    <div><dt class="muted">Stack</dt><dd>{tech?.join(", ")}</dd></div>
+                </dl>
+                <p class="row__body lead mg-lead" data-split>{description}</p>
+            </div>
+        </header>
+
+        <!-- HERO: the way in, and the app opening -->
+        <section class="wrap" aria-label="The app">
+            <div class="mg-stage mg-stage--hero" data-reveal>
+                <div class="mg-phone">
+                    <Image src={login} alt="Mongmo's sign-in screen: Pop-ups, points, pickup" widths={[400, 744]} sizes="(min-width: 900px) 26vw, 45vw" loading="eager" />
+                </div>
+                <div class="mg-phone">
+                    <PhoneVideo src="/media/mongmo/opening.mp4" poster={openingPoster} label="Opening the app: the splash screen, then home" />
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ PART 1 ============ -->
+        <div class="mg-part-wrap wrap" data-reveal data-part="The app">
+            <p class="mg-part mono">The app</p>
+        </div>
+
+        <Chapter id="mg-project" num={1} title="The project" html={t("The project")}>
+            <div class="mg-stage" slot="media">
+                <div class="mg-phone"><PhoneVideo src="/media/mongmo/overview.mp4" poster={overviewPoster} label="A tour of the app: map, home, nearby pop-ups" /></div>
+            </div>
+        </Chapter>
+
+        <Chapter id="mg-why" num={2} title="Why an app instead of a website?" html={t("Why an app instead of a website?")} side="left">
+            <div class="mg-stage" slot="media">
+                <div class="mg-phone"><PhoneVideo src="/media/mongmo/explore.mp4" poster={explorePoster} label="Exploring: finding a pop-up and doing its challenges" /></div>
+            </div>
+        </Chapter>
+
+        <Chapter id="mg-stack" num={3} title="Stack" html={t("Stack")} lead={1}>
+            <figure class="mg-diagram" slot="media" data-mg-diagram>
+                <div class="mg-node mg-node--app">
+                    <span class="mono muted">One TypeScript codebase · iOS, Android, web</span>
+                    <strong>Expo · React Native</strong>
+                    <div class="mg-node__split">
+                        <div class="mg-node mg-node--inner"><strong>TanStack Query</strong><span>Server state, caching</span></div>
+                        <div class="mg-node mg-node--inner"><strong>Zustand</strong><span>Cart, filters, settings</span></div>
+                    </div>
+                </div>
+                <span class="mg-arrow mono" aria-hidden="true">↕</span>
+                <div class="mg-node mg-node--core">
+                    <span class="mono">Supabase</span>
+                    <div class="mg-cells">
+                        <span>Auth</span><span>PostgreSQL</span><span>Storage</span><span>Realtime</span>
+                    </div>
+                </div>
+            </figure>
+        </Chapter>
+
+        <!-- ============ PART 2 ============ -->
+        <div class="mg-part-wrap wrap" data-reveal data-part="Engineering decisions">
+            <p class="mg-part mono">Engineering decisions</p>
+        </div>
+
+        <Chapter id="mg-intent" num={4} title="The client sends intent. The server decides the result." html={t("The client sends intent. The server decides the result.")} side="left">
+            <div class="mg-stage mg-stage--pair" slot="media">
+                <div class="mg-phone">
+                    <PhoneVideo src="/media/mongmo/ordering.mp4" poster={orderingPoster} label="A guest ordering ahead from the menu" />
+                    <p class="mg-phone__label mono">Guest orders</p>
+                </div>
+                <div class="mg-phone">
+                    <PhoneVideo src="/media/mongmo/owner-orders.mp4" poster={ownerPoster} label="The owner's order board: marking an order ready" />
+                    <p class="mg-phone__label mono">Owner's board</p>
+                </div>
+            </div>
+        </Chapter>
+
+        <Chapter id="mg-security" num={5} title="Security beyond row-level security" html={t("Security beyond row-level security")}>
+            <figure class="mg-diagram" slot="media" data-mg-diagram>
+                <div class="mg-table" role="table" aria-label="Which event fields guests can read">
+                    <div class="mg-table__row mg-table__row--head mono" role="row">
+                        <span role="columnheader">One pop-up's row</span>
+                        <span role="columnheader">Guests can read</span>
+                    </div>
+                    {
+                        columns.map((c) => (
+                            <div class:list={["mg-table__row", { "mg-table__row--locked": !c.guests }]} role="row">
+                                <span role="cell">
+                                    {c.name}
+                                    {c.note && <small class="muted">{c.note}</small>}
+                                </span>
+                                <span role="cell" class="mono">{c.guests ? "✓ Yes" : "✕ No"}</span>
+                            </div>
+                        ))
+                    }
+                </div>
+            </figure>
+        </Chapter>
+
+        <Chapter id="mg-challenges" num={6} title="A challenge system that can grow" html={t("A challenge system that can grow")} side="left">
+            <div class="mg-stage" slot="media">
+                <div class="mg-phone"><PhoneVideo src="/media/mongmo/edit-challenge.mp4" poster={challengePoster} label="An owner editing a pop-up and creating a timed challenge" /></div>
+            </div>
+        </Chapter>
+
+        <Chapter id="mg-points" num={7} title="Points are a ledger, not a balance" html={t("Points are a ledger, not a balance")}>
+            <figure class="mg-diagram" slot="media" data-mg-diagram>
+                <div class="mg-ledger" data-mg-ledger>
+                    <p class="mg-ledger__head mono muted">Ledger · example</p>
+                    <ol class="mg-ledger__rows">
+                        {
+                            ledger.map((row) => (
+                                <li class="mg-ledger__row">
+                                    <span>{row.what}</span>
+                                    <span class:list={["mono", { "mg-minus": row.points < 0 }]}>
+                                        {row.points > 0 ? `+${row.points}` : `−${Math.abs(row.points)}`}
+                                    </span>
+                                </li>
+                            ))
+                        }
+                    </ol>
+                    <p class="mg-ledger__total">
+                        <span class="mono muted">Balance = sum of entries</span>
+                        <strong data-mg-balance={balance}>{balance}</strong>
+                    </p>
+                </div>
+            </figure>
+        </Chapter>
+
+        <!-- ============ PART 3 ============ -->
+        <div class="mg-part-wrap wrap" data-reveal data-part="Building around the phone">
+            <p class="mg-part mono">Building around the phone</p>
+        </div>
+
+        <Chapter id="mg-geofence" num={8} title="Geofenced pop-up discovery" html={t("Geofenced pop-up discovery")} side="left">
+            <div class="mg-stage" slot="media">
+                <div class="mg-phone"><PhoneVideo src="/media/mongmo/create-popup.mp4" poster={createPoster} label="An owner creating a new pop-up: photo, address and location" /></div>
+            </div>
+        </Chapter>
+
+        <Chapter id="mg-native" num={9} title="Native features without tying the UI to one platform" html={t("Native features without tying the UI to one platform")}>
+            <figure class="mg-diagram" slot="media" data-mg-diagram>
+                <div class="mg-table mg-table--platforms" role="table" aria-label="The same feature on each platform">
+                    <div class="mg-table__row mg-table__row--head mono" role="row">
+                        <span role="columnheader">Feature</span>
+                        <span role="columnheader">iOS</span>
+                        <span role="columnheader">Android</span>
+                        <span role="columnheader">Web</span>
+                    </div>
+                    {
+                        platforms.map((p) => (
+                            <div class="mg-table__row" role="row">
+                                <span role="cell" class="mono">{p.feature}</span>
+                                <span role="cell">{p.ios}</span>
+                                <span role="cell">{p.android}</span>
+                                <span role="cell" class="mg-web">{p.web}</span>
+                            </div>
+                        ))
+                    }
+                </div>
+            </figure>
+        </Chapter>
+
+        <Chapter id="mg-dance" num={10} title="Debugging the dance meter that never moved" html={t("Debugging the dance meter that never moved")} side="left">
+            <figure class="mg-diagram" slot="media">
+                <div class="mg-dance" data-mg-dance tabindex="0" aria-label="Try the dance meter: move your cursor or finger quickly inside this box">
+                    <p class="mg-dance__prompt mono" data-mg-dance-prompt>Wiggle your cursor in here</p>
+                    <p class="mg-dance__time"><strong data-mg-dance-time>0.0</strong><span class="mono muted"> / 5.0 s</span></p>
+                    <div class="mg-dance__meter" aria-hidden="true"><span data-mg-dance-fill></span></div>
+                    <p class="mg-dance__note mono muted">Same idea as the fix: time between readings, capped, with a short hold after each move.</p>
+                </div>
+            </figure>
+        </Chapter>
+
+        <!-- ============ PART 4 ============ -->
+        <div class="mg-part-wrap wrap" data-reveal data-part="What's next">
+            <p class="mg-part mono">What's next</p>
+        </div>
+
+        <Chapter id="mg-next" num={11} title="What I'd improve next" html={t("What I'd improve next")} />
+        <Chapter id="mg-takeaway" num={12} title="Takeaway" html={t("Takeaway")} fold={false} />
+        {extra.map((heading, i) => <Chapter id={`mg-extra-${i}`} num={13 + i} title={heading} html={t(heading)} />)}
+    </article>
+
+    <ChapterNav />
+    <NextProject current="mongmo" />
+</Base>
+
+<script>
+    import { gsap } from "gsap";
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // diagrams build up the first time they come into view
+    if (!reduceMotion) {
+        const io = new IntersectionObserver(
+            (entries) =>
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) return;
+                    io.unobserve(entry.target);
+                    const parts = entry.target.querySelectorAll(".mg-node, .mg-arrow, .mg-cells span, .mg-table__row, .mg-ledger__row, .mg-ledger__total");
+                    gsap.from(parts, { autoAlpha: 0, y: 14, duration: 0.7, ease: "expo.out", stagger: 0.08 });
+                    const total = entry.target.querySelector<HTMLElement>("[data-mg-balance]");
+                    if (total) {
+                        const counter = { n: 0 };
+                        gsap.to(counter, {
+                            n: Number(total.dataset.mgBalance),
+                            duration: 1.2,
+                            delay: 0.5,
+                            ease: "expo.out",
+                            snap: { n: 1 },
+                            onUpdate: () => (total.textContent = String(counter.n)),
+                        });
+                    }
+                }),
+            { threshold: 0.3 },
+        );
+        document.querySelectorAll("[data-mg-diagram]").forEach((d) => io.observe(d));
+    }
+
+    // --- the dance meter: the fixed algorithm, fed by pointer speed ---
+    const dance = document.querySelector<HTMLElement>("[data-mg-dance]");
+    if (dance) {
+        const GOAL_MS = 5000;
+        const MAX_STEP_MS = 200; // a pause between readings can't count as dancing
+        const MOVE_HOLD_MS = 250; // a move keeps counting briefly
+        const THRESHOLD = 1.2; // px per ms of pointer speed
+
+        const fill = dance.querySelector<HTMLElement>("[data-mg-dance-fill]")!;
+        const time = dance.querySelector<HTMLElement>("[data-mg-dance-time]")!;
+        const prompt = dance.querySelector<HTMLElement>("[data-mg-dance-prompt]")!;
+
+        let activeMs = 0;
+        let lastReadingAt: number | null = null;
+        let lastMoveAt: number | null = null;
+        let last: { x: number; y: number; t: number } | null = null;
+        let done = false;
+
+        const render = () => {
+            const p = Math.min(1, activeMs / GOAL_MS);
+            fill.style.transform = `scaleX(${p})`;
+            time.textContent = (Math.min(activeMs, GOAL_MS) / 1000).toFixed(1);
+            if (p >= 1 && !done) {
+                done = true;
+                dance.classList.add("is-done");
+                prompt.textContent = "You danced. +20 points";
+            }
+        };
+
+        // same shape as addDanceReading(): measure elapsed time ourselves
+        const reading = (force: number, at: number) => {
+            const step = lastReadingAt === null ? 0 : Math.min(Math.max(at - lastReadingAt, 0), MAX_STEP_MS);
+            if (force >= THRESHOLD) lastMoveAt = at;
+            const dancing = lastMoveAt !== null && at - lastMoveAt <= MOVE_HOLD_MS;
+            if (dancing) activeMs += step;
+            lastReadingAt = at;
+            render();
+        };
+
+        dance.addEventListener("pointermove", (e) => {
+            if (done) return;
+            const now = performance.now();
+            if (last) {
+                const dt = Math.max(now - last.t, 1);
+                const speed = Math.hypot(e.clientX - last.x, e.clientY - last.y) / dt;
+                reading(speed, now);
+            }
+            last = { x: e.clientX, y: e.clientY, t: now };
+        });
+        dance.addEventListener("pointerleave", () => (last = null));
+        // double-click to start over
+        dance.addEventListener("dblclick", () => {
+            activeMs = 0;
+            lastReadingAt = lastMoveAt = null;
+            done = false;
+            dance.classList.remove("is-done");
+            prompt.textContent = "Wiggle your cursor in here";
+            render();
+        });
+    }
+</script>
+
+<style>
+    .mg {
+        --mg-red: #e2401f;
+        --mg-blue: #b9dcfb;
+        /* code keywords: Mongmo blue on the dark panel, red on the light one */
+        --code-accent: var(--mg-blue);
+        overflow-x: clip;
+        padding-bottom: var(--section);
+    }
+
+    :global(html.dark) .mg {
+        --code-accent: #c9381a;
+    }
+
+    /* --- INTRO --- */
+
+    .mg-kicker {
+        margin: 24px 0 0;
+    }
+
+    .mg-title {
+        font-size: clamp(3rem, 1rem + 8vw, 9.5rem);
+    }
+
+    .mg-intro {
+        margin-top: clamp(32px, 5vw, 64px);
+    }
+
+    .mg-facts {
+        display: grid;
+        gap: 14px;
+        align-content: start;
+        margin: 0;
+    }
+
+    .mg-facts dd {
+        margin: 2px 0 0;
+    }
+
+    .mg-lead {
+        max-width: 34ch;
+    }
+
+    /* --- STAGE: white, like the recordings' own background --- */
+
+    .mg-stage {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        gap: clamp(16px, 3vw, 48px);
+        padding: clamp(20px, 3vw, 40px);
+        background: #fff;
+    }
+
+    .mg-phone {
+        /* tall enough to read, short enough that the whole phone stays on screen */
+        width: min(100%, calc((100svh - var(--header-h) - 160px) * 0.51), 340px);
+        min-width: 0;
+        height: auto;
+    }
+
+    .mg-stage--pair .mg-phone {
+        width: min(48%, calc((100svh - var(--header-h) - 200px) * 0.51), 320px);
+    }
+
+    .mg-phone :global(img) {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+
+    .mg-phone__label {
+        margin: 10px 0 0;
+        color: #75736e;
+        text-align: center;
+    }
+
+    .mg-stage--hero {
+        align-items: center;
+    }
+
+    .mg-stage--hero .mg-phone {
+        width: min(45%, 360px);
+    }
+
+    .mg-stage--hero .mg-phone:last-child {
+        margin-top: clamp(24px, 6vw, 96px);
+    }
+
+    /* --- PARTS --- */
+
+    .mg-part-wrap {
+        margin-top: calc(var(--section) * 1.4);
+    }
+
+    .mg-part {
+        margin: 0;
+        padding-top: 14px;
+        border-top: 1px solid var(--text);
+    }
+
+    .mg-part-wrap + :global(.chapter) {
+        padding-top: clamp(40px, 6vw, 80px);
+    }
+
+    /* --- DIAGRAMS --- */
+
+    .mg-diagram {
+        display: grid;
+        gap: 12px;
+        margin: 0;
+    }
+
+    .mg-node {
+        display: grid;
+        gap: 6px;
+        padding: clamp(14px, 1.8vw, 22px);
+        border: 1px solid var(--line);
+        background: var(--bg);
+    }
+
+    .mg-node strong {
+        font-size: var(--fs-body);
+        font-weight: 500;
+    }
+
+    .mg-node span:not(.mono) {
+        color: var(--muted);
+        font-size: var(--fs-small);
+    }
+
+    .mg-node__split {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 8px;
+    }
+
+    .mg-node--inner {
+        padding: 12px;
+    }
+
+    .mg-node--core {
+        background: var(--text);
+        color: var(--bg);
+        border-color: var(--text);
+    }
+
+    .mg-arrow {
+        justify-self: center;
+        color: var(--muted);
+    }
+
+    .mg-cells {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 4px;
+    }
+
+    .mg-cells span {
+        padding: 10px 12px;
+        border: 1px solid color-mix(in oklab, var(--bg) 25%, transparent);
+        color: var(--bg) !important;
+        font-size: var(--fs-small);
+    }
+
+    /* tables: security columns, platform fallbacks */
+    .mg-table {
+        border-top: 1px solid var(--text);
+    }
+
+    .mg-table__row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: baseline;
+        gap: 6px var(--gutter);
+        padding-block: 14px;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .mg-table__row--head {
+        color: var(--muted);
+    }
+
+    .mg-table__row small {
+        display: block;
+        margin-top: 4px;
+        font-size: var(--fs-small);
+    }
+
+    .mg-table__row--locked {
+        border-bottom-color: var(--text);
+    }
+
+    .mg-table__row--locked > :last-child {
+        color: var(--mg-red);
+    }
+
+    .mg-table--platforms .mg-table__row {
+        grid-template-columns: 6rem repeat(3, minmax(0, 1fr));
+        font-size: var(--fs-small);
+    }
+
+    .mg-web {
+        font-weight: 800;
+    }
+
+    @media (max-width: 599px) {
+        .mg-table--platforms .mg-table__row {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .mg-table--platforms .mg-table__row > :first-child {
+            grid-column: 1 / -1;
+        }
+    }
+
+    /* ledger */
+    .mg-ledger {
+        padding: clamp(16px, 2vw, 24px);
+        border: 1px solid var(--line);
+    }
+
+    .mg-ledger__head {
+        margin: 0 0 8px;
+    }
+
+    .mg-ledger__rows {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .mg-ledger__row {
+        display: flex;
+        justify-content: space-between;
+        gap: var(--gutter);
+        padding-block: 12px;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .mg-minus {
+        color: var(--mg-red);
+    }
+
+    .mg-ledger__total {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: var(--gutter);
+        margin: 16px 0 0;
+    }
+
+    .mg-ledger__total strong {
+        font-size: var(--fs-display);
+        font-weight: 500;
+        line-height: 0.9;
+        letter-spacing: -0.05em;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* dance meter */
+    .mg-dance {
+        display: grid;
+        gap: 14px;
+        padding: clamp(20px, 3vw, 36px);
+        border: 1px dashed var(--muted);
+        cursor: crosshair;
+        touch-action: none;
+        user-select: none;
+        transition: border-color 0.4s var(--ease);
+    }
+
+    .mg-dance.is-done {
+        border: 1px solid var(--mg-red);
+    }
+
+    .mg-dance__prompt,
+    .mg-dance__note {
+        margin: 0;
+    }
+
+    .mg-dance__time {
+        margin: 0;
+    }
+
+    .mg-dance__time strong {
+        font-size: var(--fs-display);
+        font-weight: 500;
+        line-height: 0.9;
+        letter-spacing: -0.05em;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .mg-dance__meter {
+        height: 10px;
+        background: var(--line);
+        overflow: hidden;
+    }
+
+    .mg-dance__meter span {
+        display: block;
+        height: 100%;
+        background: var(--mg-red);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.15s linear;
+    }
+</style>
