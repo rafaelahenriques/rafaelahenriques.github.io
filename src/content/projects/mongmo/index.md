@@ -17,8 +17,13 @@ scope:
   - Server-authoritative Supabase / PostgreSQL backend
   - Native features with web fallbacks
 media:
-  screenshot: "./cover.png"
+  screenshot: "./media/cover.jpg"
+  gallery:
+    - "./media/cover.jpg"
+    - "./media/ordering.jpg"
+    - "./media/explore.jpg"
 tags: ["Mobile", "Product", "Supabase"]
+customPage: true
 ---
 
 ## The project
@@ -48,9 +53,7 @@ Expo provides the native capabilities needed for location, camera, sensors, noti
 
 Supabase handles authentication, PostgreSQL, file storage and realtime updates. TanStack Query manages server state and caching, while Zustand is reserved for local state such as the cart, filters and settings.
 
-## Engineering decisions
-
-### 1. The client sends intent. The server decides the result.
+## The client sends intent. The server decides the result.
 One of the main architectural decisions was to make the database authoritative.
 
 When someone places an order, the app sends item IDs and quantities, but never the price:
@@ -83,7 +86,7 @@ This means the rules still apply if someone bypasses the interface and calls the
 
 **Trade-off:** keeping business logic in SQL is less convenient to unit test than keeping everything in TypeScript, but it prevents security-sensitive rules from depending on a trusted client.
 
-### 2. Security beyond row-level security
+## Security beyond row-level security
 Supabase's row-level security controls which rows users can access, but Mongmo had a case where that was not enough.
 
 The QR token is stored on the same event row as public information such as its title, location and date. Giving users normal read access to that row would also expose the QR token, making the check-in system pointless.
@@ -108,7 +111,7 @@ from public, anon, authenticated;
 
 The lesson was simple: privileged internal functions should be deny-by-default.
 
-### 3. A challenge system that can grow
+## A challenge system that can grow
 Mongmo has eleven challenge types with different requirements: photos, votes, ratings, timed challenges, motion challenges and others.
 
 Creating a separate system for every type would quickly become difficult to maintain, so they share one challenge model with a JSON configuration.
@@ -149,7 +152,7 @@ Completion also checks actual evidence rather than trusting the client. A photo 
 
 This keeps the system flexible without giving up type safety or server-side validation.
 
-### 4. Points are a ledger, not a balance
+## Points are a ledger, not a balance
 Instead of storing one mutable `points` number on each profile, every change becomes an entry in an append-only ledger.
 
 A challenge or badge adds points. Redeeming a reward creates a negative entry.
@@ -162,9 +165,7 @@ The same data can also be used for leaderboards by summing entries over a specif
 
 **Trade-off:** the balance has to be calculated when it is read, but that cost is negligible at Mongmo's current scale.
 
-## Building around the phone
-
-### Geofenced pop-up discovery
+## Geofenced pop-up discovery
 Mongmo registers a region around relevant pop-ups using `expo-location` and `expo-task-manager`.
 
 When the operating system reports that the device has entered one of those regions, the background task checks whether the event is currently active and whether the user has already been alerted recently.
@@ -189,7 +190,7 @@ This means notifications are tied to both place and time. Entering the location 
 
 Location is also used during check-in and in the owner's event editor, where addresses are converted to coordinates automatically.
 
-### Native features without tying the UI to one platform
+## Native features without tying the UI to one platform
 Platform-specific behaviour is kept behind shared interfaces.
 
 Calendar integration is one example. On iOS and Android, Mongmo can open the system's event interface. On the web, the same `addToCalendar()` call generates an `.ics` file instead.
@@ -200,7 +201,7 @@ The same principle is used elsewhere: SF Symbols fall back to Lucide icons outsi
 
 This keeps platform differences at the service/component boundary instead of spreading `Platform.OS` checks throughout the application.
 
-### Debugging the dance meter that never moved
+## Debugging the dance meter that never moved
 One of the hardest bugs in the project came from the dance challenge.
 
 The original implementation counted dancing using the motion event's reported interval:
