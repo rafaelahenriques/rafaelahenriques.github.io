@@ -1,10 +1,12 @@
 ---
 /**
- * Selected projects as a deck of cards. The top card can be dragged or
- * flicked away (it tucks in at the back), any title in the index pulls its
- * card to the top, and while nobody touches it the deck shuffles itself; a
- * line under the active title shows when. Cards are links to the projects.
- * Without JS it's a static stack with the first project on top.
+ * Selected projects as a deck of cards. Grab the deck anywhere and drag or
+ * flick the top card away (it tucks in at the back); a two-finger trackpad
+ * swipe, the arrow keys and the ← → buttons do the same, and any title in
+ * the index pulls its card to the top. While nobody touches it the deck
+ * shuffles itself (a line under the active title shows when); the first
+ * manual move hands control to the visitor for good. Cards are links to the
+ * projects. Without JS it's a static stack with the first project on top.
  */
 import { Image } from "astro:assets";
 import { pad, slugOf, type ProjectEntry } from "../lib/content";
@@ -64,10 +66,10 @@ const slotOf = (i: number) => SLOTS[Math.min(i, SLOTS.length - 1)];
                 <a href={cards[0].href} class="mono link" data-deck-cta>
                     View <span data-deck-cta-title>{cards[0].title}</span> →
                 </a>
-                <span class="deck-hint mono muted">Drag the card, or pick a title</span>
             </p>
         </div>
 
+        <div class="deck-col">
         <div class="deck" data-deck-stack>
             {
                 cards.map((c, i) => {
@@ -104,6 +106,12 @@ const slotOf = (i: number) => SLOTS[Math.min(i, SLOTS.length - 1)];
                 })
             }
         </div>
+        <div class="deck-controls">
+            <button type="button" class="deck-controls__btn" data-deck-prev aria-label="Previous project">←</button>
+            <span class="deck-hint mono muted">Swipe or drag the cards</span>
+            <button type="button" class="deck-controls__btn" data-deck-next aria-label="Next project">→</button>
+        </div>
+        </div>
     </div>
 </section>
 
@@ -121,6 +129,8 @@ const slotOf = (i: number) => SLOTS[Math.min(i, SLOTS.length - 1)];
         { x: 0.04, y: 0.1, r: 8, s: 0.88 },
     ];
     const AUTOPLAY = 5; // seconds per card while nobody's touching it
+    const THROW_DISTANCE = 0.22; // of the card width
+    const THROW_SPEED = 0.5; // px per ms: a quick flick throws even if it's short
 
     const root = document.querySelector<HTMLElement>("[data-deck]");
     const stack = root?.querySelector<HTMLElement>("[data-deck-stack]");
@@ -131,12 +141,14 @@ const slotOf = (i: number) => SLOTS[Math.min(i, SLOTS.length - 1)];
         const bars = buttons.map((b) => b.querySelector<HTMLElement>(".deck-index__bar")!);
         const cta = root.querySelector<HTMLAnchorElement>("[data-deck-cta]")!;
         const ctaTitle = root.querySelector<HTMLElement>("[data-deck-cta-title]")!;
+        const prevButton = root.querySelector<HTMLButtonElement>("[data-deck-prev]")!;
+        const nextButton = root.querySelector<HTMLButtonElement>("[data-deck-next]")!;
         const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
         const speed = reduceMotion ? 0 : 1;
 
         let order = cards.map((_, i) => i); // order[0] is the card on top
-        let busy = false;
+        let move: gsap.core.Timeline | null = null; // the move in progress, if any
 
         const width = () => cards[0].offsetWidth;
         const slotProps = (slot: number) => {
@@ -146,13 +158,19 @@ const slotOf = (i: number) => SLOTS[Math.min(i, SLOTS.length - 1)];
         };
         // stacking order, once a move has finished
         const restack = () => order.forEach((ci, slot) => gsap.set(cards[ci], { zIndex: 100 - slot }));
-        // only the top card is reachable by keyboard and screen readers
+        // only the top card is clickable and reachable by keyboard and screen readers
         const exposeTop = () =>
             order.forEach((ci, slot) => {
-                cards[ci].tabIndex = slot === 0 ? 0 : -1;
-                if (slot === 0) cards[ci].removeAttribute("aria-hidden");
+                const top = slot === 0;
+                cards[ci].tabIndex = top ? 0 : -1;
+                cards[ci].classList.toggle("is-top", top);
+                if (top) cards[ci].removeAttribute("aria-hidden");
                 else cards[ci].setAttribute("aria-hidden", "true");
             });
+        // a new move never waits or gets dropped: the one before it jumps to its end
+        const finishMove = () => {
+            if (move?.isActive()) move.progress(1);
+        };
 
         // GSAP owns the transforms from here; the CSS stack was the no-JS fallback.
         // With motion on, the cards wait out of sight to be dealt in.
@@ -165,11 +183,12 @@ const slotOf = (i: number) => SLOTS[Math.min(i, SLOTS.length - 1)];
         let bar: gsap.core.Tween | null = null;
         let hovering = false;
         let inView = false;
-        const playing = () => !reduceMotion && inView && !hovering && !document.hidden;
+        let manual = false; // set by the first move the visitor makes
+        const playing = () => !reduceMotion && !manual && inView && !hovering && !document.hidden;
         const startBar = () => {
             bar?.kill();
             bars.forEach((b) => gsap.set(b, { scaleX: 0 }));
-            if (reduceMotion) return;
+            if (reduceMotion || manual) return;
             bar = gsap.fromTo(
                 bars[order[0]],
                 { scaleX: 0 },
@@ -177,6 +196,14 @@ const slotOf = (i: number) => SLOTS[Math.min(i, SLOTS.length - 1)];
             );
         };
         const syncBar = () => (playing() ? bar?.resume() : bar?.pause());
+        /** The visitor has taken over: no more shuffling on its own. */
+        const takeOver = () => {
+            if (manual) return;
+            manual = true;
+            bar?.kill();
+            bars.forEach((b) => gsap.set(b, { scaleX: 0 }));
+            root.classList.add("is-manual");
+        };
 
         const updateInfo = () => {
             const top = order[0];
@@ -188,77 +215,90 @@ const slotOf = (i: number) => SLOTS[Math.min(i, SLOTS.length - 1)];
             syncDraggables();
         };
 
-        // --- the moves ---
+        // --- the two moves ---
 
         /** Throw the top card off to one side; it tucks in at the back. */
         function advance(dir: number) {
-            if (busy) return;
-            busy = true;
+            finishMove();
             const top = order[0];
             order = [...order.slice(1), top];
             const card = cards[top];
             const w = width();
             gsap.set(card, { zIndex: 200 });
-            const tl = gsap.timeline({
-                onComplete: () => {
-                    busy = false;
-                    restack();
-                },
-            });
-            tl.to(card, { x: dir * w * 1.25, y: -w * 0.12, rotation: dir * 24, rotationX: 0, rotationY: 0, duration: 0.45 * speed, ease: "power2.in" })
+            move = gsap.timeline({ onComplete: restack });
+            move.to(card, { x: dir * w * 1.25, y: -w * 0.12, rotation: dir * 24, rotationX: 0, rotationY: 0, duration: 0.45 * speed, ease: "power2.in" })
                 .set(card, { zIndex: 0 })
                 .to(card, { ...slotProps(order.length - 1), duration: 0.6 * speed, ease: "power3.out" });
             order.slice(0, -1).forEach((ci, slot) => {
                 gsap.set(cards[ci], { zIndex: 100 - slot });
-                tl.to(cards[ci], { ...slotProps(slot), duration: 0.6 * speed, ease: "power3.out" }, 0.18 * speed);
+                move!.to(cards[ci], { ...slotProps(slot), duration: 0.6 * speed, ease: "power3.out" }, 0.18 * speed);
             });
             updateInfo();
         }
 
         /** Pull a card out of the deck and lay it on top. */
         function bringToFront(ci: number) {
-            if (busy || order[0] === ci) return;
-            busy = true;
+            finishMove();
+            if (order[0] === ci) return;
             order = [ci, ...order.filter((c) => c !== ci)];
             const card = cards[ci];
             const w = width();
-            const tl = gsap.timeline({
-                onComplete: () => {
-                    busy = false;
-                    restack();
-                },
-            });
-            tl.to(card, { x: w * 0.85, y: -w * 0.06, rotation: 14, duration: 0.35 * speed, ease: "power2.out" })
+            move = gsap.timeline({ onComplete: restack });
+            move.to(card, { x: w * 0.85, y: -w * 0.06, rotation: 14, duration: 0.35 * speed, ease: "power2.out" })
                 .set(card, { zIndex: 200 })
                 .to(card, { ...slotProps(0), duration: 0.55 * speed, ease: "power3.inOut" });
-            order.slice(1).forEach((c, i) => tl.to(cards[c], { ...slotProps(i + 1), duration: 0.6 * speed, ease: "power3.out" }, 0.1 * speed));
+            order.slice(1).forEach((c, i) => move!.to(cards[c], { ...slotProps(i + 1), duration: 0.6 * speed, ease: "power3.out" }, 0.1 * speed));
             updateInfo();
         }
 
-        // --- drag / flick the top card ---
+        const next = () => {
+            takeOver();
+            advance(1);
+        };
+        const previous = () => {
+            takeOver();
+            bringToFront(order[order.length - 1]);
+        };
+
+        // --- drag or flick: press anywhere on the deck, the top card comes along ---
+        let samples: { x: number; t: number }[] = [];
         const draggables = cards.map((card) =>
             Draggable.create(card, {
-                type: finePointer ? "x,y" : "x", // touch: horizontal swipes, page still scrolls
+                trigger: stack,
+                type: finePointer ? "x,y" : "x", // touch: horizontal swipes, the page still scrolls
                 dragClickables: true,
                 minimumMovement: 6,
+                cursor: "grab",
+                activeCursor: "grabbing",
                 onPress() {
                     bar?.pause();
-                    gsap.to(card, { rotationX: 0, rotationY: 0, duration: 0.3 });
+                    if (move?.isActive()) {
+                        finishMove();
+                        this.update();
+                    }
+                    gsap.to(card, { rotationX: 0, rotationY: 0, duration: 0.3, overwrite: "auto" });
+                    samples = [];
+                },
+                onDragStart() {
+                    takeOver();
                 },
                 onDrag() {
                     gsap.set(card, { rotation: SLOTS[0].r + this.x * 0.06 });
+                    samples.push({ x: this.x, t: performance.now() });
+                    if (samples.length > 5) samples.shift();
                 },
                 onRelease() {
                     // pressed without dragging: the click opens the project
-                    if (!this.isDragging) return syncBar();
+                    if (!this.isDragging) syncBar();
                 },
                 onDragEnd() {
-                    const w = width();
-                    if (Math.abs(this.x) > w * 0.28) advance(Math.sign(this.x));
-                    else {
-                        gsap.to(card, { ...slotProps(0), duration: 0.7 * speed, ease: "elastic.out(1, 0.6)" });
-                        syncBar();
-                    }
+                    const first = samples[0];
+                    const last = samples[samples.length - 1];
+                    const velocity = first && last && last.t > first.t ? (last.x - first.x) / (last.t - first.t) : 0;
+                    const far = Math.abs(this.x) > width() * THROW_DISTANCE;
+                    const flicked = Math.abs(velocity) > THROW_SPEED && Math.sign(velocity) === Math.sign(this.x);
+                    if (far || flicked) advance(Math.sign(this.x) || 1);
+                    else gsap.to(card, { ...slotProps(0), duration: 0.7 * speed, ease: "elastic.out(1, 0.6)" });
                 },
             })[0],
         );
@@ -266,23 +306,63 @@ const slotOf = (i: number) => SLOTS[Math.min(i, SLOTS.length - 1)];
             draggables.forEach((d, ci) => (ci === order[0] ? d.enable() : d.disable()));
         }
 
+        // --- two-finger trackpad swipe ---
+        let swipe = 0;
+        let swipeLockedUntil = 0;
+        stack.addEventListener(
+            "wheel",
+            (e) => {
+                // vertical scrolling passes straight through to the page
+                if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+                // horizontal: it's for the deck (and not the browser's back gesture)
+                e.preventDefault();
+                const now = performance.now();
+                if (now < swipeLockedUntil) {
+                    // the same swipe's momentum keeps arriving; ignore it until it stops
+                    swipeLockedUntil = now + 250;
+                    return;
+                }
+                swipe += e.deltaX;
+                if (Math.abs(swipe) > 40) {
+                    takeOver();
+                    advance(swipe > 0 ? -1 : 1);
+                    swipe = 0;
+                    swipeLockedUntil = now + 600;
+                }
+            },
+            { passive: false },
+        );
+
+        // --- buttons and keys ---
+        prevButton.addEventListener("click", previous);
+        nextButton.addEventListener("click", next);
+        buttons.forEach((b, i) =>
+            b.addEventListener("click", () => {
+                takeOver();
+                bringToFront(i);
+            }),
+        );
+        root.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowRight") next();
+            else if (e.key === "ArrowLeft") previous();
+            else return;
+            e.preventDefault();
+        });
+
         // --- the top card leans towards the cursor ---
         if (finePointer && !reduceMotion) {
             stack.addEventListener("pointermove", (e) => {
                 const card = cards[order[0]];
-                if (busy || draggables[order[0]].isPressed) return;
+                if (move?.isActive() || draggables[order[0]].isPressed) return;
                 const r = card.getBoundingClientRect();
                 const dx = (e.clientX - (r.left + r.width / 2)) / r.width;
                 const dy = (e.clientY - (r.top + r.height / 2)) / r.height;
                 gsap.to(card, { rotationY: dx * 10, rotationX: -dy * 10, duration: 0.6, ease: "power3.out", overwrite: "auto" });
             });
             stack.addEventListener("pointerleave", () => {
-                if (!busy) gsap.to(cards[order[0]], { rotationX: 0, rotationY: 0, duration: 0.8, ease: "power3.out" });
+                if (!move?.isActive()) gsap.to(cards[order[0]], { rotationX: 0, rotationY: 0, duration: 0.8, ease: "power3.out" });
             });
         }
-
-        // --- the index ---
-        buttons.forEach((b, i) => b.addEventListener("click", () => bringToFront(i)));
 
         // pause the shuffle while someone is looking closely or using the keyboard
         root.addEventListener("pointerenter", () => {
@@ -309,13 +389,14 @@ const slotOf = (i: number) => SLOTS[Math.min(i, SLOTS.length - 1)];
             if (dealt) return;
             dealt = true;
             // bottom card first, each one landing on the pile with a little twist
+            move = gsap.timeline({ onComplete: restack });
             [...order].reverse().forEach((ci, i) => {
-                const slot = order.indexOf(ci);
-                const rest = slotProps(slot);
-                gsap.fromTo(
+                const rest = slotProps(order.indexOf(ci));
+                move!.fromTo(
                     cards[ci],
                     { x: rest.x, y: rest.y + width() * 0.6, rotation: i % 2 ? 14 : -12, autoAlpha: 0 },
-                    { ...rest, autoAlpha: 1, duration: 0.9, ease: "expo.out", delay: i * 0.12 },
+                    { ...rest, autoAlpha: 1, duration: 0.9, ease: "expo.out" },
+                    i * 0.12,
                 );
             });
         };
@@ -339,7 +420,8 @@ const slotOf = (i: number) => SLOTS[Math.min(i, SLOTS.length - 1)];
 
         // the card size follows the viewport; keep the stack in shape
         window.addEventListener("resize", () => {
-            if (!busy) order.forEach((ci, slot) => gsap.set(cards[ci], slotProps(slot)));
+            finishMove();
+            order.forEach((ci, slot) => gsap.set(cards[ci], slotProps(slot)));
         });
 
         updateInfo();
@@ -389,7 +471,7 @@ const slotOf = (i: number) => SLOTS[Math.min(i, SLOTS.length - 1)];
     .deck-index__btn {
         position: relative;
         display: grid;
-        grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+        grid-template-columns: 2.5rem minmax(0, 1fr);
         align-items: baseline;
         gap: var(--gutter);
         width: 100%;
@@ -440,24 +522,87 @@ const slotOf = (i: number) => SLOTS[Math.min(i, SLOTS.length - 1)];
         margin: 20px 0 0;
     }
 
-    @media (max-width: 599px) {
-        .deck-index__meta {
-            display: none;
+    /* the category sits under the title, and beside it once there's room */
+    .deck-index__meta {
+        grid-column: 2;
+        margin-top: 6px;
+        color: var(--muted);
+    }
+
+    @media (min-width: 600px) and (max-width: 899px), (min-width: 1280px) {
+        .deck-index__btn {
+            grid-template-columns: 2.5rem minmax(0, 1fr) auto;
         }
 
-        .deck-index__btn {
-            grid-template-columns: 2.5rem minmax(0, 1fr);
+        .deck-index__meta {
+            grid-column: 3;
+            margin-top: 0;
+            color: inherit;
         }
     }
 
     /* --- the deck --- */
+
+    .deck-col {
+        order: -1;
+        min-width: 0;
+    }
 
     .deck {
         --card-w: min(360px, 68vw);
         position: relative;
         /* card (4:5 image + caption) plus room for the cards fanned behind it */
         height: calc(var(--card-w) * 1.25 + var(--card-w) * 0.22 + 64px);
-        order: -1;
+        /* the whole deck is the handle: grab anywhere, the top card comes along */
+        cursor: grab;
+        touch-action: pan-y;
+        overscroll-behavior-x: contain;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+
+    .deck:active {
+        cursor: grabbing;
+    }
+
+    .deck-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 16px;
+        margin-top: 8px;
+    }
+
+    .deck-controls__btn {
+        display: grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        background: none;
+        color: var(--text);
+        font: inherit;
+        cursor: pointer;
+        transition:
+            border-color 0.3s var(--ease),
+            background-color 0.3s var(--ease),
+            color 0.3s var(--ease);
+    }
+
+    .deck-controls__btn:hover,
+    .deck-controls__btn:focus-visible {
+        border-color: var(--text);
+    }
+
+    .deck-controls__btn:active {
+        background: var(--text);
+        color: var(--bg);
+    }
+
+    /* once the visitor is in charge, the autoplay lines go */
+    .deck-section.is-manual .deck-index__bar {
+        display: none;
     }
 
     .deck-card {
@@ -472,15 +617,13 @@ const slotOf = (i: number) => SLOTS[Math.min(i, SLOTS.length - 1)];
         box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.35);
         /* no-JS stack; GSAP takes over the transform */
         transform: translate(calc(var(--x) * var(--card-w)), calc(var(--y) * var(--card-w))) rotate(var(--r)) scale(var(--s));
-        cursor: grab;
-        touch-action: pan-y;
-        user-select: none;
-        -webkit-user-select: none;
         -webkit-tap-highlight-color: transparent;
     }
 
-    .deck-card:active {
-        cursor: grabbing;
+    /* with JS, only the top card takes clicks; a press on the cards behind it
+       lands on the deck, which drags the top card */
+    :global(html.js) .deck-card:not(.is-top) {
+        pointer-events: none;
     }
 
     :global(html.dark) .deck-card {
@@ -520,10 +663,10 @@ const slotOf = (i: number) => SLOTS[Math.min(i, SLOTS.length - 1)];
         }
 
         .deck-info {
-            grid-column: 1 / span 5;
+            grid-column: 1 / span 6;
         }
 
-        .deck {
+        .deck-col {
             grid-column: 7 / -1;
             order: 0;
         }
