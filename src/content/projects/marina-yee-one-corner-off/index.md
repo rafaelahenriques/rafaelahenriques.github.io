@@ -2,7 +2,6 @@
 title: "Marina Yee — One Corner Off"
 section: featured
 order: 4
-status: in-progress
 category: "Creative Development"
 types: ["web", "interactive"]
 year: "2026"
