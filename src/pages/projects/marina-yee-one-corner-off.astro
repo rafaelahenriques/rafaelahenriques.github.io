@@ -2,10 +2,10 @@
 /**
  * One Corner Off (Marina Yee for MoMu) case study. Same shape as Wolf & Sheep
  * and Mongmo: parts and numbered chapters, each ## section of index.md beside
- * what it explains. Here that's the walkthrough, a short looping clip of each
- * interaction (cut from the walkthrough), screenshots of the site, and two
- * small pieces drawn in HTML: a live type specimen in the site's own fonts
- * and the bundle sizes.
+ * what it explains: screenshots of the site, stills of the four sections that
+ * set the direction, a live type specimen in the site's own fonts, a short
+ * looping clip of each interaction (cut from the walkthrough) and the bundle
+ * sizes. The full walkthrough closes the page, before the link to the site.
  */
 import Base from "../../layouts/BaseLayout.astro";
 import { Image, getImage } from "astro:assets";
@@ -33,7 +33,6 @@ import stillCover from "../../content/projects/marina-yee-one-corner-off/media/s
 import stillBeyond from "../../content/projects/marina-yee-one-corner-off/media/still-beyond.jpg";
 import stillTurning from "../../content/projects/marina-yee-one-corner-off/media/still-turning.jpg";
 import stillLookCloser from "../../content/projects/marina-yee-one-corner-off/media/still-lookcloser.jpg";
-import earlyCollage from "../../content/projects/marina-yee-one-corner-off/one-corner-off-1.png";
 
 const project = (await getEntry("projects", "marina-yee-one-corner-off"))!;
 const { title, description, role, year, category, context, order, tech, media, status } = project.data;
@@ -54,21 +53,20 @@ const byPlain = new Map([...parts].map(([k, v]) => [plain(k), v]));
 const t = (heading: string) => byPlain.get(heading);
 const placed = [
     "The project",
-    "The challenge",
-    "Finding the visual direction",
-    "Visual system",
-    "One Corner Off",
-    "Moving away from the spotlight",
-    "Working with what was already there",
-    "Text as movement",
-    "M.Y. Project",
-    "Beyond sustainability",
-    "The main interaction: folding the page",
-    "Progressive enhancement",
-    "Managing scroll-based animation",
+    "Design process",
+    "Layout and typography",
+    "Colour and imagery",
+    "Cover: detachable corner",
+    "Spotlight: pinned scroll animation",
+    "Garment index: interactive content selection",
+    "Typography animations",
+    "M.Y. Project: image sequence",
+    "Beyond sustainability: horizontal scrolling",
+    "Main interaction: folding the page",
+    "Responsive design and accessibility",
+    "ScrollTrigger architecture",
     "Tooling and performance",
     "What I learned",
-    "Next steps",
 ];
 const extra = [...byPlain.keys()].filter((heading) => !placed.includes(heading));
 
@@ -76,9 +74,9 @@ const walkthroughPosterSrc = (await getImage({ src: walkthroughPoster, width: 12
 
 const stillsThatWorked = [
     { img: stillCover, label: "The cover" },
-    { img: stillBeyond, label: "Beyond Sustainability" },
-    { img: stillTurning, label: "The paragraph that turns" },
-    { img: stillLookCloser, label: "Look Closer" },
+    { img: stillBeyond, label: "The horizontal chapter" },
+    { img: stillTurning, label: "The rotating paragraphs" },
+    { img: stillLookCloser, label: "The closing spread" },
 ];
 
 const palette = [
@@ -90,22 +88,22 @@ const palette = [
 ];
 
 const withoutJs = [
-    { part: "Garment picker", js: "One look at a time", none: "Every look shown" },
-    { part: "M.Y. Project", js: "Pinned, garments wipe in", none: "An image grid" },
-    { part: "Beyond sustainability", js: "Horizontal chapter", none: "Vertical" },
-    { part: "Folding page", js: "Fold the corner back", none: "Static, with a cut corner" },
+    { part: "Garment index", js: "One look at a time", none: "All four looks" },
+    { part: "M.Y. Project", js: "Pinned image sequence", none: "Static image grid" },
+    { part: "Horizontal sections", js: "Scroll sideways", none: "Vertical layout" },
+    { part: "Folding page", js: "Fold the corner back", none: "Static composition" },
 ];
 
 const sizes = [
     { value: 4.6, unit: "KB", label: "initial JavaScript, gzipped (11.7 KB raw)" },
     { value: 8.7, unit: "KB", label: "CSS, gzipped (40.6 KB raw)" },
-    { value: 64.6, unit: "KB", label: "GSAP kept out of the first load when motion is off" },
+    { value: 64.6, unit: "KB", label: "GSAP, loaded only when motion is enabled" },
 ];
 ---
 
 <Base title={title} description={description}>
     <Fragment slot="head">
-        <!-- the site's own typefaces, for the Visual system specimen -->
+        <!-- the site's own typefaces, for the typography specimen -->
         <link
             rel="stylesheet"
             href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Reenie+Beanie&display=swap"
@@ -142,66 +140,37 @@ const sizes = [
             </div>
         </header>
 
-        <!-- WALKTHROUGH -->
-        <section class="wrap" aria-label="Walkthrough">
-            <figure class="my-walkthrough" data-reveal>
-                <video
-                    class="my-screen"
-                    controls
-                    playsinline
-                    preload="none"
-                    poster={walkthroughPosterSrc}
-                    width="1280"
-                    height="726"
-                    aria-label="Walkthrough of the One Corner Off longread, from the cover to the end"
-                >
-                    <source src="/media/marina-yee/walkthrough.mp4" type="video/mp4" />
-                </video>
-                <figcaption class="mono muted">Walkthrough · 1:14</figcaption>
-            </figure>
-        </section>
-
         <!-- ============ PART 1 ============ -->
         <div class="my-part-wrap wrap" data-reveal data-part="The project">
             <p class="my-part mono">The project</p>
         </div>
 
-        <Chapter id="my-project" num={1} title="The project" html={t("The project")}>
+        <Chapter id="my-project" num={1} title="The project" html={t("The project")} lead={1}>
             <Shot slot="media" img={siteOneCornerOff} alt="The One Corner Off chapter: the title, and the Flemish expression explained in two justified columns" />
         </Chapter>
 
-        <Chapter id="my-challenge" num={2} title="The challenge" html={t("The challenge")} side="left">
-            <Shot slot="media" img={siteFilm} alt="The In her own words section: a film still with a play button and a handwritten note, 'she loves second-hand'" />
-        </Chapter>
-
-        <!-- ============ PART 2 ============ -->
-        <div class="my-part-wrap wrap" data-reveal data-part="Design">
-            <p class="my-part mono">Design</p>
-        </div>
-
-        <Chapter id="my-direction" num={3} title="Finding the visual direction" html={t("Finding the visual direction")}>
+        <Chapter id="my-process" num={2} title="Design process" html={t("Design process")} side="left">
             <figure class="my-direction" slot="media">
-                <div class="my-direction__before">
-                    <p class="mono muted">Before</p>
-                    <Image src={earlyCollage} alt="An early direction: a torn editorial collage of fabric and type" widths={[300, 600]} sizes="160px" />
-                </div>
-                <div class="my-direction__after">
-                    <p class="mono muted">The four sections that worked</p>
-                    <ul class="my-direction__grid">
-                        {
-                            stillsThatWorked.map((s) => (
-                                <li>
-                                    <Image src={s.img} alt={s.label} widths={[400, 800]} sizes="(min-width: 900px) 20vw, 45vw" class="my-screen" />
-                                    <span class="mono">{s.label}</span>
-                                </li>
-                            ))
-                        }
-                    </ul>
-                </div>
+                <p class="mono muted">The four sections that worked</p>
+                <ul class="my-direction__grid">
+                    {
+                        stillsThatWorked.map((s) => (
+                            <li>
+                                <Image src={s.img} alt={s.label} widths={[400, 800]} sizes="(min-width: 900px) 25vw, 45vw" class="my-screen" />
+                                <span class="mono">{s.label}</span>
+                            </li>
+                        ))
+                    }
+                </ul>
             </figure>
         </Chapter>
 
-        <Chapter id="my-system" num={4} title="Visual system" html={t("Visual system")} side="left">
+        <!-- ============ PART 2 ============ -->
+        <div class="my-part-wrap wrap" data-reveal data-part="Visual design">
+            <p class="my-part mono">Visual design</p>
+        </div>
+
+        <Chapter id="my-type" num={3} title="Layout and typography" html={t("Layout and typography")}>
             <figure class="my-spec" slot="media" data-my-spec>
                 <div class="my-spec__type" aria-hidden="true">
                     <span class="my-spec__word" data-my-word><span>One corner</span><span>off</span></span>
@@ -210,7 +179,15 @@ const sizes = [
                     Archivo · <span data-my-axes>width 62 · weight 800</span>
                 </p>
                 <p class="my-spec__hand">Make it look finished, then disturb it.</p>
-                <ul class="my-swatches">
+                <figcaption class="visually-hidden">
+                    Archivo moving between its condensed and wide, heavy and light cuts, with Reenie Beanie for the handwritten note.
+                </figcaption>
+            </figure>
+        </Chapter>
+
+        <Chapter id="my-colour" num={4} title="Colour and imagery" html={t("Colour and imagery")} side="left">
+            <figure class="my-colour" slot="media">
+                <ul class="my-swatches" aria-label="Palette">
                     {
                         palette.map((c) => (
                             <li>
@@ -220,43 +197,41 @@ const sizes = [
                         ))
                     }
                 </ul>
-                <figcaption class="visually-hidden">
-                    Archivo in its condensed, heavy cut and Reenie Beanie for the handwritten note, with the palette: black, paper, white, biro blue and red.
-                </figcaption>
+                <Shot img={siteFilm} alt="A dark section: a film still with a play button and a handwritten biro-blue note, 'she loves second-hand'" />
             </figure>
         </Chapter>
 
         <!-- ============ PART 3 ============ -->
-        <div class="my-part-wrap wrap" data-reveal data-part="Turning the story into interaction">
-            <p class="my-part mono">Turning the story into interaction</p>
+        <div class="my-part-wrap wrap" data-reveal data-part="Interaction design and development">
+            <p class="my-part mono">Interaction design and development</p>
         </div>
 
-        <Chapter id="my-cover" num={5} title="One Corner Off" html={t("One Corner Off")}>
+        <Chapter id="my-cover" num={5} title="Cover: detachable corner" html={t("Cover: detachable corner")}>
             <div class="my-clip" slot="media"><LoopVideo src="/media/marina-yee/cover.mp4" poster={coverPoster} label="The cover: a corner is cut away from the title, falls and is thrown" /></div>
         </Chapter>
 
-        <Chapter id="my-spotlight" num={6} title="Moving away from the spotlight" html={t("Moving away from the spotlight")} side="left">
-            <div class="my-clip" slot="media"><LoopVideo src="/media/marina-yee/spotlight.mp4" poster={spotlightPoster} label="The Antwerp Six in a spotlight that recedes as her work comes into view" /></div>
+        <Chapter id="my-spotlight" num={6} title="Spotlight: pinned scroll animation" html={t("Spotlight: pinned scroll animation")} side="left">
+            <div class="my-clip" slot="media"><LoopVideo src="/media/marina-yee/spotlight.mp4" poster={spotlightPoster} label="The Antwerp Six in a spotlight that shrinks as her work comes into view" /></div>
         </Chapter>
 
-        <Chapter id="my-garments" num={7} title="Working with what was already there" html={t("Working with what was already there")}>
+        <Chapter id="my-garments" num={7} title="Garment index: interactive content selection" html={t("Garment index: interactive content selection")}>
             <div class="my-clip" slot="media"><LoopVideo src="/media/marina-yee/garments.mp4" poster={garmentsPoster} label="The garment index: choosing a category reveals its garment and details" /></div>
         </Chapter>
 
-        <Chapter id="my-text" num={8} title="Text as movement" html={t("Text as movement")} side="left">
+        <Chapter id="my-typography" num={8} title="Typography animations" html={t("Typography animations")} side="left">
             <div class="my-clip" slot="media"><LoopVideo src="/media/marina-yee/marquee.mp4" poster={marqueePoster} label="An oversized marquee whose letters change weight as they cross the screen" /></div>
         </Chapter>
 
-        <Chapter id="my-myproject" num={9} title="M.Y. Project" html={t("M.Y. Project")}>
+        <Chapter id="my-myproject" num={9} title="M.Y. Project: image sequence" html={t("M.Y. Project: image sequence")}>
             <div class="my-clip" slot="media"><LoopVideo src="/media/marina-yee/myproject.mp4" poster={myProjectPoster} label="M.Y. Project: each garment wipes up over the last as its name rolls in" /></div>
         </Chapter>
 
-        <Chapter id="my-beyond" num={10} title="Beyond sustainability" html={t("Beyond sustainability")} side="left">
+        <Chapter id="my-beyond" num={10} title="Beyond sustainability: horizontal scrolling" html={t("Beyond sustainability: horizontal scrolling")} side="left">
             <div class="my-clip" slot="media"><LoopVideo src="/media/marina-yee/horizontal.mp4" poster={horizontalPoster} label="The horizontal chapter, ending with the bottom corner of the page breaking away" /></div>
         </Chapter>
 
-        <Chapter id="my-fold" num={11} title="The main interaction: folding the page" html={t("The main interaction: folding the page")}>
-            <div class="my-clip" slot="media"><LoopVideo src="/media/marina-yee/fold.mp4" poster={foldPoster} label="Folding back the corner of the Already finished page to reveal the garment underneath" /></div>
+        <Chapter id="my-fold" num={11} title="Main interaction: folding the page" html={t("Main interaction: folding the page")}>
+            <div class="my-clip" slot="media"><LoopVideo src="/media/marina-yee/fold.mp4" poster={foldPoster} label="Folding back the corner of the black page to reveal the garment underneath" /></div>
         </Chapter>
 
         <!-- ============ PART 4 ============ -->
@@ -264,7 +239,7 @@ const sizes = [
             <p class="my-part mono">Under the hood</p>
         </div>
 
-        <Chapter id="my-progressive" num={12} title="Progressive enhancement" html={t("Progressive enhancement")} side="left">
+        <Chapter id="my-responsive" num={12} title="Responsive design and accessibility" html={t("Responsive design and accessibility")} side="left">
             <figure class="my-diagram" slot="media" data-my-diagram>
                 <div class="my-table" role="table" aria-label="Each interactive part with and without JavaScript">
                     <div class="my-table__row my-table__row--head mono" role="row">
@@ -285,9 +260,9 @@ const sizes = [
             </figure>
         </Chapter>
 
-        <Chapter id="my-scroll" num={13} title="Managing scroll-based animation" html={t("Managing scroll-based animation")} />
+        <Chapter id="my-scrolltrigger" num={13} title="ScrollTrigger architecture" html={t("ScrollTrigger architecture")} />
 
-        <Chapter id="my-tooling" num={14} title="Tooling and performance" html={t("Tooling and performance")}>
+        <Chapter id="my-tooling" num={14} title="Tooling and performance" html={t("Tooling and performance")} lead={6}>
             <ul class="my-sizes" slot="media" data-my-diagram>
                 {
                     sizes.map((s) => (
@@ -309,13 +284,29 @@ const sizes = [
         </div>
 
         <Chapter id="my-learned" num={15} title="What I learned" html={t("What I learned")} side="left" />
-        <Chapter id="my-next" num={16} title="Next steps" html={t("Next steps")} fold={false} />
-        {extra.map((heading, i) => <Chapter id={`my-extra-${i}`} num={17 + i} title={heading} html={t(heading)} />)}
+        {extra.map((heading, i) => <Chapter id={`my-extra-${i}`} num={16 + i} title={heading} html={t(heading)} />)}
 
-        <!-- VISIT -->
-        {
-            media?.live && (
-                <section class="wrap my-end" aria-label="Visit the website">
+        <!-- WALKTHROUGH: the whole thing, start to finish -->
+        <section class="wrap my-end" aria-labelledby="my-walkthrough-title">
+            <p id="my-walkthrough-title" class="my-part mono">Walkthrough</p>
+            <figure class="my-walkthrough">
+                <video
+                    class="my-screen"
+                    controls
+                    playsinline
+                    preload="none"
+                    poster={walkthroughPosterSrc}
+                    width="1280"
+                    height="726"
+                    aria-label="Walkthrough of the One Corner Off longread, from the cover to the end"
+                >
+                    <source src="/media/marina-yee/walkthrough.mp4" type="video/mp4" />
+                </video>
+                <figcaption class="mono muted">The longread from cover to close · 1:14</figcaption>
+            </figure>
+
+            {
+                media?.live && (
                     <a href={media.live} class="my-end__link" target="_blank" rel="noopener">
                         <span class="my-end__shot">
                             <Image src={siteFooter} alt="" widths={[800, 1400, 2000]} sizes="(min-width: 900px) 50vw, 100vw" class="my-screen" />
@@ -325,9 +316,9 @@ const sizes = [
                             <span class="my-end__title">Visit the website <span class="my-end__arrow" aria-hidden="true">↗</span></span>
                         </span>
                     </a>
-                </section>
-            )
-        }
+                )
+            }
+        </section>
     </article>
 
     <ChapterNav />
@@ -537,22 +528,14 @@ const sizes = [
         padding-top: clamp(40px, 6vw, 80px);
     }
 
-    /* --- 03 DIRECTION: before, and what stayed --- */
+    /* --- 02 DESIGN PROCESS: the four sections that worked --- */
 
     .my-direction {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 24px;
         margin: 0;
     }
 
     .my-direction p {
         margin: 0 0 10px;
-    }
-
-    .my-direction__before :global(img) {
-        width: 160px;
-        height: auto;
     }
 
     .my-direction__grid {
@@ -569,14 +552,7 @@ const sizes = [
         gap: 6px;
     }
 
-    @media (min-width: 1100px) {
-        .my-direction {
-            grid-template-columns: 160px minmax(0, 1fr);
-            align-items: start;
-        }
-    }
-
-    /* --- 04 SPECIMEN --- */
+    /* --- 03 SPECIMEN --- */
 
     .my-spec {
         display: grid;
@@ -624,11 +600,19 @@ const sizes = [
         transform-origin: left;
     }
 
+    /* --- 04 COLOUR: the palette above a dark section of the site --- */
+
+    .my-colour {
+        display: grid;
+        gap: 20px;
+        margin: 0;
+    }
+
     .my-swatches {
         display: grid;
         grid-template-columns: repeat(5, minmax(0, 1fr));
         gap: 10px;
-        margin: 8px 0 0;
+        margin: 0;
         padding: 0;
         list-style: none;
     }
@@ -641,10 +625,10 @@ const sizes = [
     .my-swatch {
         aspect-ratio: 1;
         background: var(--c);
-        border: 1px solid rgba(244, 242, 238, 0.25);
+        border: 1px solid var(--line);
     }
 
-    /* --- 12 PROGRESSIVE ENHANCEMENT --- */
+    /* --- 12 WITHOUT JAVASCRIPT --- */
 
     .my-diagram {
         margin: 0;
@@ -709,10 +693,16 @@ const sizes = [
         font-size: var(--fs-small);
     }
 
-    /* --- END: the site's footer, and the way there --- */
+    /* --- END: the walkthrough, then the site's footer and the way there --- */
 
     .my-end {
+        display: grid;
+        gap: clamp(48px, 7vw, 96px);
         padding-top: calc(var(--section) * 1.4);
+    }
+
+    .my-end > .my-part {
+        margin-bottom: calc(-1 * clamp(24px, 5vw, 64px));
     }
 
     .my-end__link {
@@ -720,7 +710,7 @@ const sizes = [
         gap: 24px var(--gutter);
         align-items: end;
         padding-top: 14px;
-        border-top: 1px solid var(--text);
+        border-top: 1px solid var(--line);
     }
 
     .my-end__shot {

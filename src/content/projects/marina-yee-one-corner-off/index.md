@@ -7,9 +7,9 @@ category: "Creative Development"
 types: ["web", "interactive"]
 year: "2026"
 tech: ["Vite", "JavaScript", "GSAP", "CSS"]
-role: "Design & development"
+role: "Research, visual design, interaction design and front-end development"
 context: "Devine (Howest) — Integration 3, for MoMu Antwerp"
-description: "An interactive, scroll-driven longread designed and developed for MoMu, the Fashion Museum Antwerp."
+description: "An interactive longread about fashion designer Marina Yee, developed for MoMu, the Fashion Museum Antwerp."
 media:
   live: "https://momu-marina-yee.netlify.app"
   screenshot: "./media/card.jpg"
@@ -23,133 +23,183 @@ customPage: true
 ---
 
 ## The project
-Marina Yee is usually introduced as one of the Antwerp Six. One Corner Off moves away from that label and focuses on how she worked: reconstructing existing garments, keeping what mattered and changing only what needed to change.
+One Corner Off is an interactive longread about fashion designer Marina Yee, developed for MoMu, the Fashion Museum Antwerp.
 
-The title comes from an expression Yee used to describe her process: make something feel finished, then deliberately disturb it.
+The project focuses on Yee’s approach to reconstructing existing garments rather than her association with the Antwerp Six. The title references a Flemish expression she used to describe her process: making something appear finished before deliberately altering it.
 
-That idea became the basis for both the design and development of the longread. Throughout the site, finished compositions are cut, unfolded, shifted or taken apart. By the end, the reader is invited to do the same.
+I was responsible for the research, visual design, interaction design and front-end development.
 
-## The challenge
-The main challenge was turning research about reconstruction, reuse and restraint into an experience that still felt like a museum publication without becoming a wall of text.
+The main objective was to create an editorial website that combined long-form content with meaningful interactions while remaining responsive, accessible and performant.
 
-Motion also had to serve the story. Instead of adding animations after designing the page, I treated interaction as part of the editorial structure. If an animation did not communicate something, it did not need to be there.
+## Design process
+The visual direction went through several iterations, including editorial collage, monochrome layouts and more experimental compositions inspired by fashion publications.
 
-At the same time, the site had to remain responsive, accessible, readable without JavaScript and usable with reduced motion.
+After receiving feedback, I evaluated individual sections rather than redesigning the entire website. Four sections were particularly successful: the cover, the horizontal chapter, the rotating paragraphs and the closing spread.
 
-## Finding the visual direction
-The design changed significantly during the project.
+I used their shared characteristics to establish a consistent visual system: oversized typography, strong contrast, layered photography, limited colour and references to printed fashion publications.
 
-Early versions explored editorial collage, monochrome layouts, cursor interactions and more traditional fashion-editorial compositions. After several rounds of critique, I stopped evaluating each redesign as a complete direction and looked instead at which sections were actually working.
+This approach helped me refine the design while keeping the strongest elements from previous iterations.
 
-Four stood out: the cover, the horizontal Beyond Sustainability chapter, a paragraph that turns over line by line, and the final Look Closer spread.
+## Layout and typography
+The website alternates between dark editorial spreads and lighter reading sections.
 
-They shared oversized typography, strong contrast, physical-looking images, restrained colour and layouts somewhere between a fashion publication, an archive and a working notebook. Those elements became the visual system for the rest of the site.
+Dark sections use oversized condensed typography, justified text and overlapping photographs. Lighter sections use narrower text columns and more whitespace to improve readability.
 
-## Visual system
-The longread alternates between two types of pages. Black spreads use oversized condensed typography, justified text and floating photographic prints. Paper-coloured pages are quieter and give longer passages more room to breathe.
+I chose Archivo as the primary typeface because its variable width and weight axes support both display typography and body text within a single font family. Reenie Beanie is used for handwritten annotations.
 
-The site uses the variable typeface Archivo. Its width and weight axes let the same family move between condensed display typography and normal reading text. Reenie Beanie is used sparingly for handwritten annotations.
+The layout uses a combination of CSS Grid, subgrid and flexible containers, depending on the content and interaction requirements.
 
-The palette is almost entirely black, paper and white, with biro blue for annotations and red for paper clips.
+## Colour and imagery
+The palette consists primarily of black, white and warm paper tones, with biro blue for annotations and red for paper clips.
 
-Photographs are treated like physical objects, with white borders, shadows, small rotations and occasional SVG paper clips. Scanned pen marks are recoloured through SVG filters to work on both light and dark backgrounds.
+Photographs are presented as physical prints using borders, shadows and slight rotations. Some are accompanied by SVG paper clips, while handwritten elements are recoloured using SVG filters.
 
-Colours and typography are controlled through CSS tokens, while dark sections switch theme values through a `data-theme` attribute.
+Colours, typography and spacing are managed through CSS custom properties. Sections switch between light and dark themes using a `data-theme` attribute, avoiding repeated colour definitions throughout the stylesheets.
 
-## One Corner Off
-The opening introduces the central idea immediately.
+## Cover: detachable corner
+The cover introduces the project’s visual concept through a large typographic composition with a detachable corner.
 
-The title fills the screen before one corner is cut away. The missing piece drops from the composition and can be picked up and thrown with the cursor. As the reader leaves the cover, the words and photographs begin drifting apart.
+I used a CSS `clip-path`, controlled through a custom property and animated with GSAP, to remove the corner from the title block.
 
-Instead of explaining “one corner off” first, the page performs it.
+The detached piece falls into place and can be dragged and thrown using the cursor. As the user scrolls, the title separates and surrounding photographs move at different speeds.
 
-## Moving away from the spotlight
-The story begins with Yee’s connection to the Antwerp Six, then deliberately moves away from it.
+This establishes the interaction language used throughout the website.
 
-In a pinned section, THE ANTWERP SIX initially fills a spotlight. As the reader scrolls, the spotlight moves into the distance and Yee’s actual practice comes into view around it: garments, drawings, studio images and working material.
+## Spotlight: pinned scroll animation
+The spotlight section uses GSAP ScrollTrigger to transition from Yee’s association with the Antwerp Six to her individual work.
 
-The interaction turns the sentence “move away from the spotlight, and her practice becomes easier to see” into something the reader physically does.
+The section remains pinned while the spotlight and its typography shrink towards the centre. Photographs of garments, sketches and studio material enter from outside the viewport.
 
-## Working with what was already there
-Yee frequently worked from existing garments, so I designed this chapter as an index of looks rather than a conventional gallery.
+I calculated the images’ movement using layout values rather than element bounding rectangles to keep their positions consistent when refreshing ScrollTrigger.
 
-Four garment categories appear as oversized outlined typography. Selecting one fills its title and reveals the corresponding garment, description and details.
+The animation is tied to scroll progress, allowing the reader to control the transition.
 
-The controls are real radio inputs. CSS handles the visual state, while JavaScript only controls which content is shown. On larger screens, CSS subgrid lets the index, description and garment share the same structure.
+## Garment index: interactive content selection
+I designed the garment section as an interactive index rather than a conventional image gallery.
 
-## Text as movement
-In one chapter, two paragraphs occupy the same space. As the reader scrolls, each line rotates in 3D to reveal the corresponding line of the second paragraph on its reverse side.
+Four categories are displayed using oversized outlined typography. Selecting a category fills its title and displays the corresponding garment, description and detail photographs.
 
-Elsewhere, a sentence about repair, reuse and upcycling becomes an oversized marquee. Individual letters move between font weights as they cross the screen by animating Archivo’s variable weight axis.
+The interface uses native radio inputs. CSS handles the selected appearance, while JavaScript manages panel visibility.
 
-Typography becomes part of the storytelling rather than something sitting on top of it.
+On larger screens, CSS subgrid allows the index, text and garment photography to share a consistent layout.
 
-## M.Y. Project
-The M.Y. Project chapter presents seven garments one at a time inside the same frame.
+I also kept the section height consistent between selections. This prevents content changes from affecting the measurements of pinned sections further down the page.
 
-As the section is pinned, each piece wipes upward over the previous one while its name rolls into place beside it. The counter is calculated from the animation timeline, keeping the text, image and numbering synchronised.
+## Typography animations
+Several sections use typography as the primary interactive element.
 
-The section gradually transitions to black, which continues directly into the next chapter.
+One chapter contains two paragraphs positioned in the same space. Individual lines rotate along the Y-axis to reveal the second paragraph, using CSS 3D transforms and GSAP.
 
-## Beyond sustainability
-The discussion of sustainability becomes a horizontal chapter containing five full-screen panels.
+Both paragraphs follow the same staggered timing to maintain alignment throughout the transition.
 
-Each panel reveals as it enters the viewport, while archive images move independently across the composition. At the end, the bottom corner of the final page breaks away and falls, repeating the visual idea introduced on the cover.
+Another section uses an oversized horizontal marquee. Individual characters animate between font weights by changing Archivo’s variable weight axis as they move across the viewport.
 
-## The main interaction: folding the page
-The final interaction gives the reader control over the idea behind the story.
+These interactions use transforms and font properties rather than repeatedly changing the document layout.
 
-A finished black page labelled ALREADY FINISHED covers a photograph of an M.Y. field jacket worn over a shirt assembled from scraps. The reader can grab the page’s corner and fold it backwards, revealing as much or as little of the garment underneath as they choose.
+## M.Y. Project: image sequence
+The M.Y. Project section presents seven garments sequentially within a single frame.
 
-Once the page has been opened far enough, the message changes:
+The section is pinned while each garment is revealed through an upward `clip-path` transition. The corresponding title rolls into position beside the image, and a counter updates based on the animation timeline.
 
-> That is the whole method. Something was already there, you decided where to change it, and both are still visible.
+I coordinated the image transitions, typography and counter within one GSAP timeline to keep the sequence synchronised.
 
-Unlike most of the site’s motion, the fold is written entirely in vanilla JavaScript.
+The section also transitions from a light to a dark theme, connecting it visually to the following chapter.
 
-The page corner and pointer position define the fold. A Sutherland–Hodgman clipping operation calculates which part of the original page remains visible, while the removed polygon is reflected across the crease to create the folded flap. CSS handles the shading, reverse of the paper and shadow.
+## Beyond sustainability: horizontal scrolling
+I developed this chapter as a horizontal sequence of five full-screen panels.
 
-The fold position is stored relative to the page dimensions, so it survives resizing without jumping.
+GSAP ScrollTrigger controls the movement of the horizontal track. Individual panels use `containerAnimation` to trigger their text reveals as they enter the viewport.
 
-It also works without a pointer. The corner behaves as an ARIA slider and can be controlled with the arrow keys, Home and End. Reduced-motion users keep the interaction itself, but without the easing between states.
+Archive photographs move independently at different speeds, with their positions calculated relative to viewport dimensions rather than the full track width.
 
-## Progressive enhancement
-The HTML contains the complete story. JavaScript enhances it rather than making it readable.
+The final panel includes another detachable corner, repeating the interaction introduced on the cover.
 
-Without JavaScript, the garment picker displays every look, the M.Y. Project becomes an image grid, the horizontal chapter becomes vertical and the folding page becomes a static composition with a cut corner.
+## Main interaction: folding the page
+The most technically complex component is an interactive paper fold developed entirely in vanilla JavaScript.
 
-`prefers-reduced-motion` is checked before the GSAP modules are dynamically imported. Accessibility also influenced how components were built from the beginning: real form controls, keyboard interactions, visible focus states, alt text, live regions and decorative elements removed from the accessibility tree.
+A black page covers a photograph of an M.Y. garment. Users can drag the page’s corner to fold it backwards and reveal the image underneath.
 
-## Managing scroll-based animation
-The project contains six pinned ScrollTrigger sections. Because pinning changes the total scroll distance of the page, the order in which those sections are measured matters.
+### Geometry and implementation
+The fold is calculated from two points: the original corner of the page and the pointer’s current position.
 
-Pins are initialised from top to bottom with explicit refresh priorities. Text-dependent animations wait for `document.fonts.ready`, and the page is measured once everything affecting layout is ready.
+These points define a crease positioned halfway between them and perpendicular to the line connecting them.
 
-This also influenced design decisions. The garment picker, for example, keeps a consistent height regardless of the selected look because changing its height would shift every pinned animation below it.
+I implemented a Sutherland–Hodgman polygon-clipping algorithm to divide the page along this crease.
 
-A large part of building the site was learning that reliable scroll animation depends as much on stable layout as it does on animation code.
+The remaining polygon becomes the visible page through CSS `clip-path`. The removed polygon is reflected across the crease to create the folded flap.
+
+The flap uses separate elements for its shape and shadow because `clip-path` would otherwise clip the shadow.
+
+CSS gradients provide shading along the crease, with their positions calculated in JavaScript.
+
+The fold position is stored as relative coordinates, allowing it to remain consistent when the page is resized.
+
+### Interaction and accessibility
+The component supports dragging, tapping and keyboard interaction.
+
+The corner is implemented as an ARIA slider, allowing users to adjust the fold using arrow keys, Home and End. A reset button returns the page to its original state.
+
+For users who prefer reduced motion, the fold remains interactive, but animated easing is disabled.
+
+I chose to implement this interaction without an animation library because it required direct geometric manipulation rather than a predefined animation sequence.
+
+## Responsive design and accessibility
+The website follows a progressive enhancement approach. The HTML contains the complete content, while JavaScript adds interactions and scroll-based animations.
+
+Without JavaScript:
+
+- The garment index displays all four looks.
+- The M.Y. Project becomes a static image grid.
+- Horizontal sections use a vertical layout.
+- The folding page becomes a static composition.
+
+I check `prefers-reduced-motion` before dynamically importing GSAP and the motion modules. This prevents unnecessary animation dependencies from loading.
+
+Other accessibility decisions include native form controls, visible keyboard focus states, descriptive image alt text, ARIA live regions and hiding decorative duplicates from assistive technologies.
+
+For draggable elements, `touch-action: none` is limited to the interaction handles so users can still scroll normally on touch devices.
+
+## ScrollTrigger architecture
+The website contains six pinned ScrollTrigger sections.
+
+Because pinned sections introduce additional scroll distance, their initialisation order affects the positions of subsequent triggers.
+
+I initialise them from top to bottom and assign explicit `refreshPriority` values to ensure accurate measurements.
+
+Text-based animations wait for `document.fonts.ready` before calculating line positions. Once all sections have been initialised, `ScrollTrigger.refresh()` recalculates the page.
+
+I also designed components to avoid unnecessary layout changes after initialisation. For example, the garment index maintains a consistent height regardless of which garment is selected.
+
+These decisions reduce incorrect trigger positions and layout shifts during scrolling.
 
 ## Tooling and performance
-I built two image-processing workflows for the project.
 
-`npm run images` uses Sharp to generate responsive WebP versions of the photography, with `srcset`, `sizes` and lazy loading.
+### Image optimisation
+I created two Node.js image-processing workflows.
 
-`npm run cutouts` processes Yee’s studio photographs into transparent garment cutouts. It flood-fills from the edges to identify the neutral background while preserving details such as the soft floor shadow.
+`npm run images` uses Sharp to generate responsive WebP variants. Images use `srcset`, `sizes`, lazy loading and asynchronous decoding.
 
-The project also has a quality check that runs ESLint, Stylelint, Prettier and a production build before changes are committed.
+`npm run cutouts` removes neutral studio backgrounds from garment photographs using edge-based flood filling. The script preserves soft shadows where possible and generates transparent cutouts for use in the layouts.
 
-The initial JavaScript bundle is approximately 11.7 KB (4.6 KB gzipped) and the CSS 40.6 KB (8.7 KB gzipped). GSAP and its plugins load separately and only when motion is enabled, keeping roughly 64.6 KB gzipped out of the initial JavaScript path for reduced-motion users.
+### Code quality
+The project uses ESLint, Stylelint and Prettier.
+
+A combined `npm run check` command runs linting, formatting checks and a production build.
+
+Development follows GitHub Flow, using feature branches and pull requests to organise changes.
+
+### Bundle optimisation
+The initial JavaScript bundle is approximately 11.7 KB (4.6 KB gzipped), with 40.6 KB of CSS (8.7 KB gzipped).
+
+GSAP and its plugins are loaded dynamically, adding approximately 64.6 KB gzipped only when motion is enabled.
+
+Using a single variable font family for most typography also reduces the number of font files required.
 
 ## What I learned
-The biggest lesson was not technical.
+The design process taught me to work more effectively with feedback. Evaluating individual sections helped me identify successful patterns and develop a consistent visual system without repeatedly starting over.
 
-During critique, deciding whether an entire design direction was “good” or “bad” was not particularly useful. Identifying the individual sections that worked was much more productive. Once I understood what those sections had in common, I had the beginnings of a design system.
+The main technical challenge was coordinating multiple scroll-driven interactions while maintaining layout stability. I learned how pinning, font loading, responsive dimensions and content changes affect ScrollTrigger calculations, and how to structure the page to avoid those issues.
 
-Technically, the project changed how I approach animation-heavy websites. Small layout inconsistencies become large problems once several sections depend on scroll position. Stable dimensions, predictable loading and clear ownership between CSS and JavaScript matter as much as the animation itself.
+Developing the paper-fold interaction also strengthened my understanding of geometry, clipping algorithms and pointer-based interaction. It required building the behaviour from scratch rather than relying on an animation library.
 
-Most importantly, the strongest interaction came directly from the subject. The folding page works because it is not an effect added to make the project more interactive. It gives the reader Yee’s method: start with something that already exists, decide where to intervene, and leave both the original and the change visible.
-
-## Next steps
-The next stage is testing the deployed experience on physical devices, particularly iOS Safari, followed by a complete VoiceOver and NVDA pass.
-
-I also plan to measure Core Web Vitals on the production build and refine image loading around the opening section.
+Overall, the project gave me more experience connecting editorial design decisions with front-end architecture, particularly when building complex interactive websites that also need to remain accessible and responsive.
