@@ -38,16 +38,14 @@ const parts = new Map(
 const text = (heading: string) => parts.get(heading);
 const placed = [
     "The project",
-    "Why an app instead of a website?",
+    "Why a mobile application?",
     "Stack",
-    "The client sends intent. The server decides the result.",
-    "Security beyond row-level security",
-    "A challenge system that can grow",
-    "Points are a ledger, not a balance",
-    "Geofenced pop-up discovery",
-    "Native features without tying the UI to one platform",
-    "Debugging the dance meter that never moved",
-    "What I'd improve next",
+    "Server-authoritative architecture",
+    "Database security",
+    "Configurable challenge system",
+    "Points and rewards",
+    "Native features and cross-platform development",
+    "Debugging the motion sensor",
     "Takeaway",
 ];
 // headings come through HTML-escaped with curly quotes; compare on plain text
@@ -76,6 +74,7 @@ const columns = [
 
 const platforms = [
     { feature: "Calendar", ios: "System event sheet", android: "System event sheet", web: "Downloads an .ics file" },
+    { feature: "Motion", ios: "Device motion sensor", android: "Device motion sensor", web: "Browser devicemotion event" },
     { feature: "Icons", ios: "SF Symbols", android: "Lucide", web: "Lucide" },
     { feature: "Haptics", ios: "Haptic feedback", android: "Haptic feedback", web: "Quietly off" },
 ];
@@ -118,12 +117,19 @@ const platforms = [
         </div>
 
         <Chapter id="mg-project" num={1} title="The project" html={t("The project")}>
-            <div class="mg-stage" slot="media">
-                <div class="mg-phone"><LoopVideo src="/media/mongmo/overview.mp4" poster={overviewPoster} label="A tour of the app: map, home, nearby pop-ups" /></div>
+            <div class="mg-stage mg-stage--pair" slot="media">
+                <div class="mg-phone">
+                    <LoopVideo src="/media/mongmo/overview.mp4" poster={overviewPoster} label="A tour of the customer app: map, home, nearby pop-ups" />
+                    <p class="mg-phone__label mono">Customers</p>
+                </div>
+                <div class="mg-phone">
+                    <LoopVideo src="/media/mongmo/create-popup.mp4" poster={createPoster} label="The owner interface: creating a new pop-up with a photo, address and location" />
+                    <p class="mg-phone__label mono">Owners</p>
+                </div>
             </div>
         </Chapter>
 
-        <Chapter id="mg-why" num={2} title="Why an app instead of a website?" html={t("Why an app instead of a website?")} side="left">
+        <Chapter id="mg-why" num={2} title="Why a mobile application?" html={t("Why a mobile application?")} side="left">
             <div class="mg-stage" slot="media">
                 <div class="mg-phone"><LoopVideo src="/media/mongmo/explore.mp4" poster={explorePoster} label="Exploring: finding a pop-up and doing its challenges" /></div>
             </div>
@@ -154,7 +160,7 @@ const platforms = [
             <p class="mg-part mono">Engineering decisions</p>
         </div>
 
-        <Chapter id="mg-intent" num={4} title="The client sends intent. The server decides the result." html={t("The client sends intent. The server decides the result.")} side="left">
+        <Chapter id="mg-intent" num={4} title="Server-authoritative architecture" html={t("Server-authoritative architecture")} side="left">
             <div class="mg-stage mg-stage--pair" slot="media">
                 <div class="mg-phone">
                     <LoopVideo src="/media/mongmo/ordering.mp4" poster={orderingPoster} label="A guest ordering ahead from the menu" />
@@ -167,7 +173,7 @@ const platforms = [
             </div>
         </Chapter>
 
-        <Chapter id="mg-security" num={5} title="Security beyond row-level security" html={t("Security beyond row-level security")}>
+        <Chapter id="mg-security" num={5} title="Database security" html={t("Database security")}>
             <figure class="mg-diagram" slot="media" data-mg-diagram>
                 <div class="mg-table" role="table" aria-label="Which event fields guests can read">
                     <div class="mg-table__row mg-table__row--head mono" role="row">
@@ -189,13 +195,13 @@ const platforms = [
             </figure>
         </Chapter>
 
-        <Chapter id="mg-challenges" num={6} title="A challenge system that can grow" html={t("A challenge system that can grow")} side="left">
+        <Chapter id="mg-challenges" num={6} title="Configurable challenge system" html={t("Configurable challenge system")} side="left">
             <div class="mg-stage" slot="media">
                 <div class="mg-phone"><LoopVideo src="/media/mongmo/edit-challenge.mp4" poster={challengePoster} label="An owner editing a pop-up and creating a timed challenge" /></div>
             </div>
         </Chapter>
 
-        <Chapter id="mg-points" num={7} title="Points are a ledger, not a balance" html={t("Points are a ledger, not a balance")}>
+        <Chapter id="mg-points" num={7} title="Points and rewards" html={t("Points and rewards")}>
             <figure class="mg-diagram" slot="media" data-mg-diagram>
                 <div class="mg-ledger" data-mg-ledger>
                     <p class="mg-ledger__head mono muted">Ledger · example</p>
@@ -224,13 +230,7 @@ const platforms = [
             <p class="mg-part mono">Building around the phone</p>
         </div>
 
-        <Chapter id="mg-geofence" num={8} title="Geofenced pop-up discovery" html={t("Geofenced pop-up discovery")} side="left">
-            <div class="mg-stage" slot="media">
-                <div class="mg-phone"><LoopVideo src="/media/mongmo/create-popup.mp4" poster={createPoster} label="An owner creating a new pop-up: photo, address and location" /></div>
-            </div>
-        </Chapter>
-
-        <Chapter id="mg-native" num={9} title="Native features without tying the UI to one platform" html={t("Native features without tying the UI to one platform")}>
+        <Chapter id="mg-native" num={8} title="Native features and cross-platform development" html={t("Native features and cross-platform development")} side="left">
             <figure class="mg-diagram" slot="media" data-mg-diagram>
                 <div class="mg-table mg-table--platforms" role="table" aria-label="The same feature on each platform">
                     <div class="mg-table__row mg-table__row--head mono" role="row">
@@ -253,25 +253,24 @@ const platforms = [
             </figure>
         </Chapter>
 
-        <Chapter id="mg-dance" num={10} title="Debugging the dance meter that never moved" html={t("Debugging the dance meter that never moved")} side="left">
+        <Chapter id="mg-dance" num={9} title="Debugging the motion sensor" html={t("Debugging the motion sensor")}>
             <figure class="mg-diagram" slot="media">
                 <div class="mg-dance" data-mg-dance tabindex="0" aria-label="Try the dance meter: move your cursor or finger quickly inside this box">
                     <p class="mg-dance__prompt mono" data-mg-dance-prompt>Wiggle your cursor in here</p>
                     <p class="mg-dance__time"><strong data-mg-dance-time>0.0</strong><span class="mono muted"> / 5.0 s</span></p>
                     <div class="mg-dance__meter" aria-hidden="true"><span data-mg-dance-fill></span></div>
-                    <p class="mg-dance__note mono muted">Same idea as the fix: time between readings, capped, with a short hold after each move.</p>
+                    <p class="mg-dance__note mono muted">Same idea as the fix: it measures the time between readings itself, and caps it.</p>
                 </div>
             </figure>
         </Chapter>
 
         <!-- ============ PART 4 ============ -->
-        <div class="mg-part-wrap wrap" data-reveal data-part="What's next">
-            <p class="mg-part mono">What's next</p>
+        <div class="mg-part-wrap wrap" data-reveal data-part="Looking back">
+            <p class="mg-part mono">Looking back</p>
         </div>
 
-        <Chapter id="mg-next" num={11} title="What I'd improve next" html={t("What I'd improve next")} />
-        <Chapter id="mg-takeaway" num={12} title="Takeaway" html={t("Takeaway")} fold={false} />
-        {extra.map((heading, i) => <Chapter id={`mg-extra-${i}`} num={13 + i} title={heading} html={t(heading)} />)}
+        <Chapter id="mg-takeaway" num={10} title="Takeaway" html={t("Takeaway")} fold={false} />
+        {extra.map((heading, i) => <Chapter id={`mg-extra-${i}`} num={11 + i} title={heading} html={t(heading)} />)}
     </article>
 
     <ChapterNav />
