@@ -428,13 +428,13 @@ const platforms = [
 
     .mg-phone {
         /* tall enough to read, short enough that the whole phone stays on screen */
-        width: min(100%, calc((100svh - var(--header-h) - 160px) * 0.51), 340px);
+        width: min(100%, clamp(200px, (100svh - var(--header-h) - 160px) * 0.51, 340px));
         min-width: 0;
         height: auto;
     }
 
     .mg-stage--pair .mg-phone {
-        width: min(48%, calc((100svh - var(--header-h) - 200px) * 0.51), 320px);
+        width: min(48%, clamp(140px, (100svh - var(--header-h) - 200px) * 0.51, 320px));
     }
 
     .mg-phone :global(img) {

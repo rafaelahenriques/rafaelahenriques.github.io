@@ -397,12 +397,15 @@ const strip = await Promise.all(
     /* --- CONTROLS --- */
 
     .pc {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        align-items: center;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: start;
         gap: 16px var(--gutter);
         padding-bottom: clamp(24px, 3vw, 40px);
+    }
+
+    .pc__layout {
+        padding-top: 9px;
     }
 
     .pc__filters {
@@ -489,9 +492,14 @@ const strip = await Promise.all(
             flex: none;
         }
 
+        .pc {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
         .pc__layout {
             order: -1;
-            margin-left: auto;
+            justify-self: end;
+            padding-top: 0;
         }
     }
 
