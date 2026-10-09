@@ -12,7 +12,7 @@ export const site = {
     cv: "/cv.pdf", // drop the file in public/cv.pdf
     location: "Kortrijk, BE",
     timeZone: "Europe/Brussels",
-    availability: "Open to software & web development internships",
+    availability: "Open to software & web development roles",
 };
 
 // Only link the CV once the file actually exists, so the build never ships a 404.
