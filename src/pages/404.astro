@@ -1,0 +1,60 @@
+---
+/**
+ * Not found. Cloudflare serves this for any address that doesn't exist
+ * (wrangler.jsonc: assets.not_found_handling = "404-page").
+ */
+import Base from "../layouts/BaseLayout.astro";
+import { getFeatured, slugOf } from "../lib/content";
+
+const featured = await getFeatured();
+---
+
+<Base title="Not found" description="This page doesn't exist.">
+    <section class="page-head wrap nf">
+        <p class="mono muted" data-reveal>404</p>
+        <h1 class="display nf__title" data-split>One page off.</h1>
+        <p class="lead nf__lead" data-reveal>
+            This address doesn't lead anywhere. Maybe one of these:
+        </p>
+        <ul class="nf__links" data-reveal>
+            <li><a href="/" class="link">Home</a></li>
+            <li><a href="/projects/" class="link">All projects</a></li>
+            {
+                featured.map((p) => (
+                    <li>
+                        <a href={`/projects/${slugOf(p)}/`} class="link">
+                            {p.data.title}
+                        </a>
+                    </li>
+                ))
+            }
+            <li><a href="/about/" class="link">About</a></li>
+        </ul>
+    </section>
+</Base>
+
+<style>
+    .nf {
+        min-height: 70vh;
+        padding-bottom: var(--section);
+    }
+
+    .nf__title {
+        max-width: 10ch;
+    }
+
+    .nf__lead {
+        margin-top: clamp(24px, 3vw, 40px);
+        color: var(--muted);
+    }
+
+    .nf__links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 28px;
+        margin: clamp(24px, 3vw, 40px) 0 0;
+        padding: 0;
+        list-style: none;
+        font-size: var(--fs-body);
+    }
+</style>
