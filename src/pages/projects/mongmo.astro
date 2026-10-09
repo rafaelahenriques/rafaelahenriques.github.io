@@ -2,7 +2,7 @@
 /**
  * Mongmo case study. Same shape as Wolf & Sheep: parts and numbered
  * chapters, each ## section of index.md beside what it explains. Here that's
- * mostly screen recordings of the app (PhoneVideo, on a white stage that
+ * mostly screen recordings of the app (LoopVideo, on a white stage that
  * matches the recordings), plus small diagrams drawn in HTML: the stack,
  * which columns guests can read, a points ledger, the platform fallbacks and
  * a dance meter you can try with the cursor.
@@ -13,7 +13,7 @@ import { getEntry } from "astro:content";
 import { pad } from "../../lib/content";
 import Chapter from "../../components/Chapter.astro";
 import ChapterNav from "../../components/ChapterNav.astro";
-import PhoneVideo from "../../components/PhoneVideo.astro";
+import LoopVideo from "../../components/LoopVideo.astro";
 import NextProject from "../../components/NextProject.astro";
 
 import login from "../../content/projects/mongmo/media/login.png";
@@ -107,7 +107,7 @@ const platforms = [
                     <Image src={login} alt="Mongmo's sign-in screen: Pop-ups, points, pickup" widths={[400, 744]} sizes="(min-width: 900px) 26vw, 45vw" loading="eager" />
                 </div>
                 <div class="mg-phone">
-                    <PhoneVideo src="/media/mongmo/opening.mp4" poster={openingPoster} label="Opening the app: the splash screen, then home" />
+                    <LoopVideo src="/media/mongmo/opening.mp4" poster={openingPoster} label="Opening the app: the splash screen, then home" />
                 </div>
             </div>
         </section>
@@ -119,13 +119,13 @@ const platforms = [
 
         <Chapter id="mg-project" num={1} title="The project" html={t("The project")}>
             <div class="mg-stage" slot="media">
-                <div class="mg-phone"><PhoneVideo src="/media/mongmo/overview.mp4" poster={overviewPoster} label="A tour of the app: map, home, nearby pop-ups" /></div>
+                <div class="mg-phone"><LoopVideo src="/media/mongmo/overview.mp4" poster={overviewPoster} label="A tour of the app: map, home, nearby pop-ups" /></div>
             </div>
         </Chapter>
 
         <Chapter id="mg-why" num={2} title="Why an app instead of a website?" html={t("Why an app instead of a website?")} side="left">
             <div class="mg-stage" slot="media">
-                <div class="mg-phone"><PhoneVideo src="/media/mongmo/explore.mp4" poster={explorePoster} label="Exploring: finding a pop-up and doing its challenges" /></div>
+                <div class="mg-phone"><LoopVideo src="/media/mongmo/explore.mp4" poster={explorePoster} label="Exploring: finding a pop-up and doing its challenges" /></div>
             </div>
         </Chapter>
 
@@ -157,11 +157,11 @@ const platforms = [
         <Chapter id="mg-intent" num={4} title="The client sends intent. The server decides the result." html={t("The client sends intent. The server decides the result.")} side="left">
             <div class="mg-stage mg-stage--pair" slot="media">
                 <div class="mg-phone">
-                    <PhoneVideo src="/media/mongmo/ordering.mp4" poster={orderingPoster} label="A guest ordering ahead from the menu" />
+                    <LoopVideo src="/media/mongmo/ordering.mp4" poster={orderingPoster} label="A guest ordering ahead from the menu" />
                     <p class="mg-phone__label mono">Guest orders</p>
                 </div>
                 <div class="mg-phone">
-                    <PhoneVideo src="/media/mongmo/owner-orders.mp4" poster={ownerPoster} label="The owner's order board: marking an order ready" />
+                    <LoopVideo src="/media/mongmo/owner-orders.mp4" poster={ownerPoster} label="The owner's order board: marking an order ready" />
                     <p class="mg-phone__label mono">Owner's board</p>
                 </div>
             </div>
@@ -191,7 +191,7 @@ const platforms = [
 
         <Chapter id="mg-challenges" num={6} title="A challenge system that can grow" html={t("A challenge system that can grow")} side="left">
             <div class="mg-stage" slot="media">
-                <div class="mg-phone"><PhoneVideo src="/media/mongmo/edit-challenge.mp4" poster={challengePoster} label="An owner editing a pop-up and creating a timed challenge" /></div>
+                <div class="mg-phone"><LoopVideo src="/media/mongmo/edit-challenge.mp4" poster={challengePoster} label="An owner editing a pop-up and creating a timed challenge" /></div>
             </div>
         </Chapter>
 
@@ -226,7 +226,7 @@ const platforms = [
 
         <Chapter id="mg-geofence" num={8} title="Geofenced pop-up discovery" html={t("Geofenced pop-up discovery")} side="left">
             <div class="mg-stage" slot="media">
-                <div class="mg-phone"><PhoneVideo src="/media/mongmo/create-popup.mp4" poster={createPoster} label="An owner creating a new pop-up: photo, address and location" /></div>
+                <div class="mg-phone"><LoopVideo src="/media/mongmo/create-popup.mp4" poster={createPoster} label="An owner creating a new pop-up: photo, address and location" /></div>
             </div>
         </Chapter>
 
