@@ -2,8 +2,9 @@
 /**
  * All projects. A moving strip of every project's images, a big title, then
  * one list that can be shown two ways: rows (big titles, thumbnail on the
- * right) or a staggered grid. Switching layout morphs the items into place
- * and filtering glides them (GSAP Flip). The filter is kept in the URL hash
+ * right) or a staggered grid. Filtering fades out what no longer matches and
+ * glides the rest into place (GSAP Flip); switching layout fades the cards
+ * out and back in. The filter is kept in the URL hash
  * (/projects/#web), the layout in localStorage.
  */
 import Base from "../../layouts/BaseLayout.astro";
@@ -182,7 +183,10 @@ const strip = await Promise.all(
         });
     }
 
-    /* --- FILTER + LAYOUT --- */
+    /* --- FILTER + LAYOUT ---
+     * Every card stays in the normal page flow the whole time, so the page
+     * never collapses or jumps: cards that no longer match fade out where they
+     * stand, the ones that stay glide to their new spot, new ones fade in. */
     const list = document.querySelector<HTMLElement>("[data-works]")!;
     const items = [...list.querySelectorAll<HTMLElement>("[data-item]")];
     const filterButtons = [...document.querySelectorAll<HTMLButtonElement>("[data-filter]")];
@@ -190,67 +194,135 @@ const strip = await Promise.all(
     const status = document.querySelector<HTMLElement>("[data-filter-status]")!;
     const empty = document.querySelector<HTMLElement>("[data-empty]")!;
     const keys = filterButtons.map((b) => b.dataset.filter!);
-    const targets = () => [...items, ...list.querySelectorAll<HTMLElement>(".work__media")];
 
     let filter = "all";
 
-    /** Animate whatever changed between `state` and now. */
-    const morph = (state: Flip.FlipState) => {
-        if (reduceMotion) {
-            ScrollTrigger.refresh();
-            return;
-        }
-        Flip.from(state, {
-            duration: 0.75,
-            ease: "power3.inOut",
-            nested: true,
-            absolute: true,
-            stagger: 0.025,
-            onEnter: (els) =>
-                gsap.fromTo(els, { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.6, ease: "power3.out", delay: 0.2 }),
-            onLeave: (els) => gsap.to(els, { autoAlpha: 0, y: -12, duration: 0.3, ease: "power2.in" }),
-            onComplete: () => ScrollTrigger.refresh(),
+    // a new click finishes the change in progress first, so two never overlap
+    let running: gsap.core.Animation[] = [];
+    const remember = <T extends gsap.core.Animation>(anim: T) => {
+        running.push(anim);
+        return anim;
+    };
+    const finish = () => {
+        while (running.length) running.shift()!.progress(1);
+    };
+    const tidy = (els: HTMLElement[]) => gsap.set(els, { clearProps: "opacity,visibility,transform" });
+
+    const matches = (item: HTMLElement, key: string) => key === "all" || (item.dataset.types ?? "").split(" ").includes(key);
+
+    /** Show the cards for `key`; data-col drives the grid's staggered offsets, so renumber them. */
+    const show = (key: string) => {
+        let col = 0;
+        items.forEach((item) => {
+            const visible = matches(item, key);
+            item.hidden = !visible;
+            if (visible) item.dataset.col = String(col++ % 3);
         });
+        const shown = items.filter((i) => !i.hidden).length;
+        status.textContent = `Showing ${shown} of ${items.length} projects`;
+        empty.hidden = shown > 0;
     };
 
     function applyFilter(key: string, animate = true) {
-        filter = keys.includes(key) ? key : "all";
-        filterButtons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.filter === filter)));
+        finish();
+        const next = keys.includes(key) ? key : "all";
+        filterButtons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.filter === next)));
         // on phones the row scrolls sideways: keep the active filter in view
-        const active = filterButtons.find((b) => b.dataset.filter === filter)!;
+        const active = filterButtons.find((b) => b.dataset.filter === next)!;
         const row = active.parentElement!;
         if (row.scrollWidth > row.clientWidth) {
             row.scrollTo({ left: active.offsetLeft - row.offsetLeft - 16, behavior: animate && !reduceMotion ? "smooth" : "auto" });
         }
+        history.replaceState(null, "", next === "all" ? location.pathname : `#${next}`);
 
-        const state = Flip.getState(targets());
-        // data-col drives the grid's staggered offsets, so renumber what's left
-        let col = 0;
-        items.forEach((item) => {
-            const show = filter === "all" || (item.dataset.types ?? "").split(" ").includes(filter);
-            item.hidden = !show;
-            if (show) item.dataset.col = String(col++ % 3);
-        });
+        const changed = next !== filter;
+        filter = next;
+        if (!animate || reduceMotion || !changed) {
+            show(next);
+            ScrollTrigger.refresh();
+            return;
+        }
 
-        const shown = items.filter((i) => !i.hidden).length;
-        status.textContent = `Showing ${shown} of ${items.length} projects`;
-        empty.hidden = shown > 0;
-        history.replaceState(null, "", filter === "all" ? location.pathname : `#${filter}`);
-        if (animate) morph(state);
-        else ScrollTrigger.refresh();
+        const leaving = items.filter((i) => !i.hidden && !matches(i, next));
+        const staying = items.filter((i) => !i.hidden && matches(i, next));
+        const entering = items.filter((i) => i.hidden && matches(i, next));
+
+        const swap = () => {
+            const state = Flip.getState(staying);
+            show(next);
+            tidy(leaving);
+            // the cards that stay move from where they were to where they are now
+            remember(
+                Flip.from(state, {
+                    duration: 0.6,
+                    ease: "power3.inOut",
+                    simple: true,
+                    stagger: 0.02,
+                    onComplete: () => {
+                        tidy(staying);
+                        ScrollTrigger.refresh();
+                    },
+                }),
+            );
+            if (entering.length) {
+                remember(
+                    gsap.fromTo(
+                        entering,
+                        { autoAlpha: 0, y: 24 },
+                        {
+                            autoAlpha: 1,
+                            y: 0,
+                            duration: 0.6,
+                            ease: "power3.out",
+                            stagger: 0.05,
+                            delay: staying.length ? 0.2 : 0,
+                            onComplete: () => tidy(entering),
+                        },
+                    ),
+                );
+            }
+        };
+
+        if (leaving.length) {
+            remember(gsap.to(leaving, { autoAlpha: 0, scale: 0.97, duration: 0.25, ease: "power2.in", stagger: 0.02, onComplete: swap }));
+        } else swap();
     }
 
     function applyLayout(layout: string, animate = true) {
         if (layout !== "list" && layout !== "grid") return;
         layoutButtons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.layout === layout)));
         if (list.dataset.layout === layout) return;
-        const state = Flip.getState(targets());
-        list.dataset.layout = layout;
+        finish();
         try {
             localStorage.setItem("projects-layout", layout);
         } catch {}
-        if (animate) morph(state);
-        else ScrollTrigger.refresh();
+
+        if (!animate || reduceMotion) {
+            list.dataset.layout = layout;
+            ScrollTrigger.refresh();
+            return;
+        }
+        // a quick fade out, the new layout, then the cards come back one by one
+        const visible = items.filter((i) => !i.hidden);
+        remember(
+            gsap.to(visible, {
+                autoAlpha: 0,
+                y: -12,
+                duration: 0.2,
+                ease: "power2.in",
+                onComplete: () => {
+                    list.dataset.layout = layout;
+                    ScrollTrigger.refresh();
+                    remember(
+                        gsap.fromTo(
+                            visible,
+                            { autoAlpha: 0, y: 24 },
+                            { autoAlpha: 1, y: 0, duration: 0.6, ease: "power3.out", stagger: 0.05, onComplete: () => tidy(visible) },
+                        ),
+                    );
+                },
+            }),
+        );
     }
 
     filterButtons.forEach((b) => b.addEventListener("click", () => applyFilter(b.dataset.filter!)));
