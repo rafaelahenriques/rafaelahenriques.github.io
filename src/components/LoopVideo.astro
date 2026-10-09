@@ -1,8 +1,8 @@
 ---
 /**
- * A screen recording of the app (the phone frame is part of the video).
+ * A short screen recording that loops: an app on a phone, a website clip.
  * Muted and looping, it plays only while on screen and loads nothing until
- * it gets close; a Pause / Play button is always there, and with reduced
+ * it gets close; a Pause / Play button sits under it, and with reduced
  * motion it waits to be played. The poster is the first frame.
  */
 import { getImage } from "astro:assets";
@@ -17,7 +17,7 @@ interface Props {
 }
 
 const { src, poster, label } = Astro.props;
-const posterSrc = (await getImage({ src: poster, width: 640, format: "webp", quality: 80 })).src;
+const posterSrc = (await getImage({ src: poster, width: Math.min(poster.width, 1200), format: "webp", quality: 80 })).src;
 ---
 
 <figure class="phone-video" data-phone-video>
