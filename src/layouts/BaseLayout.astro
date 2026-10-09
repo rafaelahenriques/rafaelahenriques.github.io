@@ -26,6 +26,8 @@ import Loader from "../components/Loader.astro";
             rel="stylesheet"
             href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=Inter:wght@500;800&display=swap"
         />
+        <!-- page-specific extras, e.g. a case study's own fonts -->
+        <slot name="head" />
 
         <!-- Apply theme + JS flag before first paint so nothing flashes -->
         <script is:inline>

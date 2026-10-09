@@ -1,0 +1,772 @@
+---
+/**
+ * One Corner Off (Marina Yee for MoMu) case study. Same shape as Wolf & Sheep
+ * and Mongmo: parts and numbered chapters, each ## section of index.md beside
+ * what it explains. Here that's the walkthrough, a short looping clip of each
+ * interaction (cut from the walkthrough), screenshots of the site, and two
+ * small pieces drawn in HTML: a live type specimen in the site's own fonts
+ * and the bundle sizes.
+ */
+import Base from "../../layouts/BaseLayout.astro";
+import { Image, getImage } from "astro:assets";
+import { getEntry } from "astro:content";
+import { pad } from "../../lib/content";
+import Chapter from "../../components/Chapter.astro";
+import ChapterNav from "../../components/ChapterNav.astro";
+import LoopVideo from "../../components/LoopVideo.astro";
+import Shot from "../../components/Shot.astro";
+import Lightbox from "../../components/Lightbox.astro";
+import NextProject from "../../components/NextProject.astro";
+
+import walkthroughPoster from "../../content/projects/marina-yee-one-corner-off/media/walkthrough.jpg";
+import coverPoster from "../../content/projects/marina-yee-one-corner-off/media/cover.jpg";
+import spotlightPoster from "../../content/projects/marina-yee-one-corner-off/media/spotlight.jpg";
+import garmentsPoster from "../../content/projects/marina-yee-one-corner-off/media/garments.jpg";
+import marqueePoster from "../../content/projects/marina-yee-one-corner-off/media/marquee.jpg";
+import myProjectPoster from "../../content/projects/marina-yee-one-corner-off/media/myproject.jpg";
+import horizontalPoster from "../../content/projects/marina-yee-one-corner-off/media/horizontal.jpg";
+import foldPoster from "../../content/projects/marina-yee-one-corner-off/media/fold.jpg";
+import siteOneCornerOff from "../../content/projects/marina-yee-one-corner-off/media/site-one-corner-off.png";
+import siteFilm from "../../content/projects/marina-yee-one-corner-off/media/site-film.png";
+import siteFooter from "../../content/projects/marina-yee-one-corner-off/media/site-footer.png";
+import stillCover from "../../content/projects/marina-yee-one-corner-off/media/still-cover.jpg";
+import stillBeyond from "../../content/projects/marina-yee-one-corner-off/media/still-beyond.jpg";
+import stillTurning from "../../content/projects/marina-yee-one-corner-off/media/still-turning.jpg";
+import stillLookCloser from "../../content/projects/marina-yee-one-corner-off/media/still-lookcloser.jpg";
+import earlyCollage from "../../content/projects/marina-yee-one-corner-off/one-corner-off-1.png";
+
+const project = (await getEntry("projects", "marina-yee-one-corner-off"))!;
+const { title, description, role, year, category, context, order, tech, media, status } = project.data;
+
+// index.md split at its ## headings; each part is one chapter's text
+const parts = new Map(
+    (project.rendered?.html ?? "").split(/(?=<h2[\s>])/).flatMap((chunk) => {
+        const heading = chunk.match(/^<h2[^>]*>([\s\S]*?)<\/h2>/);
+        return heading ? [[heading[1].trim(), chunk.slice(heading[0].length)] as [string, string]] : [];
+    }),
+);
+// headings come through HTML-escaped with curly quotes; compare on plain text
+const plain = (s: string) =>
+    s
+        .replace(/&#x27;|&#39;|’/g, "'")
+        .replace(/&#x26;|&amp;/g, "&");
+const byPlain = new Map([...parts].map(([k, v]) => [plain(k), v]));
+const t = (heading: string) => byPlain.get(heading);
+const placed = [
+    "The project",
+    "The challenge",
+    "Finding the visual direction",
+    "Visual system",
+    "One Corner Off",
+    "Moving away from the spotlight",
+    "Working with what was already there",
+    "Text as movement",
+    "M.Y. Project",
+    "Beyond sustainability",
+    "The main interaction: folding the page",
+    "Progressive enhancement",
+    "Managing scroll-based animation",
+    "Tooling and performance",
+    "What I learned",
+    "Next steps",
+];
+const extra = [...byPlain.keys()].filter((heading) => !placed.includes(heading));
+
+const walkthroughPosterSrc = (await getImage({ src: walkthroughPoster, width: 1280, format: "webp", quality: 80 })).src;
+
+const stillsThatWorked = [
+    { img: stillCover, label: "The cover" },
+    { img: stillBeyond, label: "Beyond Sustainability" },
+    { img: stillTurning, label: "The paragraph that turns" },
+    { img: stillLookCloser, label: "Look Closer" },
+];
+
+const palette = [
+    { name: "Black", value: "#1a1a1a" },
+    { name: "Paper", value: "#f4f2ee" },
+    { name: "White", value: "#ffffff" },
+    { name: "Biro blue", value: "#2f3db0" },
+    { name: "Red", value: "#d2382b" },
+];
+
+const withoutJs = [
+    { part: "Garment picker", js: "One look at a time", none: "Every look shown" },
+    { part: "M.Y. Project", js: "Pinned, garments wipe in", none: "An image grid" },
+    { part: "Beyond sustainability", js: "Horizontal chapter", none: "Vertical" },
+    { part: "Folding page", js: "Fold the corner back", none: "Static, with a cut corner" },
+];
+
+const sizes = [
+    { value: 4.6, unit: "KB", label: "initial JavaScript, gzipped (11.7 KB raw)" },
+    { value: 8.7, unit: "KB", label: "CSS, gzipped (40.6 KB raw)" },
+    { value: 64.6, unit: "KB", label: "GSAP kept out of the first load when motion is off" },
+];
+---
+
+<Base title={title} description={description}>
+    <Fragment slot="head">
+        <!-- the site's own typefaces, for the Visual system specimen -->
+        <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Reenie+Beanie&display=swap"
+        />
+    </Fragment>
+
+    <article class="my">
+        <!-- INTRO -->
+        <header class="page-head wrap">
+            <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
+            <p class="my-kicker mono muted" data-reveal>
+                {pad(order ?? 4)} — {category}
+                {status === "in-progress" && <span class="my-status">In progress</span>}
+            </p>
+            <h1 class="display my-title" data-split>{title}</h1>
+
+            <div class="row my-intro">
+                <dl class="row__label my-facts mono" data-reveal>
+                    <div><dt class="muted">Year</dt><dd>{year}</dd></div>
+                    <div><dt class="muted">Role</dt><dd>{role}</dd></div>
+                    <div><dt class="muted">Context</dt><dd>{context}</dd></div>
+                    <div><dt class="muted">Stack</dt><dd>{tech?.join(", ")}</dd></div>
+                </dl>
+                <div class="row__body">
+                    <p class="lead my-lead" data-split>{description}</p>
+                    {
+                        media?.live && (
+                            <a href={media.live} class="my-visit mono" target="_blank" rel="noopener" data-reveal>
+                                Visit the website <span aria-hidden="true">↗</span>
+                            </a>
+                        )
+                    }
+                </div>
+            </div>
+        </header>
+
+        <!-- WALKTHROUGH -->
+        <section class="wrap" aria-label="Walkthrough">
+            <figure class="my-walkthrough" data-reveal>
+                <video
+                    class="my-screen"
+                    controls
+                    playsinline
+                    preload="none"
+                    poster={walkthroughPosterSrc}
+                    width="1280"
+                    height="726"
+                    aria-label="Walkthrough of the One Corner Off longread, from the cover to the end"
+                >
+                    <source src="/media/marina-yee/walkthrough.mp4" type="video/mp4" />
+                </video>
+                <figcaption class="mono muted">Walkthrough · 1:14</figcaption>
+            </figure>
+        </section>
+
+        <!-- ============ PART 1 ============ -->
+        <div class="my-part-wrap wrap" data-reveal data-part="The project">
+            <p class="my-part mono">The project</p>
+        </div>
+
+        <Chapter id="my-project" num={1} title="The project" html={t("The project")}>
+            <Shot slot="media" img={siteOneCornerOff} alt="The One Corner Off chapter: the title, and the Flemish expression explained in two justified columns" />
+        </Chapter>
+
+        <Chapter id="my-challenge" num={2} title="The challenge" html={t("The challenge")} side="left">
+            <Shot slot="media" img={siteFilm} alt="The In her own words section: a film still with a play button and a handwritten note, 'she loves second-hand'" />
+        </Chapter>
+
+        <!-- ============ PART 2 ============ -->
+        <div class="my-part-wrap wrap" data-reveal data-part="Design">
+            <p class="my-part mono">Design</p>
+        </div>
+
+        <Chapter id="my-direction" num={3} title="Finding the visual direction" html={t("Finding the visual direction")}>
+            <figure class="my-direction" slot="media">
+                <div class="my-direction__before">
+                    <p class="mono muted">Before</p>
+                    <Image src={earlyCollage} alt="An early direction: a torn editorial collage of fabric and type" widths={[300, 600]} sizes="160px" />
+                </div>
+                <div class="my-direction__after">
+                    <p class="mono muted">The four sections that worked</p>
+                    <ul class="my-direction__grid">
+                        {
+                            stillsThatWorked.map((s) => (
+                                <li>
+                                    <Image src={s.img} alt={s.label} widths={[400, 800]} sizes="(min-width: 900px) 20vw, 45vw" class="my-screen" />
+                                    <span class="mono">{s.label}</span>
+                                </li>
+                            ))
+                        }
+                    </ul>
+                </div>
+            </figure>
+        </Chapter>
+
+        <Chapter id="my-system" num={4} title="Visual system" html={t("Visual system")} side="left">
+            <figure class="my-spec" slot="media" data-my-spec>
+                <div class="my-spec__type" aria-hidden="true">
+                    <span class="my-spec__word" data-my-word><span>One corner</span><span>off</span></span>
+                </div>
+                <p class="my-spec__axes mono">
+                    Archivo · <span data-my-axes>width 62 · weight 800</span>
+                </p>
+                <p class="my-spec__hand">Make it look finished, then disturb it.</p>
+                <ul class="my-swatches">
+                    {
+                        palette.map((c) => (
+                            <li>
+                                <span class="my-swatch" style={`--c:${c.value}`} />
+                                <span class="mono">{c.name}</span>
+                            </li>
+                        ))
+                    }
+                </ul>
+                <figcaption class="visually-hidden">
+                    Archivo in its condensed, heavy cut and Reenie Beanie for the handwritten note, with the palette: black, paper, white, biro blue and red.
+                </figcaption>
+            </figure>
+        </Chapter>
+
+        <!-- ============ PART 3 ============ -->
+        <div class="my-part-wrap wrap" data-reveal data-part="Turning the story into interaction">
+            <p class="my-part mono">Turning the story into interaction</p>
+        </div>
+
+        <Chapter id="my-cover" num={5} title="One Corner Off" html={t("One Corner Off")}>
+            <div class="my-clip" slot="media"><LoopVideo src="/media/marina-yee/cover.mp4" poster={coverPoster} label="The cover: a corner is cut away from the title, falls and is thrown" /></div>
+        </Chapter>
+
+        <Chapter id="my-spotlight" num={6} title="Moving away from the spotlight" html={t("Moving away from the spotlight")} side="left">
+            <div class="my-clip" slot="media"><LoopVideo src="/media/marina-yee/spotlight.mp4" poster={spotlightPoster} label="The Antwerp Six in a spotlight that recedes as her work comes into view" /></div>
+        </Chapter>
+
+        <Chapter id="my-garments" num={7} title="Working with what was already there" html={t("Working with what was already there")}>
+            <div class="my-clip" slot="media"><LoopVideo src="/media/marina-yee/garments.mp4" poster={garmentsPoster} label="The garment index: choosing a category reveals its garment and details" /></div>
+        </Chapter>
+
+        <Chapter id="my-text" num={8} title="Text as movement" html={t("Text as movement")} side="left">
+            <div class="my-clip" slot="media"><LoopVideo src="/media/marina-yee/marquee.mp4" poster={marqueePoster} label="An oversized marquee whose letters change weight as they cross the screen" /></div>
+        </Chapter>
+
+        <Chapter id="my-myproject" num={9} title="M.Y. Project" html={t("M.Y. Project")}>
+            <div class="my-clip" slot="media"><LoopVideo src="/media/marina-yee/myproject.mp4" poster={myProjectPoster} label="M.Y. Project: each garment wipes up over the last as its name rolls in" /></div>
+        </Chapter>
+
+        <Chapter id="my-beyond" num={10} title="Beyond sustainability" html={t("Beyond sustainability")} side="left">
+            <div class="my-clip" slot="media"><LoopVideo src="/media/marina-yee/horizontal.mp4" poster={horizontalPoster} label="The horizontal chapter, ending with the bottom corner of the page breaking away" /></div>
+        </Chapter>
+
+        <Chapter id="my-fold" num={11} title="The main interaction: folding the page" html={t("The main interaction: folding the page")}>
+            <div class="my-clip" slot="media"><LoopVideo src="/media/marina-yee/fold.mp4" poster={foldPoster} label="Folding back the corner of the Already finished page to reveal the garment underneath" /></div>
+        </Chapter>
+
+        <!-- ============ PART 4 ============ -->
+        <div class="my-part-wrap wrap" data-reveal data-part="Under the hood">
+            <p class="my-part mono">Under the hood</p>
+        </div>
+
+        <Chapter id="my-progressive" num={12} title="Progressive enhancement" html={t("Progressive enhancement")} side="left">
+            <figure class="my-diagram" slot="media" data-my-diagram>
+                <div class="my-table" role="table" aria-label="Each interactive part with and without JavaScript">
+                    <div class="my-table__row my-table__row--head mono" role="row">
+                        <span role="columnheader">Part</span>
+                        <span role="columnheader">With JavaScript</span>
+                        <span role="columnheader">Without</span>
+                    </div>
+                    {
+                        withoutJs.map((r) => (
+                            <div class="my-table__row" role="row">
+                                <span role="cell" class="mono">{r.part}</span>
+                                <span role="cell">{r.js}</span>
+                                <span role="cell" class="my-table__none">{r.none}</span>
+                            </div>
+                        ))
+                    }
+                </div>
+            </figure>
+        </Chapter>
+
+        <Chapter id="my-scroll" num={13} title="Managing scroll-based animation" html={t("Managing scroll-based animation")} />
+
+        <Chapter id="my-tooling" num={14} title="Tooling and performance" html={t("Tooling and performance")}>
+            <ul class="my-sizes" slot="media" data-my-diagram>
+                {
+                    sizes.map((s) => (
+                        <li class="my-size">
+                            <span class="my-size__value">
+                                <span data-my-count={s.value}>{s.value}</span>
+                                <small class="mono">{s.unit}</small>
+                            </span>
+                            <span class="my-size__label muted">{s.label}</span>
+                        </li>
+                    ))
+                }
+            </ul>
+        </Chapter>
+
+        <!-- ============ PART 5 ============ -->
+        <div class="my-part-wrap wrap" data-reveal data-part="Looking back">
+            <p class="my-part mono">Looking back</p>
+        </div>
+
+        <Chapter id="my-learned" num={15} title="What I learned" html={t("What I learned")} side="left" />
+        <Chapter id="my-next" num={16} title="Next steps" html={t("Next steps")} fold={false} />
+        {extra.map((heading, i) => <Chapter id={`my-extra-${i}`} num={17 + i} title={heading} html={t(heading)} />)}
+
+        <!-- VISIT -->
+        {
+            media?.live && (
+                <section class="wrap my-end" aria-label="Visit the website">
+                    <a href={media.live} class="my-end__link" target="_blank" rel="noopener">
+                        <span class="my-end__shot">
+                            <Image src={siteFooter} alt="" widths={[800, 1400, 2000]} sizes="(min-width: 900px) 50vw, 100vw" class="my-screen" />
+                        </span>
+                        <span class="my-end__text">
+                            <span class="mono muted">momu-marina-yee.netlify.app</span>
+                            <span class="my-end__title">Visit the website <span class="my-end__arrow" aria-hidden="true">↗</span></span>
+                        </span>
+                    </a>
+                </section>
+            )
+        }
+    </article>
+
+    <ChapterNav />
+    <NextProject current="marina-yee-one-corner-off" />
+    <Lightbox />
+</Base>
+
+<script>
+    import { gsap } from "gsap";
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // tables and figures build up the first time they come into view
+    if (!reduceMotion) {
+        const io = new IntersectionObserver(
+            (entries) =>
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) return;
+                    io.unobserve(entry.target);
+                    gsap.from(entry.target.querySelectorAll(".my-table__row, .my-size"), {
+                        autoAlpha: 0,
+                        y: 14,
+                        duration: 0.7,
+                        ease: "expo.out",
+                        stagger: 0.08,
+                    });
+                    entry.target.querySelectorAll<HTMLElement>("[data-my-count]").forEach((el) => {
+                        const counter = { n: 0 };
+                        gsap.to(counter, {
+                            n: Number(el.dataset.myCount),
+                            duration: 1.4,
+                            ease: "expo.out",
+                            onUpdate: () => (el.textContent = counter.n.toFixed(1)),
+                        });
+                    });
+                }),
+            { threshold: 0.3 },
+        );
+        document.querySelectorAll("[data-my-diagram]").forEach((d) => io.observe(d));
+    }
+
+    // --- the specimen: Archivo's width and weight follow the cursor, the way
+    //     the site's marquee animates the weight axis ---
+    const spec = document.querySelector<HTMLElement>("[data-my-spec]");
+    const word = spec?.querySelector<HTMLElement>("[data-my-word]");
+    const axes = spec?.querySelector<HTMLElement>("[data-my-axes]");
+    if (spec && word && axes) {
+        const state = { wdth: 62, wght: 800 };
+        const render = () => {
+            word.style.fontVariationSettings = `"wdth" ${state.wdth.toFixed(0)}, "wght" ${state.wght.toFixed(0)}`;
+            axes.textContent = `width ${state.wdth.toFixed(0)} · weight ${state.wght.toFixed(0)}`;
+        };
+        render();
+
+        if (!reduceMotion) {
+            // on its own it breathes between condensed-heavy and wide-light
+            const idle = gsap.to(state, {
+                wdth: 125,
+                wght: 200,
+                duration: 3.2,
+                ease: "sine.inOut",
+                yoyo: true,
+                repeat: -1,
+                paused: true,
+                onUpdate: render,
+            });
+            new IntersectionObserver(([e]) => (e.isIntersecting ? idle.resume() : idle.pause())).observe(spec);
+
+            // with the cursor: left to right is width, top to bottom is weight
+            spec.addEventListener("pointermove", (e) => {
+                idle.pause();
+                const r = spec.getBoundingClientRect();
+                const x = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+                const y = Math.min(1, Math.max(0, (e.clientY - r.top) / r.height));
+                gsap.to(state, { wdth: 62 + x * 63, wght: 900 - y * 800, duration: 0.5, ease: "power3.out", overwrite: true, onUpdate: render });
+            });
+            spec.addEventListener("pointerleave", () => idle.resume());
+        }
+    }
+</script>
+
+<style>
+    .my {
+        overflow-x: clip;
+        padding-bottom: var(--section);
+        /* code keywords: biro blue */
+        --code-accent: #9fb0ff;
+    }
+
+    :global(html.dark) .my {
+        --code-accent: #2f3db0;
+    }
+
+    .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    /* --- INTRO --- */
+
+    .my-kicker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 16px;
+        margin: 24px 0 0;
+    }
+
+    .my-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--text);
+    }
+
+    .my-status::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border: 1px solid currentColor;
+        border-radius: 50%;
+    }
+
+    .my-title {
+        max-width: 12ch;
+        font-size: clamp(2.75rem, 1rem + 7vw, 8.5rem);
+    }
+
+    .my-intro {
+        margin-top: clamp(32px, 5vw, 64px);
+    }
+
+    .my-facts {
+        display: grid;
+        gap: 14px;
+        align-content: start;
+        margin: 0;
+    }
+
+    .my-facts dd {
+        margin: 2px 0 0;
+    }
+
+    .my-lead {
+        max-width: 32ch;
+    }
+
+    .my-visit {
+        display: inline-flex;
+        gap: 8px;
+        margin-top: 28px;
+        padding: 10px 16px;
+        border: 1px solid var(--text);
+        border-radius: 999px;
+        transition:
+            background-color 0.35s var(--ease),
+            color 0.35s var(--ease);
+    }
+
+    .my-visit:hover,
+    .my-visit:focus-visible {
+        background: var(--text);
+        color: var(--bg);
+    }
+
+    /* --- SCREENS: the site sits in a dark frame, like it does on screen --- */
+
+    .my :global(.my-screen) {
+        display: block;
+        width: 100%;
+        height: auto;
+        background: #1a1a1a;
+        box-shadow: var(--media-shadow);
+    }
+
+    .my-walkthrough {
+        display: grid;
+        gap: 12px;
+        margin: 0;
+    }
+
+    .my-walkthrough video {
+        aspect-ratio: 1280 / 726;
+    }
+
+    .my-clip :global(video) {
+        background: #1a1a1a;
+        box-shadow: var(--media-shadow);
+    }
+
+    /* --- PARTS --- */
+
+    .my-part-wrap {
+        margin-top: calc(var(--section) * 1.4);
+    }
+
+    .my-part {
+        margin: 0;
+        padding-top: 14px;
+        border-top: 1px solid var(--text);
+    }
+
+    .my-part-wrap + :global(.chapter) {
+        padding-top: clamp(40px, 6vw, 80px);
+    }
+
+    /* --- 03 DIRECTION: before, and what stayed --- */
+
+    .my-direction {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px;
+        margin: 0;
+    }
+
+    .my-direction p {
+        margin: 0 0 10px;
+    }
+
+    .my-direction__before :global(img) {
+        width: 160px;
+        height: auto;
+    }
+
+    .my-direction__grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .my-direction__grid li {
+        display: grid;
+        gap: 6px;
+    }
+
+    @media (min-width: 1100px) {
+        .my-direction {
+            grid-template-columns: 160px minmax(0, 1fr);
+            align-items: start;
+        }
+    }
+
+    /* --- 04 SPECIMEN --- */
+
+    .my-spec {
+        display: grid;
+        gap: 16px;
+        margin: 0;
+        padding: clamp(20px, 3vw, 36px);
+        background: #1a1a1a;
+        color: #f4f2ee;
+        cursor: ew-resize;
+        user-select: none;
+    }
+
+    /* two fixed lines, sized so even the widest, heaviest setting fits:
+       the box never changes height while the axes move */
+    .my-spec__type {
+        font-size: clamp(1.9rem, 0.6rem + 3vw, 4rem);
+        overflow: hidden;
+    }
+
+    .my-spec__word {
+        display: block;
+        font-family: "Archivo", var(--sans);
+        line-height: 0.92;
+        letter-spacing: -0.01em;
+        text-transform: uppercase;
+    }
+
+    .my-spec__word > span {
+        display: block;
+        white-space: nowrap;
+    }
+
+    .my-spec__axes {
+        margin: 0;
+        opacity: 0.6;
+    }
+
+    .my-spec__hand {
+        margin: 4px 0 0;
+        font-family: "Reenie Beanie", cursive;
+        font-size: clamp(1.6rem, 1.2rem + 1.2vw, 2.4rem);
+        line-height: 1;
+        color: #9fb0ff;
+        transform: rotate(-2deg);
+        transform-origin: left;
+    }
+
+    .my-swatches {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 10px;
+        margin: 8px 0 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .my-swatches li {
+        display: grid;
+        gap: 6px;
+    }
+
+    .my-swatch {
+        aspect-ratio: 1;
+        background: var(--c);
+        border: 1px solid rgba(244, 242, 238, 0.25);
+    }
+
+    /* --- 12 PROGRESSIVE ENHANCEMENT --- */
+
+    .my-diagram {
+        margin: 0;
+    }
+
+    .my-table {
+        border-top: 1px solid var(--text);
+    }
+
+    .my-table__row {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr);
+        align-items: baseline;
+        gap: 6px var(--gutter);
+        padding-block: 14px;
+        border-bottom: 1px solid var(--line);
+        font-size: var(--fs-small);
+    }
+
+    .my-table__row--head {
+        color: var(--muted);
+    }
+
+    .my-table__none {
+        font-weight: 800;
+    }
+
+    /* --- 14 SIZES --- */
+
+    .my-sizes {
+        display: grid;
+        gap: var(--gutter);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .my-size {
+        display: grid;
+        grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+        align-items: end;
+        gap: var(--gutter);
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+    }
+
+    .my-size__value {
+        font-size: clamp(2.5rem, 1rem + 4vw, 5rem);
+        font-weight: 500;
+        line-height: 0.85;
+        letter-spacing: -0.05em;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .my-size__value small {
+        margin-left: 6px;
+        font-size: var(--fs-mono);
+        letter-spacing: 0.02em;
+    }
+
+    .my-size__label {
+        font-size: var(--fs-small);
+    }
+
+    /* --- END: the site's footer, and the way there --- */
+
+    .my-end {
+        padding-top: calc(var(--section) * 1.4);
+    }
+
+    .my-end__link {
+        display: grid;
+        gap: 24px var(--gutter);
+        align-items: end;
+        padding-top: 14px;
+        border-top: 1px solid var(--text);
+    }
+
+    .my-end__shot {
+        overflow: hidden;
+    }
+
+    .my-end__shot :global(img) {
+        transition: transform 1s var(--ease);
+    }
+
+    .my-end__link:hover .my-end__shot :global(img) {
+        transform: scale(1.03);
+    }
+
+    .my-end__text {
+        display: grid;
+        gap: 10px;
+    }
+
+    .my-end__title {
+        font-size: var(--fs-h2);
+        font-weight: 500;
+        line-height: 1;
+        letter-spacing: -0.04em;
+    }
+
+    .my-end__arrow {
+        display: inline-block;
+        transition: transform 0.6s var(--ease);
+    }
+
+    .my-end__link:hover .my-end__arrow {
+        transform: translate(0.12em, -0.12em);
+    }
+
+    @media (min-width: 900px) {
+        .my-end__link {
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+        }
+
+        .my-end__shot {
+            grid-column: 1 / span 7;
+        }
+
+        .my-end__text {
+            grid-column: 9 / -1;
+        }
+    }
+</style>
