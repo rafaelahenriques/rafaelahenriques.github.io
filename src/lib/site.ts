@@ -9,7 +9,7 @@ export const site = {
     email: "Rafaela.Henriques.work@gmail.com",
     github: "https://github.com/rafaelahenriques",
     linkedin: "https://www.linkedin.com/in/rafaela-henriques-1464a22b5/",
-    cv: "/cv.pdf", // drop the file in public/cv.pdf
+    cv: "/Rafaela_Henriques_Resume.pdf", // the file lives in public/
     location: "Kortrijk, BE",
     timeZone: "Europe/Brussels",
     availability: "Open to software & web development roles",
@@ -26,7 +26,7 @@ export interface ContactLink {
 }
 
 export const contactLinks: ContactLink[] = [
-    hasCv && { label: "CV", href: site.cv, download: true },
+    hasCv && { label: "Resume", href: site.cv, download: true },
     site.linkedin && { label: "LinkedIn", href: site.linkedin, external: true },
     site.github && { label: "GitHub", href: site.github, external: true },
     { label: "Email", href: `mailto:${site.email}` },

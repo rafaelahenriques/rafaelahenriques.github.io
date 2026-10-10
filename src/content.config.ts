@@ -27,6 +27,8 @@ const projects = defineCollection({
           live: z.string().url().optional(),
           video: z.string().url().optional(),
           screenshot: image().optional(),
+          // Projects page list / grid only; falls back to the screenshot
+          thumbnail: image().optional(),
           gallery: z.array(image()).optional(),
         })
         .optional(),

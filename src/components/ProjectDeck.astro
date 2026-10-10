@@ -553,6 +553,8 @@ const slotOf = (i: number) => SLOTS[Math.min(i, SLOTS.length - 1)];
         position: relative;
         /* card (4:5 image + caption) plus room for the cards fanned behind it */
         height: calc(var(--card-w) * 1.25 + var(--card-w) * 0.22 + 64px);
+        /* the cards' z-indexes stay inside the deck, never above the header or the loader */
+        isolation: isolate;
         /* the whole deck is the handle: grab anywhere, the top card comes along */
         cursor: grab;
         touch-action: pan-y;
