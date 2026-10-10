@@ -106,11 +106,12 @@ const strip = await Promise.all(
                             <span class="work__title">{it.p.data.title}</span>
                             <span class="work__meta mono">
                                 {it.p.data.category}
-                                {it.inProgress && <span class="status">In progress</span>}
+                                {it.inProgress && <span class="wip">In progress</span>}
                             </span>
                             <span class="work__year mono">{it.p.data.year}</span>
                             {it.image && (
                                 <span class="work__media">
+                                    {it.inProgress && <span class="wip wip--on-media work__wip">In progress</span>}
                                     <Picture
                                         src={it.image}
                                         alt=""
@@ -598,6 +599,7 @@ const strip = await Promise.all(
     }
 
     .work__media {
+        position: relative;
         display: block;
         overflow: hidden;
         background: var(--line);
@@ -622,24 +624,15 @@ const strip = await Promise.all(
         color: var(--muted);
     }
 
-    .status {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        color: var(--text);
-    }
-
-    .status::before {
-        content: "";
-        width: 6px;
-        height: 6px;
-        border: 1px solid currentColor;
-        border-radius: 50%;
-    }
 
     .work__num,
     .work__year {
         color: var(--muted);
+    }
+
+    /* the small list thumbnails carry the badge in the row details instead */
+    .works[data-layout="list"] .work__wip {
+        display: none;
     }
 
     /* LIST: big uppercase titles between rules, thumbnail on the right */

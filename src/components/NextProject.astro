@@ -16,7 +16,10 @@ const next = all[(index + 1) % all.length];
 <nav class="next-project" aria-label="Next project">
     <a href={`/projects/${slugOf(next)}/`} class="next-project__link wrap">
         <span class="mono next-project__label">Next project</span>
-        <span class="next-project__title">{next.data.title}</span>
+        <span class="next-project__title">
+            {next.data.title}
+            {next.data.status === "in-progress" && <span class="wip next-project__wip">In progress</span>}
+        </span>
         <span class="next-project__arrow" aria-hidden="true">→</span>
     </a>
 </nav>
@@ -49,6 +52,13 @@ const next = all[(index + 1) % all.length];
 
     .next-project__arrow {
         transition: transform 0.6s var(--ease);
+    }
+
+    /* sits with the title, at mid-height of the big type */
+    .next-project__wip {
+        margin-left: 0.6rem;
+        vertical-align: middle;
+        letter-spacing: 0.02em;
     }
 
     .next-project__link:hover .next-project__arrow,
