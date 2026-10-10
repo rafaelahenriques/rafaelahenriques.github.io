@@ -261,6 +261,61 @@ main {
 }
 
 /*
+ * 4.5 IN PROGRESS
+ * -------------------
+ * A yellow pill with a slowly pulsing dot, the one place the site uses
+ * yellow, so unfinished projects are clear wherever they appear.
+ */
+
+.wip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 10px 4px 9px;
+    border-radius: 999px;
+    background: #f6d33f;
+    color: #111110;
+    font-family: var(--mono);
+    font-size: var(--fs-mono);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.wip::before {
+    content: "";
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: wip-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes wip-pulse {
+    50% {
+        opacity: 0.25;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wip::before {
+        animation: none;
+    }
+}
+
+/* on top of a project image */
+.wip--on-media {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+}
+
+/*
  * 5.0 MEDIA
  * -------------------
  */

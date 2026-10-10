@@ -54,7 +54,7 @@ const slotOf = (i: number) => SLOTS[Math.min(i, SLOTS.length - 1)];
                                 <span class="mono">{c.num}</span>
                                 <span class="deck-index__title">{c.title}</span>
                                 <span class="deck-index__meta mono">
-                                    {c.inProgress ? "In progress" : c.category}
+                                    {c.inProgress ? <span class="wip">In progress</span> : c.category}
                                 </span>
                                 <span class="deck-index__bar" aria-hidden="true" />
                             </button>
@@ -85,6 +85,7 @@ const slotOf = (i: number) => SLOTS[Math.min(i, SLOTS.length - 1)];
                             style={`--x:${slot.x};--y:${slot.y};--r:${slot.r}deg;--s:${slot.s};z-index:${100 - i}`}
                         >
                             <div class="deck-card__media">
+                                {c.inProgress && <span class="wip wip--on-media">In progress</span>}
                                 {c.image && (
                                     <Image
                                         src={c.image}
@@ -633,6 +634,7 @@ const slotOf = (i: number) => SLOTS[Math.min(i, SLOTS.length - 1)];
     }
 
     .deck-card__media {
+        position: relative;
         aspect-ratio: 4 / 5;
         overflow: hidden;
         background: color-mix(in oklab, var(--text) 6%, var(--bg));
