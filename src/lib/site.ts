@@ -8,7 +8,7 @@ import { join } from "node:path";
 export const site = {
     email: "Rafaela.Henriques.work@gmail.com",
     github: "https://github.com/rafaelahenriques",
-    linkedin: "https://www.linkedin.com/in/rafaela-henriques-1464a22b5/",
+    linkedin: "https://www.linkedin.com/in/rafaelarosahenriques/",
     cv: "/Rafaela_Henriques_Resume.pdf", // the file lives in public/
     location: "Kortrijk, BE",
     timeZone: "Europe/Brussels",
