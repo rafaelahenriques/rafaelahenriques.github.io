@@ -2,6 +2,7 @@
 title: "ML5.js Pose Classifier"
 section: other
 order: 2
+status: in-progress
 category: "Machine Learning"
 types: ["web", "interactive"]
 year: "2025"

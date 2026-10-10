@@ -116,7 +116,7 @@ const sizes = [
             <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
             <p class="my-kicker mono muted" data-reveal>
                 {pad(order ?? 4)} — {category}
-                {status === "in-progress" && <span class="my-status">In progress</span>}
+                {status === "in-progress" && <span class="wip">In progress</span>}
             </p>
             <h1 class="display my-title" data-split>{title}</h1>
 
@@ -430,20 +430,6 @@ const sizes = [
         margin: 24px 0 0;
     }
 
-    .my-status {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        color: var(--text);
-    }
-
-    .my-status::before {
-        content: "";
-        width: 6px;
-        height: 6px;
-        border: 1px solid currentColor;
-        border-radius: 50%;
-    }
 
     .my-title {
         max-width: 12ch;
