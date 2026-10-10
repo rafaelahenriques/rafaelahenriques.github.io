@@ -19,7 +19,8 @@ const items = projects.map((p, i) => ({
     href: `/projects/${slugOf(p)}/`,
     types: p.data.types,
     inProgress: p.data.status === "in-progress",
-    image: p.data.media?.screenshot,
+    // the list can use its own image (media.thumbnail); otherwise the screenshot
+    image: p.data.media?.thumbnail ?? p.data.media?.screenshot,
 }));
 
 const filters = [
@@ -33,7 +34,8 @@ const filters = [
 
 // The strip: every project's images, taken round-robin so neighbours differ
 const STRIP_H = 360;
-const galleries = items.map((it) => (it.p.data.media?.gallery ?? [it.image]).filter((img) => img !== undefined));
+// (the strip keeps the screenshot; only the list below uses media.thumbnail)
+const galleries = items.map((it) => (it.p.data.media?.gallery ?? [it.p.data.media?.screenshot]).filter((img) => img !== undefined));
 const depth = Math.max(...galleries.map((g) => g.length));
 const strip = await Promise.all(
     Array.from({ length: depth }, (_, round) => items.map((it, i) => ({ it, img: galleries[i][round] })))

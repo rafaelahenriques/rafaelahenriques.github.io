@@ -15,6 +15,7 @@ scope:
 description: "A game UI kit built from the style of another artist's illustration: I analysed its shapes, colour, shading and lines, then designed a start menu, settings screen and component set that belong to it — built in Photoshop, ready to slice for a game engine."
 media:
   screenshot: "./mainUi.png"
+  thumbnail: "./ui_main.png"
 tags: ["UI", "Design", "Photoshop", "Game Dev"]
 customPage: true
 ---
