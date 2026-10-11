@@ -573,3 +573,19 @@ main {
         transition-duration: 0.01ms !important;
     }
 }
+
+.tech-list {
+    white-space: normal;
+    text-align: center;
+}
+
+@media (min-width: 900px) {
+    .caps-eg {
+        max-width: none;
+        width: 100%;
+    }
+
+    .tech-list {
+        white-space: nowrap;
+    }
+}
