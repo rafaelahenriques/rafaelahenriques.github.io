@@ -4,14 +4,19 @@ import ProjectDeck from "../components/ProjectDeck.astro";
 import SpreadName from "../components/SpreadName.astro";
 import babyPhoto from "../assets/me/rafaela-2006.jpg";
 import { getFeatured } from "../lib/content";
+import { websiteSchema } from "../lib/seo";
 
 const featured = await getFeatured();
 ---
 
-<Base title="Home" description="Rafaela Henriques — web developer. Selected projects.">
+<Base
+    title="Home"
+    description="Rafaela Henriques is a web developer in Kortrijk, Belgium: full-stack, mobile and interactive projects, and a Digital Design & Development student at Howest."
+    schema={[websiteSchema()]}
+>
     <!-- HELLO: my name spread across the page, with me in 2006 in the middle -->
     <section class="hello" aria-labelledby="intro">
-        <h2 id="intro" class="visually-hidden">Intro</h2>
+        <h1 id="intro" class="visually-hidden">Rafaela Henriques — web developer</h1>
         <SpreadName
             word="Rafaela"
             insertAt={3}
@@ -56,12 +61,4 @@ const featured = await getFeatured();
         text-align: center;
     }
 
-    .visually-hidden {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip-path: inset(50%);
-        white-space: nowrap;
-    }
 </style>

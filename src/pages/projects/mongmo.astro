@@ -11,6 +11,7 @@ import Base from "../../layouts/BaseLayout.astro";
 import { Image } from "astro:assets";
 import { getEntry } from "astro:content";
 import { pad } from "../../lib/content";
+import { projectSeo } from "../../lib/seo";
 import Chapter from "../../components/Chapter.astro";
 import ChapterNav from "../../components/ChapterNav.astro";
 import LoopVideo from "../../components/LoopVideo.astro";
@@ -80,7 +81,7 @@ const platforms = [
 ];
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} {...projectSeo(project)}>
     <article class="mg">
         <!-- INTRO -->
         <header class="page-head wrap">

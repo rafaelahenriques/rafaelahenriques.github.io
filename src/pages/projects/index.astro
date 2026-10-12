@@ -10,6 +10,7 @@
 import Base from "../../layouts/BaseLayout.astro";
 import { Picture, getImage } from "astro:assets";
 import { getProjects, pad, slugOf, PROJECT_TYPES } from "../../lib/content";
+import { SITE_URL, breadcrumbSchema } from "../../lib/seo";
 
 const projects = await getProjects();
 
@@ -51,7 +52,23 @@ const strip = await Promise.all(
 );
 ---
 
-<Base title="Projects" description="Rafaela Henriques — all projects: web, mobile and full-stack apps, games and interactive work, branding and UI design.">
+<Base
+    title="Projects"
+    description="All projects by Rafaela Henriques: web, mobile and full-stack apps, games and interactive work, branding and UI design."
+    schema={[
+        {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            name: "Projects",
+            url: `${SITE_URL}/projects/`,
+            mainEntity: {
+                "@type": "ItemList",
+                itemListElement: projects.map((p, i) => ({ "@type": "ListItem", position: i + 1, name: p.data.title, url: `${SITE_URL}/projects/${slugOf(p)}/` })),
+            },
+        },
+        breadcrumbSchema([{ name: "Home", path: "/" }, { name: "Projects", path: "/projects/" }]),
+    ]}
+>
     <!-- STRIP: every project's images, drifting past -->
     <div class="strip" data-strip aria-label="Project images">
         <div class="strip__track" data-strip-track>
@@ -82,7 +99,7 @@ const strip = await Promise.all(
         <div class="pc__filters" role="group" aria-label="Filter projects" data-filters>
             {
                 filters.map((f) => (
-                    <button type="button" class="pill mono" data-filter={f.key} aria-pressed={String(f.key === "all")}>
+                    <button type="button" class="pill mono" data-filter={f.key} aria-pressed={f.key === "all" ? "true" : "false"}>
                         {f.label}
                         <span class="pill__count">{pad(f.count)}</span>
                     </button>
@@ -341,14 +358,6 @@ const strip = await Promise.all(
 </script>
 
 <style>
-    .visually-hidden {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip-path: inset(50%);
-        white-space: nowrap;
-    }
 
     /* --- STRIP --- */
 

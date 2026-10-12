@@ -11,6 +11,7 @@ import Base from "../../layouts/BaseLayout.astro";
 import { Image, getImage } from "astro:assets";
 import { getEntry } from "astro:content";
 import { pad } from "../../lib/content";
+import { projectSeo } from "../../lib/seo";
 import Chapter from "../../components/Chapter.astro";
 import ChapterNav from "../../components/ChapterNav.astro";
 import LoopVideo from "../../components/LoopVideo.astro";
@@ -101,7 +102,7 @@ const sizes = [
 ];
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} {...projectSeo(project)}>
     <Fragment slot="head">
         <!-- the site's own typefaces, for the typography specimen -->
         <link
@@ -412,14 +413,6 @@ const sizes = [
         --code-accent: #2f3db0;
     }
 
-    .visually-hidden {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip-path: inset(50%);
-        white-space: nowrap;
-    }
 
     /* --- INTRO --- */
 

@@ -101,8 +101,9 @@ const letters = [...word];
 
             const tl = gsap
                 .timeline({ paused: true })
-                // the word rises in, letter by letter
-                .to(letters, { yPercent: 0, autoAlpha: 1, duration: 0.9, ease: "expo.out", stagger: 0.05 })
+                // the word rises in from its middle outwards, so it reads as one
+                // word (never "RAF…" first, even if the browser hitches)
+                .to(letters, { yPercent: 0, autoAlpha: 1, duration: 0.9, ease: "expo.out", stagger: { each: 0.04, from: "center" } })
                 // the photo opens at the seam and pushes the letters apart
                 .to(photo, { x: 0, scale: 1, duration: 1.5, ease: "expo.inOut" }, "+=0.3")
                 .from(photo.querySelector("img"), { scale: 1.6, duration: 1.8, ease: "expo.out" }, "<")
@@ -110,6 +111,16 @@ const letters = [...word];
 
             tl.eventCallback("onComplete", () => addHover(spread));
             whenVisible(() => tl.play());
+
+            // the packed positions were measured for this width: if it changes
+            // before the intro has finished, go straight to the spread-out end state
+            const width = window.innerWidth;
+            const onResize = () => {
+                if (window.innerWidth === width) return;
+                window.removeEventListener("resize", onResize);
+                if (tl.progress() < 1) tl.progress(1);
+            };
+            window.addEventListener("resize", onResize);
         });
 
     const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
@@ -166,9 +177,18 @@ const letters = [...word];
         });
     }
 
-    // letter widths depend on the webfont, so measure once it has loaded
+    // Letter widths depend on the webfont. document.fonts.ready can resolve
+    // before the font has even started loading, so ask for the exact face the
+    // word uses (with a time limit, so a slow font never blocks the page).
+    const fontLoaded = () => {
+        const face = getComputedStyle(document.querySelector(".spread__word") ?? document.body);
+        const load = document.fonts.load(`${face.fontWeight} 100px ${face.fontFamily}`).catch(() => {});
+        return Promise.race([load.then(() => document.fonts.ready), new Promise((r) => setTimeout(r, 1500))]);
+    };
+
     gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", (ctx) => {
-        document.fonts.ready.then(ctx.add(setUp));
+        // (ctx.add runs its function immediately, so call it from inside then)
+        fontLoaded().then(() => ctx.add(setUp));
     });
 </script>
 

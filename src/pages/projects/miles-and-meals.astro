@@ -10,6 +10,7 @@ import Base from "../../layouts/BaseLayout.astro";
 import { Image } from "astro:assets";
 import { getEntry } from "astro:content";
 import { pad } from "../../lib/content";
+import { projectSeo } from "../../lib/seo";
 import { fullSize as full } from "../../lib/images";
 import Lightbox from "../../components/Lightbox.astro";
 import NextProject from "../../components/NextProject.astro";
@@ -106,7 +107,7 @@ const values = [
 ];
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} {...projectSeo(project)}>
     <article class="mm">
         <!-- INTRO: title on the left, a slideshow of the work on the right -->
         <header class="page-head wrap">
