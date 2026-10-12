@@ -26,8 +26,8 @@ export interface ContactLink {
 }
 
 export const contactLinks: ContactLink[] = [
-    hasCv && { label: "Resume", href: site.cv, download: true },
-    site.linkedin && { label: "LinkedIn", href: site.linkedin, external: true },
-    site.github && { label: "GitHub", href: site.github, external: true },
+    ...(hasCv ? [{ label: "Resume", href: site.cv, download: true }] : []),
+    ...(site.linkedin ? [{ label: "LinkedIn", href: site.linkedin, external: true }] : []),
+    ...(site.github ? [{ label: "GitHub", href: site.github, external: true }] : []),
     { label: "Email", href: `mailto:${site.email}` },
-].filter((link): link is ContactLink => Boolean(link));
+];

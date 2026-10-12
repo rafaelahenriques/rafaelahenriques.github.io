@@ -102,6 +102,33 @@ a {
     outline-offset: 3px;
 }
 
+/* read by screen readers, not shown */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* keyboard users can jump past the header straight to the page */
+.skip-link {
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    z-index: 2000;
+    padding: 10px 14px;
+    background: var(--text);
+    color: var(--bg);
+    transform: translateY(-150%);
+    transition: transform 0.3s var(--ease);
+}
+
+.skip-link:focus {
+    transform: none;
+}
+
 /*
  * 3.0 TYPOGRAPHY
  * -------------------

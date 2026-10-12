@@ -9,6 +9,7 @@ import Base from "../../layouts/BaseLayout.astro";
 import { Image } from "astro:assets";
 import { getEntry } from "astro:content";
 import { pad } from "../../lib/content";
+import { projectSeo } from "../../lib/seo";
 import { fullSize } from "../../lib/images";
 import Chapter from "../../components/Chapter.astro";
 import Shot from "../../components/Shot.astro";
@@ -76,7 +77,7 @@ const pieces = [
 ];
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} {...projectSeo(project)}>
     <article class="ws">
         <!-- INTRO -->
         <header class="page-head wrap">
