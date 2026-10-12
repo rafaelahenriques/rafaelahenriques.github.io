@@ -5,6 +5,7 @@ import { Image } from "astro:assets";
 import { getCollection } from "astro:content";
 import { pad } from "../lib/content";
 import portrait from "../assets/me/rafaela.jpg";
+import { profilePageSchema } from "../lib/seo";
 
 // Skill groups from the content collection, by `order` then name
 const skills = (await getCollection("skills")).sort((a, b) => {
@@ -15,7 +16,7 @@ const skills = (await getCollection("skills")).sort((a, b) => {
 const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-minded"];
 ---
 
-<Base title="About" description="Rafaela Henriques, an Angolan-Portuguese developer based in Belgium, studying Digital Design & Development at Howest: Creative Development major, Experience Design minor.">
+<Base title="About" type="profile" image={portrait} schema={[profilePageSchema("/about/")]} description="Rafaela Henriques, an Angolan-Portuguese developer based in Belgium, studying Digital Design & Development at Howest: Creative Development major, Experience Design minor.">
     <!-- HEADER: name on the left, portrait on the right -->
     <header class="page-head wrap about-head">
         <div class="about-head__title">

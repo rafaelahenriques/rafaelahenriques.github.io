@@ -130,7 +130,7 @@ function start() {
         codeReveals();
         // Split after webfonts load so line breaks are measured correctly;
         // ctx.add keeps it inside this matchMedia context for cleanup.
-        document.fonts.ready.then(ctx.add(splitReveals));
+        document.fonts.ready.then(() => ctx.add(splitReveals));
     });
 
     // the page may have reflowed under the loader; re-measure every trigger
