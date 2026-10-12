@@ -3,6 +3,7 @@ import Base from "../../layouts/BaseLayout.astro";
 import { render } from "astro:content";
 import { Picture } from "astro:assets";
 import { getProjects, pad, slugOf, type ProjectEntry } from "../../lib/content";
+import { projectSeo } from "../../lib/seo";
 
 export async function getStaticPaths() {
     const projects = await getProjects();
@@ -43,7 +44,7 @@ const facts = [
 ].filter((f) => f.value);
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} {...projectSeo(project)}>
     <header class="page-head wrap">
         <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
         <p class="project-kicker mono muted" data-reveal>{kicker}</p>

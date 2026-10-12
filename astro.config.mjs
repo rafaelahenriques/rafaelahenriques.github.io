@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
@@ -9,4 +10,8 @@ export default defineConfig({
     markdown: { shikiConfig: { theme: 'css-variables' } },
     // dev server: 4321 unless a port is handed in (e.g. a second preview copy)
     server: { port: Number(process.env.PORT) || 4321 },
+    // start loading a page as soon as a link to it is hovered or tapped
+    prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
+    // sitemap-index.xml for search engines (the 404 page stays out)
+    integrations: [sitemap({ filter: (page) => !page.includes('/404') })],
 });

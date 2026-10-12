@@ -9,7 +9,7 @@ import { getFeatured, slugOf } from "../lib/content";
 const featured = await getFeatured();
 ---
 
-<Base title="Not found" description="This page doesn't exist.">
+<Base title="Not found" description="This page doesn't exist." noindex>
     <section class="page-head wrap nf">
         <p class="mono muted" data-reveal>404</p>
         <h1 class="display nf__title" data-split>One page off.</h1>

@@ -50,7 +50,7 @@ const slotOf = (i: number) => SLOTS[Math.min(i, SLOTS.length - 1)];
                 {
                     cards.map((c, i) => (
                         <li>
-                            <button type="button" class="deck-index__btn" data-deck-go={i} aria-pressed={String(i === 0)}>
+                            <button type="button" class="deck-index__btn" data-deck-go={i} aria-pressed={i === 0 ? "true" : "false"}>
                                 <span class="mono">{c.num}</span>
                                 <span class="deck-index__title">{c.title}</span>
                                 <span class="deck-index__meta mono">
