@@ -1,43 +1,32 @@
-# Astro Starter Kit: Minimal
+# rafaelahenriques.com
 
-```sh
-npm create astro@latest -- --template minimal
+Source code for my portfolio: [rafaelahenriques.com](https://rafaelahenriques.com).
+
+It's a static Astro site with GSAP for motion, deployed on Cloudflare Workers. Every project is a Markdown entry in a typed content collection, so adding a case study means adding a folder rather than writing a new page.
+
+## Features
+
+- Project case studies generated from `src/content/projects/*/index.md`, validated by a Zod schema in `src/content.config.ts`
+- A swipeable project deck on the home page, plus a projects index with list and grid views and a type filter
+- A command menu for searching projects, pages and contact actions
+- Light and dark themes, and animations that respect reduced-motion settings
+- A script that generates typographic cover images for projects without screenshots yet (`scripts/build-covers.mjs`)
+
+## Run it
+
+```bash
+npm install
+npm run dev      # http://localhost:4321
+npm run build    # static output in dist/
+npm run check    # Astro and TypeScript diagnostics
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Structure
 
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and  files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
-
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+| Path | Contents |
+|---|---|
+| `src/pages/` | Home, about, projects index, project detail and 404 routes |
+| `src/content/projects/` | One folder per project: Markdown plus images and videos |
+| `src/components/` | Project deck, chapters, lightbox, command menu, header and footer |
+| `src/scripts/` | GSAP animations |
+| `wrangler.jsonc` | Cloudflare Workers static-assets deployment |
