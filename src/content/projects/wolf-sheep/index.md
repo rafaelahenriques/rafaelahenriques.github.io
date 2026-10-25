@@ -20,9 +20,9 @@ media:
   repo: "https://github.com/rafaelahenriques/Wolf-and-Sheep-Game-main"
   live: "https://wolfandsheepgame.netlify.app"
   video: "https://vimeo.com/1233170503"
-  screenshot: "./maingame.png"
+  screenshot: "./cover.jpg"
   gallery:
-    - "./maingame.png"
+    - "./cover.jpg"
     - "./startscreen.png"
     - "./statistics.png"
 tags: ["Full-stack", "Python", "API", "Game Logic"]
