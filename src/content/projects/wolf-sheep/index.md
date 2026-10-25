@@ -27,6 +27,8 @@ media:
     - "./statistics.png"
 tags: ["Full-stack", "Python", "API", "Game Logic"]
 customPage: true
+tagline: "A university Pygame project rebuilt on my own as a full-stack game, with a minimax AI and a React client."
+tv: "/media/tv/wolf-sheep.mp4"
 ---
 
 ## Origin

@@ -1,6 +1,6 @@
 ---
 import Base from "../layouts/BaseLayout.astro";
-import ProjectDeck from "../components/ProjectDeck.astro";
+import ProjectTV from "../components/ProjectTV.astro";
 import SpreadName from "../components/SpreadName.astro";
 import babyPhoto from "../assets/me/rafaela-2006.jpg";
 import { getFeatured } from "../lib/content";
@@ -42,8 +42,8 @@ const featured = await getFeatured();
         </div>
     </section>
 
-    <!-- SELECTED PROJECTS: a deck of cards -->
-    <ProjectDeck projects={featured} />
+    <!-- SELECTED PROJECTS: channels on an old TV -->
+    <ProjectTV projects={featured} />
 </Base>
 
 <style>
