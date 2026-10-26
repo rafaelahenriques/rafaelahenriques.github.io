@@ -36,7 +36,7 @@ export interface GameBoyOptions {
 
 const MODEL = "/models/gameboy.glb";
 const SCREEN_ASPECT = 1.1176; // the LCD, width / height (from the model)
-const PICTURE_ASPECT = 4 / 3; // the clips and posters
+const PICTURE_ASPECT = 640 / 572; // the clips and posters: made 10:9 for this screen, so nothing is cut off
 const BASE_YAW = -0.38; // turned a little, so the side shows
 const CARD_SECONDS = 7; // the in-progress screen, before moving on
 const INK = "#2e3a22"; // dark LCD green
@@ -64,7 +64,7 @@ const fragmentShader = /* glsl */ `
     void main() {
         // glTF UVs run top-down; flip them so y points up, like the textures
         vec2 uv = vec2(vUv.x, 1.0 - vUv.y);
-        // the 4:3 picture covers the screen
+        // the picture covers the screen (the clips are made to its shape)
         vec2 st = uv;
         float k = uMapAspect / uScreenAspect;
         if (k > 1.0) st.x = (st.x - 0.5) / k + 0.5; else st.y = (st.y - 0.5) * k + 0.5;
