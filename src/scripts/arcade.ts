@@ -1,8 +1,8 @@
 /**
  * The projects arcade: a close-up of an arcade cabinet ("Arcade Invaders" by
  * tef, CC BY 4.0) in three.js whose screen flips through the projects. Each
- * project is drawn as a dark screen in neon pink (its image dithered into four
- * pinks, its title in pixel letters, number, category, "press start");
+ * project is drawn as a dark screen in neon (its image dithered into four
+ * tones of it, its title in pixel letters, number, category, "press start");
  * changing project rolls the picture up like a CRT losing vertical hold. The cabinet works: the left
  * stick and buttons go back, the right ones forward, 1P / 2P and the screen
  * open the project. Until the visitor touches it, it flips on its own. It only
@@ -38,20 +38,22 @@ const SCREEN_ASPECT = 1.4172; // the screen, width / height (from the model)
 const MARQUEE_ASPECT = 3.3408;
 // how much has to stay in view around the screen, half width / half height
 const FRAME = { x: 0.2, y: 0.23 };
-// a black cabinet lit in neon pink, with a yellow stick (one accent: swap NEON
-// and its tints for another colour)
-const NEON = "#ff2e88";
-const NEON_DEEP = "#6e0f3f";
-const NEON_PALE = "#ffc2dd";
+// a black cabinet lit in one neon colour (light blue; for pink: 255, 46, 136 with
+// #6e0f3f, #ffc2dd, #0f0a10 and pink tones), with yellow sticks and red buttons
+const NEON_RGB = "92, 200, 255";
+const NEON = `rgb(${NEON_RGB})`;
+const neon = (alpha: number) => `rgba(${NEON_RGB}, ${alpha})`;
+const NEON_DEEP = "#0d3a57";
+const NEON_PALE = "#cdeeff";
 const YELLOW = "#ffd23f";
-const SCREEN_BG = "#0f0a10";
-const WHITE = "#f6eff3";
-// four pinks for the dithered pictures, dark to light
-const PINKS = [
-    [15, 10, 16],
-    [96, 18, 62],
-    [232, 46, 136],
-    [255, 196, 224],
+const SCREEN_BG = "#080d12";
+const WHITE = "#f1f6f9";
+// four tones of it for the dithered pictures, dark to light
+const TONES = [
+    [8, 13, 18],
+    [18, 64, 98],
+    [64, 178, 240],
+    [206, 240, 255],
 ];
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16);
 
@@ -69,6 +71,7 @@ const fragmentShader = /* glsl */ `
     uniform float uRoll;
     uniform float uTime;
     uniform float uHover;
+    uniform vec3 uTint;
     varying vec2 vUv;
 
     float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
@@ -98,7 +101,7 @@ const fragmentShader = /* glsl */ `
         col *= 0.985 + 0.015 * sin(uTime * 53.0);
         // static while it rolls
         float n = hash(floor(p * vec2(300.0, 220.0)) + floor(uTime * 30.0));
-        col = mix(col, vec3(1.0, 0.8, 0.92) * n, sin(uRoll * 3.14159) * 0.55);
+        col = mix(col, uTint * n, sin(uRoll * 3.14159) * 0.55);
         // darker towards the rounded corners, a touch brighter on hover
         col *= smoothstep(0.85, 0.35, length(c * vec2(1.0, 1.25))) * 0.5 + 0.5;
         col *= 1.0 + uHover * 0.08;
@@ -116,7 +119,7 @@ const loadImage = (src: string) =>
         img.src = src;
     });
 
-/** the image, covered into w × h and dithered into the four pinks, in chunky pixels */
+/** the image, covered into w × h and dithered into the four tones, in chunky pixels */
 function dither(img: HTMLImageElement, w: number, h: number, px: number) {
     const cw = Math.ceil(w / px);
     const ch = Math.ceil(h / px);
@@ -130,10 +133,10 @@ function dither(img: HTMLImageElement, w: number, h: number, px: number) {
         for (let x = 0; x < cw; x++) {
             const i = (y * cw + x) * 4;
             const l = (0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]) / 255;
-            // a bit of contrast, then pick one of four pinks with an ordered dither
+            // a bit of contrast, then pick one of four tones with an ordered dither
             const v = Math.min(1, Math.max(0, (l - 0.5) * 1.25 + 0.5)) * 3;
             const level = Math.min(3, Math.floor(v + BAYER[(y % 4) * 4 + (x % 4)] - 0.5 + 0.5));
-            const [r, g, b] = PINKS[Math.max(0, level)];
+            const [r, g, b] = TONES[Math.max(0, level)];
             d[i] = r;
             d[i + 1] = g;
             d[i + 2] = b;
@@ -176,7 +179,7 @@ function drawPixelText(g: CanvasRenderingContext2D, lines: string[], size: numbe
     g.drawImage(back, x + cell, y + cell, back.width * cell, back.height * cell);
     g.save();
     if (glow) {
-        g.shadowColor = "rgba(255, 46, 136, 0.7)";
+        g.shadowColor = neon(0.7);
         g.shadowBlur = glow;
     }
     g.drawImage(front, x, y, front.width * cell, front.height * cell);
@@ -193,8 +196,8 @@ async function drawScreen(game: ArcadeGame, total: number) {
     g.fillStyle = SCREEN_BG;
     g.fillRect(0, 0, W, H);
     const glow = g.createRadialGradient(W * 0.5, H * 0.45, 0, W * 0.5, H * 0.45, W * 0.6);
-    glow.addColorStop(0, "rgba(255, 46, 136, 0.16)");
-    glow.addColorStop(1, "rgba(255, 46, 136, 0)");
+    glow.addColorStop(0, neon(0.16));
+    glow.addColorStop(1, neon(0));
     g.fillStyle = glow;
     g.fillRect(0, 0, W, H);
 
@@ -217,7 +220,7 @@ async function drawScreen(game: ArcadeGame, total: number) {
         g.imageSmoothingEnabled = false;
         g.drawImage(pixels, box.x, box.y, box.w, box.h);
     } else {
-        g.fillStyle = "rgba(255, 46, 136, 0.12)";
+        g.fillStyle = neon(0.12);
         g.fillRect(box.x, box.y, box.w, box.h);
     }
     g.lineWidth = 5;
@@ -289,7 +292,7 @@ async function drawScreen(game: ArcadeGame, total: number) {
     return tex;
 }
 
-/** the marquee: "PROJECTS" in pink pixel letters in a neon frame, with a yellow star either side */
+/** the marquee: "PROJECTS" in pixel letters in a neon frame, with a yellow star either side */
 function drawMarquee() {
     const W = 1024;
     const H = Math.round(W / MARQUEE_ASPECT);
@@ -300,7 +303,7 @@ function drawMarquee() {
     // (the top of the texture sits behind the cabinet's lip, so the frame starts lower)
     const frame = { x: 28, y: 84, w: W - 56, h: H - 84 - 16 };
     g.save();
-    g.shadowColor = "rgba(255, 46, 136, 0.8)";
+    g.shadowColor = neon(0.8);
     g.shadowBlur = 18;
     g.strokeStyle = NEON;
     g.lineWidth = 7;
@@ -344,7 +347,7 @@ export async function createArcade(o: ArcadeOptions) {
     top.target.position.set(0, 0.6, 0);
     scene.add(top, top.target);
     // the screen's light spilling onto the cabinet (it's close: a little goes a long way)
-    const spill = new THREE.PointLight(0xff4fa0, 0.06);
+    const spill = new THREE.PointLight(NEON, 0.06);
     spill.position.set(0, 0.73, 0.25);
     scene.add(spill);
 
@@ -356,7 +359,7 @@ export async function createArcade(o: ArcadeOptions) {
     const gltf = await new GLTFLoader().loadAsync(MODEL);
     scene.add(gltf.scene);
 
-    // the cabinet, restyled by material: black, with neon pink trim and pink-red buttons
+    // the cabinet, restyled by material: black, with neon trim and red buttons
     const palette: Record<string, THREE.MeshStandardMaterialParameters> = {
         Body: { color: 0x0e0d10, roughness: 0.5, metalness: 0.1 },
         Side: { color: 0x121114, roughness: 0.5, metalness: 0.1 },
@@ -436,7 +439,7 @@ export async function createArcade(o: ArcadeOptions) {
         if (!screens.has(i)) screens.set(i, drawScreen(o.games[i], o.games.length));
         return screens.get(i)!;
     };
-    const blank = new THREE.DataTexture(new Uint8Array([15, 10, 16, 255]), 1, 1);
+    const blank = new THREE.DataTexture(new Uint8Array([8, 13, 18, 255]), 1, 1);
     blank.colorSpace = THREE.SRGBColorSpace;
     blank.needsUpdate = true;
     const uniforms = {
@@ -445,6 +448,7 @@ export async function createArcade(o: ArcadeOptions) {
         uRoll: { value: 0 },
         uTime: { value: 0 },
         uHover: { value: 0 },
+        uTint: { value: new THREE.Color(NEON_PALE) },
     };
     screen.material = new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader, toneMapped: false });
 
