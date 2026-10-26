@@ -1,0 +1,427 @@
+---
+/**
+ * The projects as an arcade: a close-up of a black cabinet lit in neon
+ * whose screen flips through them (src/scripts/arcade.ts), on a dark block that
+ * dissolves into the page in pixels. Beside it (under it on smaller screens)
+ * the project on screen, back / next and a link to open it. The cabinet's own
+ * controls work too: left stick and buttons go back, right ones forward, the
+ * screen opens the project. Until the visitor touches anything it flips on its
+ * own (not with reduced motion).
+ *
+ * "View as list" carries data-show-layout, for the projects page to switch
+ * views. If WebGL isn't there it sends "arcade:unavailable" and the page shows
+ * the list instead.
+ */
+import { getImage } from "astro:assets";
+import { pad, slugOf, type ProjectEntry } from "../lib/content";
+import PixelEdge from "./PixelEdge.astro";
+
+interface Props {
+    projects: ProjectEntry[];
+}
+
+const { projects } = Astro.props;
+
+const games = await Promise.all(
+    projects.map(async (p, i) => {
+        const image = p.data.media?.thumbnail ?? p.data.media?.screenshot;
+        return {
+            num: pad(i + 1),
+            title: p.data.title,
+            category: p.data.category ?? "",
+            year: p.data.year ?? "",
+            href: `/projects/${slugOf(p)}/`,
+            // small: the screen dithers it into big pixels anyway
+            image: image && (await getImage({ src: image, width: 480, format: "webp", quality: 75 })).src,
+            inProgress: p.data.status === "in-progress",
+        };
+    }),
+);
+const first = games[0];
+const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean).join(" · ");
+---
+
+<div class="arcade" data-arcade>
+    <PixelEdge seed={11} rows={4} tone="night" />
+    <section class="arcade__block night" aria-label="Projects arcade">
+        <div class="arcade__top wrap mono">
+            <p class="arcade__label">Projects <span class="arcade__count">({pad(games.length)})</span></p>
+            <button type="button" class="arcade__view" data-show-layout="list">
+                View as list
+                <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M0 1.5h12M0 6h12M0 10.5h12" stroke="currentColor" stroke-width="1.5" /></svg>
+            </button>
+        </div>
+
+        <div class="arcade__stage">
+            <canvas class="arcade__canvas" data-arcade-canvas aria-hidden="true"></canvas>
+            <p class="arcade__loading mono" data-arcade-loading>Insert coin…</p>
+        </div>
+
+        <div class="arcade__bar wrap">
+            <p class="arcade__now" aria-live="polite">
+                <span class="arcade__num mono" data-arcade-num>{first.num} / {pad(games.length)}</span>
+                <a href={first.href} class="arcade__title" data-arcade-title>{first.title}</a>
+                <span class="arcade__meta mono" data-arcade-meta>{meta(first)}</span>
+            </p>
+            <div class="arcade__controls">
+                <button type="button" class="arcade__btn" data-arcade-prev aria-label="Previous project">←</button>
+                <button type="button" class="arcade__btn" data-arcade-next aria-label="Next project">→</button>
+                <a href={first.href} class="arcade__open mono" data-arcade-open>Open project <span aria-hidden="true">→</span></a>
+            </div>
+            <p class="arcade__hint mono" data-arcade-hint hidden>Try the sticks and buttons · the screen opens a project</p>
+        </div>
+
+        <p class="arcade__credit wrap mono">
+            Arcade: <a href="https://sketchfab.com/3d-models/arcade-invaders-8c96ac36c52e4cf2a33cf605bd762014" target="_blank" rel="noopener">“Arcade Invaders” by tef</a>,
+            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>, restyled
+        </p>
+    </section>
+    <PixelEdge seed={12} rows={6} tone="night" direction="up" />
+
+    <script type="application/json" data-arcade-games set:html={JSON.stringify(games)} />
+</div>
+
+<script>
+    import { gsap } from "gsap";
+    import type { Arcade, ArcadeGame } from "../scripts/arcade";
+
+    const root = document.querySelector<HTMLElement>("[data-arcade]");
+    if (root) {
+        const games: ArcadeGame[] = JSON.parse(root.querySelector("[data-arcade-games]")!.textContent!);
+        const canvas = root.querySelector<HTMLCanvasElement>("[data-arcade-canvas]")!;
+        const num = root.querySelector<HTMLElement>("[data-arcade-num]")!;
+        const title = root.querySelector<HTMLAnchorElement>("[data-arcade-title]")!;
+        const meta = root.querySelector<HTMLElement>("[data-arcade-meta]")!;
+        const open = root.querySelector<HTMLAnchorElement>("[data-arcade-open]")!;
+        const hint = root.querySelector<HTMLElement>("[data-arcade-hint]")!;
+        const loading = root.querySelector<HTMLElement>("[data-arcade-loading]")!;
+        const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const total = String(games.length).padStart(2, "0");
+
+        let current = 0;
+        let arcade: Arcade | null = null;
+
+        // attract mode: it flips by itself until the visitor takes over
+        const ATTRACT_MS = 4200;
+        let attract = !reduceMotion;
+        let timer = 0;
+        let hovering = false;
+        const schedule = () => {
+            clearTimeout(timer);
+            if (!attract) return;
+            timer = window.setTimeout(() => {
+                if (arcade?.visible && !hovering) step(1, false);
+                schedule();
+            }, ATTRACT_MS);
+        };
+
+        const select = (i: number) => {
+            current = i;
+            const g = games[i];
+            num.textContent = `${g.num} / ${total}`;
+            title.textContent = g.title;
+            title.href = open.href = g.href;
+            meta.textContent = [g.category, g.year].filter(Boolean).join(" · ");
+            if (!reduceMotion) gsap.fromTo([num, title, meta], { autoAlpha: 0, y: 8 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: "expo.out", stagger: 0.04, overwrite: true });
+            arcade?.show(i);
+        };
+        const step = (dir: number, byVisitor: boolean) => {
+            if (byVisitor) attract = false;
+            const n = games.length;
+            select((((current + dir) % n) + n) % n);
+            schedule();
+        };
+
+        root.querySelector("[data-arcade-prev]")!.addEventListener("click", () => step(-1, true));
+        root.querySelector("[data-arcade-next]")!.addEventListener("click", () => step(1, true));
+        root.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowLeft") step(-1, true);
+            else if (e.key === "ArrowRight") step(1, true);
+        });
+        canvas.addEventListener("pointerenter", () => (hovering = true));
+        canvas.addEventListener("pointerleave", () => (hovering = false));
+
+        // load three.js and the model once the arcade is about to be seen
+        const start = async () => {
+            try {
+                const { createArcade } = await import("../scripts/arcade");
+                arcade = await createArcade({
+                    canvas,
+                    games,
+                    reduceMotion,
+                    onPrev: () => step(-1, true),
+                    onNext: () => step(1, true),
+                    onOpen: () => (window.location.href = games[current].href),
+                });
+                arcade.show(current);
+                root.classList.add("is-live");
+                hint.hidden = false;
+                schedule();
+            } catch (err) {
+                console.warn("Arcade: no WebGL, showing the list instead", err);
+                root.dispatchEvent(new CustomEvent("arcade:unavailable", { bubbles: true }));
+            } finally {
+                loading.hidden = true;
+            }
+        };
+        const io = new IntersectionObserver(
+            ([entry]) => {
+                if (!entry.isIntersecting) return;
+                io.disconnect();
+                start();
+            },
+            { rootMargin: "400px 0px" },
+        );
+        io.observe(root);
+    }
+</script>
+
+<style>
+    /* the cabinet's neon (as in src/scripts/arcade.ts), on the dark block */
+    .arcade {
+        --neon-rgb: 92, 200, 255;
+        --neon: rgb(var(--neon-rgb));
+        --neon-ink: #080d12;
+    }
+
+    .arcade__block {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .arcade__top {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: var(--gutter);
+        padding-block: 8px 0;
+        color: var(--muted);
+    }
+
+    .arcade__label {
+        margin: 0;
+    }
+
+    .arcade__view {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 0 2px;
+        border: 0;
+        border-bottom: 1px solid currentColor;
+        background: none;
+        color: var(--text);
+        font: inherit;
+        text-transform: inherit;
+        letter-spacing: inherit;
+        cursor: pointer;
+        transition: color 0.3s var(--ease);
+    }
+
+    .arcade__view:hover {
+        color: var(--neon);
+    }
+
+    /* the screen's glow on the dark behind the cabinet */
+    .arcade__stage {
+        position: relative;
+        height: clamp(400px, 64vh, 620px);
+        background: radial-gradient(60% 55% at 50% 42%, rgba(var(--neon-rgb), 0.13), transparent 70%);
+    }
+
+    .arcade__canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        /* the close-up cuts off softly at the bottom */
+        mask-image: linear-gradient(to bottom, #000 82%, transparent);
+        opacity: 0;
+        transition: opacity 1.2s var(--ease);
+        touch-action: pan-y;
+    }
+
+    .is-live .arcade__canvas {
+        opacity: 1;
+    }
+
+    .arcade__loading {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        margin: 0;
+        color: var(--muted);
+    }
+
+    .arcade__loading[hidden] {
+        display: none;
+    }
+
+    /* --- the project on screen, and the controls --- */
+
+    .arcade__bar {
+        display: grid;
+        gap: 18px;
+        padding-block: 20px;
+        border-top: 1px solid var(--line);
+    }
+
+    .arcade__now {
+        display: grid;
+        gap: 6px;
+        margin: 0;
+        min-width: 0;
+    }
+
+    .arcade__num,
+    .arcade__meta,
+    .arcade__hint {
+        color: var(--muted);
+    }
+
+    .arcade__title {
+        font-size: clamp(1.6rem, 0.9rem + 3vw, 3.5rem);
+        font-weight: 800;
+        line-height: 0.95;
+        letter-spacing: -0.03em;
+        text-transform: uppercase;
+        text-decoration: none;
+        color: var(--text);
+        overflow-wrap: anywhere;
+        transition: color 0.3s var(--ease);
+    }
+
+    .arcade__title:hover {
+        color: var(--neon);
+    }
+
+    .arcade__controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .arcade__btn {
+        display: grid;
+        place-items: center;
+        width: 48px;
+        height: 48px;
+        padding: 0;
+        border: 1px solid var(--line);
+        background: none;
+        color: var(--text);
+        font: inherit;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition:
+            border-color 0.3s var(--ease),
+            background-color 0.3s var(--ease),
+            color 0.3s var(--ease);
+    }
+
+    .arcade__btn:hover {
+        border-color: var(--text);
+    }
+
+    .arcade__btn:active {
+        background: var(--text);
+        color: var(--bg);
+    }
+
+    /* the one lit-up button: square and neon, like the cabinet's trim */
+    .arcade__open {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        height: 48px;
+        margin-left: auto;
+        padding: 0 18px;
+        background: var(--neon);
+        color: var(--neon-ink);
+        text-decoration: none;
+        text-transform: uppercase;
+        transition: box-shadow 0.3s var(--ease);
+    }
+
+    .arcade__open:hover,
+    .arcade__open:focus-visible {
+        box-shadow: 0 0 24px rgba(var(--neon-rgb), 0.6);
+    }
+
+    .arcade__hint {
+        margin: 0;
+    }
+
+    .arcade__hint[hidden] {
+        display: none;
+    }
+
+    .arcade__credit {
+        margin: 0;
+        padding-bottom: 24px;
+        color: var(--muted);
+    }
+
+    .arcade__credit a {
+        color: inherit;
+    }
+
+    /* wide screens: the arcade fills the screen, the cabinet stands right of
+       centre and the project sits on the left, like the Game Boy on the home page */
+    @media (min-width: 1100px) {
+        .arcade__block {
+            grid-template-rows: auto auto;
+        }
+
+        .arcade__top,
+        .arcade__stage,
+        .arcade__bar {
+            grid-area: 1 / 1;
+        }
+
+        .arcade__top,
+        .arcade__bar {
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .arcade__top > *,
+        .arcade__bar > * {
+            pointer-events: auto;
+        }
+
+        .arcade__top {
+            align-self: start;
+        }
+
+        .arcade__stage {
+            --view-shift: 0.15;
+            height: clamp(560px, calc(100svh - 190px), 1000px);
+        }
+
+        .arcade__bar {
+            align-self: end;
+            justify-items: start;
+            width: min(40%, 520px);
+            margin-left: 0;
+            padding-bottom: clamp(32px, 6vh, 64px);
+            border-top: 0;
+        }
+
+        .arcade__open {
+            margin-left: 6px;
+        }
+
+        .arcade__credit {
+            grid-area: 2 / 1;
+            text-align: right;
+        }
+    }
+
+    @media (max-width: 1099px) {
+        .arcade__top {
+            padding-bottom: 8px;
+        }
+    }
+</style>

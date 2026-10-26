@@ -1,0 +1,50 @@
+---
+/**
+ * Where the page dissolves into a dark block, in big pixels (src/scripts/pixels.ts).
+ * Put it right before a block (direction "down") or right after one ("up").
+ * tone: the block's colour, "inverse" (footer, next project) or "night" (the arcade).
+ * Decorative: without JS the block simply starts with a straight edge.
+ */
+interface Props {
+    seed?: number;
+    rows?: number;
+    direction?: "down" | "up";
+    tone?: "inverse" | "night";
+    class?: string;
+}
+
+const { seed = 1, rows = 7, direction = "down", tone = "inverse", class: className } = Astro.props;
+---
+
+<div
+    class:list={["pixel-edge", className]}
+    style={`--rows:${rows}`}
+    data-pixel-edge
+    data-seed={seed}
+    data-rows={rows}
+    data-direction={direction}
+    data-tone={tone}
+    aria-hidden="true"
+>
+    <canvas></canvas>
+</div>
+
+<script>
+    import { mountPixelEdges } from "../scripts/pixels";
+    mountPixelEdges();
+</script>
+
+<style>
+    .pixel-edge {
+        --cell: clamp(16px, 2.3vw, 32px);
+        position: relative;
+        height: calc(var(--rows) * var(--cell));
+    }
+
+    .pixel-edge canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+    }
+</style>
