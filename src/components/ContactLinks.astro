@@ -15,12 +15,12 @@ const { class: className } = Astro.props;
                 <a
                     href={link.href}
                     class="link"
-                    download={link.download ? "" : undefined}
-                    target={link.external ? "_blank" : undefined}
-                    rel={link.external ? "noopener noreferrer" : undefined}
+                    target={link.newTab ? "_blank" : undefined}
+                    rel={link.newTab ? "noopener noreferrer" : undefined}
                 >
                     {link.label}
-                    {link.external && <span aria-hidden="true"> ↗</span>}
+                    {link.newTab && <span aria-hidden="true"> ↗</span>}
+                    {link.newTab && <span class="visually-hidden"> (opens in a new tab)</span>}
                 </a>
             </li>
         ))

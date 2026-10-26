@@ -6,7 +6,7 @@ import { join } from "node:path";
  * Leave a value empty to hide its link.
  */
 export const site = {
-    email: "Rafaela.Henriques.work@gmail.com",
+    email: "rafaela.henriques.work@gmail.com",
     github: "https://github.com/rafaelahenriques",
     linkedin: "https://www.linkedin.com/in/rafaelarosahenriques/",
     cv: "/Rafaela_Henriques_Resume.pdf", // the file lives in public/
@@ -21,13 +21,13 @@ const hasCv = existsSync(join(process.cwd(), "public", site.cv));
 export interface ContactLink {
     label: string;
     href: string;
-    external?: boolean;
-    download?: boolean;
+    /** opens in a new tab, marked ↗: the profiles, and the résumé PDF */
+    newTab?: boolean;
 }
 
 export const contactLinks: ContactLink[] = [
-    ...(hasCv ? [{ label: "Resume", href: site.cv, download: true }] : []),
-    ...(site.linkedin ? [{ label: "LinkedIn", href: site.linkedin, external: true }] : []),
-    ...(site.github ? [{ label: "GitHub", href: site.github, external: true }] : []),
+    ...(hasCv ? [{ label: "Resume", href: site.cv, newTab: true }] : []),
+    ...(site.linkedin ? [{ label: "LinkedIn", href: site.linkedin, newTab: true }] : []),
+    ...(site.github ? [{ label: "GitHub", href: site.github, newTab: true }] : []),
     { label: "Email", href: `mailto:${site.email}` },
 ];

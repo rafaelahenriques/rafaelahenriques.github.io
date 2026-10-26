@@ -1,6 +1,6 @@
 ---
-category: "Tools"
-order: 6
+category: "Tools & workflow"
+order: 5
 items:
   - "Git"
   - "GitHub"

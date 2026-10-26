@@ -1,6 +1,6 @@
 ---
-category: "Interaction & motion"
-order: 4
+category: "Creative tech & motion"
+order: 3
 items:
   - "GSAP"
   - "Framer Motion"
