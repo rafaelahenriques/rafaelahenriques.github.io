@@ -9,6 +9,7 @@ It's a static Astro site with GSAP for motion, deployed on Cloudflare Workers. E
 - Project case studies generated from `src/content/projects/*/index.md`, validated by a Zod schema in `src/content.config.ts`
 - A 3D Game Boy on the home page (three.js) that plays each selected project on its screen, with working buttons; plus a projects index with list and grid views and a type filter
 - A command menu for searching projects, pages and contact actions
+- GitHub numbers on the about page (commits, contributions, most used languages, the last year day by day), refreshed from GitHub's public data before every build (`scripts/github-stats.mjs`)
 - Light and dark themes, and animations that respect reduced-motion settings
 - A script that generates typographic cover images for projects without screenshots yet (`scripts/build-covers.mjs`)
 
