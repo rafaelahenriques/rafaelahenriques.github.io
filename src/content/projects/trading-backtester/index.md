@@ -37,6 +37,7 @@ metrics:
 media:
   screenshot: "./cover.png"
 tags: ["Backend", "Data", "Algorithms"]
+tagline: "An engine that replays historical market data through a strategy and measures how it would have performed."
 ---
 
 ## Status

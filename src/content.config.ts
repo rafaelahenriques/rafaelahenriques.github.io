@@ -43,6 +43,10 @@ const projects = defineCollection({
       metrics: z.array(labelled).optional(),
       // Projects with their own page in src/pages/projects/ (e.g. case studies)
       customPage: z.boolean().optional(),
+      // Home page TV: a one-line summary beside it, and the clip it plays
+      // (a path under public/, with a .jpg poster of the same name beside it)
+      tagline: z.string().optional(),
+      tv: z.string().optional(),
       // Projects page filters this project appears under (labels in lib/content.ts)
       types: z.array(z.enum(["web", "mobile", "fullstack", "data", "interactive", "branding", "ui"])).default([]),
     }),
