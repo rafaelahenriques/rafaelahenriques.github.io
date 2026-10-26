@@ -17,7 +17,7 @@ const exact = languages.map((l) => (l.percent / total) * CELLS);
 const cells = exact.map(Math.floor);
 const byRemainder = exact.map((x, i) => [x - Math.floor(x), i]).sort((a, b) => b[0] - a[0]);
 for (let k = 0; k < CELLS - cells.reduce((a, b) => a + b, 0); k++) cells[byRemainder[k][1]]++;
-// each language a shade of the ink, darkest first; everything else faint
+// each language in one of the site's colours; everything else faint
 const tone = (i: number) => (languages[i].name === "Other" ? "other" : String(i));
 const squares = cells.flatMap((n, i) => Array.from({ length: n }, () => tone(i)));
 ---
@@ -86,24 +86,30 @@ const squares = cells.flatMap((n, i) => Array.from({ length: n }, () => tone(i))
         aspect-ratio: 1;
     }
 
+    /* colours from around the site, in order */
+    /* the pixel that lights up under the cursor */
     .gh__tone--0 {
-        background: var(--text);
+        background: var(--pixel-accent);
     }
 
+    /* the "in progress" badge */
     .gh__tone--1 {
-        background: color-mix(in oklab, var(--text) 74%, var(--bg));
+        background: #f6d33f;
     }
 
+    /* the arcade's buttons */
     .gh__tone--2 {
-        background: color-mix(in oklab, var(--text) 52%, var(--bg));
+        background: #f0245c;
     }
 
+    /* the arcade's neon */
     .gh__tone--3 {
-        background: color-mix(in oklab, var(--text) 36%, var(--bg));
+        background: #5cc8ff;
     }
 
+    /* the Game Boy's screen */
     .gh__tone--4 {
-        background: color-mix(in oklab, var(--text) 24%, var(--bg));
+        background: #b5caa0;
     }
 
     .gh__tone--other {
