@@ -2,7 +2,7 @@
 /**
  * Command menu (⌘K / Ctrl K, or "/"): one search box for the whole site.
  * Type a project, a category or a technology ("react", "python", "mobile")
- * and jump straight to it; or download the résumé, copy the email address,
+ * and jump straight to it; or open the résumé, copy the email address,
  * open LinkedIn / GitHub, switch the theme.
  *
  * A modal <dialog> with the combobox + listbox pattern: the input keeps
@@ -20,13 +20,12 @@ type Item = {
     keywords?: string;
     href?: string;
     external?: boolean;
-    download?: boolean;
     action?: "copy-email" | "theme";
     wip?: boolean;
 };
 
 const projects = await getProjects();
-const resume = contactLinks.find((l) => l.download);
+const resume = contactLinks.find((l) => l.href === site.cv);
 
 const items: Item[] = [
     ...projects.map((p) => ({
@@ -40,7 +39,7 @@ const items: Item[] = [
     { group: "Pages", label: "Home", href: "/" },
     { group: "Pages", label: "All projects", hint: "List or grid, filter by type", href: "/projects/" },
     { group: "Pages", label: "About", hint: "Bio, skills, availability", href: "/about/" },
-    ...(resume ? [{ group: "Contact", label: "Download résumé", hint: "PDF", keywords: "cv resume", href: resume.href, download: true }] : []),
+    ...(resume ? [{ group: "Contact", label: "Open résumé", hint: "PDF", keywords: "cv resume download", href: resume.href, external: true }] : []),
     { group: "Contact", label: "Copy email address", hint: site.email, keywords: "mail contact", action: "copy-email" as const },
     { group: "Contact", label: "Send an email", hint: site.email, keywords: "mail contact", href: `mailto:${site.email}` },
     ...(site.linkedin ? [{ group: "Contact", label: "LinkedIn", keywords: "profile", href: site.linkedin, external: true }] : []),
@@ -94,7 +93,6 @@ const groups = [...new Set(items.map((i) => i.group))];
                                     data-search={`${item.label} ${item.hint ?? ""} ${item.keywords ?? ""}`.toLowerCase()}
                                     data-href={item.href}
                                     data-external={item.external ? "" : undefined}
-                                    data-download={item.download ? "" : undefined}
                                     data-action={item.action}
                                 >
                                     <span class="cmdk__label">{item.label}</span>
@@ -194,10 +192,7 @@ const groups = [...new Set(items.map((i) => i.group))];
             }
             if (!href) return;
             close();
-            if (option.hasAttribute("data-download")) {
-                const a = Object.assign(document.createElement("a"), { href, download: "" });
-                a.click();
-            } else if (option.hasAttribute("data-external")) {
+            if (option.hasAttribute("data-external")) {
                 window.open(href, "_blank", "noopener");
             } else {
                 window.location.href = href;
