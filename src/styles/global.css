@@ -19,8 +19,8 @@
     --text-inverse: #f3f1ec;
     --muted-inverse: #9b988f;
     --line-inverse: rgba(243, 241, 236, 0.16);
-    /* always dark, whatever the theme: the arcade */
-    --night-bg: #0b0d0a;
+    /* always dark, whatever the theme: the arcade, in a navy to go with the Game Boy */
+    --night-bg: #0d0f2e;
     /* the pixel under the cursor */
     --pixel-accent: #3646ff;
     --media-shadow: 1px 1px 30px rgba(0, 0, 0, 0.08);
@@ -57,8 +57,8 @@ html.dark {
     --muted-inverse: #6f6d68;
     --line-inverse: rgba(14, 14, 13, 0.16);
     --pixel-accent: #5b69ff;
-    /* the arcade's block stays dark, but green enough to stand off the page */
-    --night-bg: #122010;
+    /* the arcade's block stays dark, but blue enough to stand off the page */
+    --night-bg: #13163d;
 }
 
 html.light {
@@ -300,9 +300,9 @@ main {
 /* always dark (the arcade) */
 .night {
     --bg: var(--night-bg);
-    --text: #e8ece4;
-    --muted: #8d9488;
-    --line: rgba(232, 236, 228, 0.14);
+    --text: #eceef9;
+    --muted: #9195b8;
+    --line: rgba(236, 238, 249, 0.14);
     background: var(--bg);
     color: var(--text);
 }

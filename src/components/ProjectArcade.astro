@@ -1,15 +1,16 @@
 ---
 /**
- * The projects as an arcade: a close-up of a cabinet whose screen flips
- * through them (src/scripts/arcade.ts), on a dark block that dissolves into
- * the page in pixels. Under it, the project on screen, back / next and a link
- * to open it. The cabinet's own controls work too: left stick and buttons go
- * back, right ones forward, 1P / 2P and the screen open the project. Until the
- * visitor touches anything it flips on its own (not with reduced motion).
+ * The projects as an arcade: a close-up of a cabinet in the Game Boy's colours
+ * whose screen flips through them (src/scripts/arcade.ts), on a dark block that
+ * dissolves into the page in pixels. Beside it (under it on smaller screens)
+ * the project on screen, back / next and a link to open it. The cabinet's own
+ * controls work too: left stick and buttons go back, right ones forward, the
+ * screen opens the project. Until the visitor touches anything it flips on its
+ * own (not with reduced motion).
  *
- * The projects page tells it which projects match the filter with an
- * "arcade:filter" event (the indexes, in order); if WebGL isn't there it sends
- * "arcade:unavailable" and the page shows the list instead.
+ * "View as list" carries data-show-layout, for the projects page to switch
+ * views. If WebGL isn't there it sends "arcade:unavailable" and the page shows
+ * the list instead.
  */
 import { getImage } from "astro:assets";
 import { pad, slugOf, type ProjectEntry } from "../lib/content";
@@ -41,8 +42,16 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
 ---
 
 <div class="arcade" data-arcade>
-    <PixelEdge seed={11} rows={6} tone="night" />
+    <PixelEdge seed={11} rows={4} tone="night" />
     <section class="arcade__block night" aria-label="Projects arcade">
+        <div class="arcade__top wrap mono">
+            <p class="arcade__label">Projects <span class="arcade__count">({pad(games.length)})</span></p>
+            <button type="button" class="arcade__view" data-show-layout="list">
+                View as list
+                <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M0 1.5h12M0 6h12M0 10.5h12" stroke="currentColor" stroke-width="1.5" /></svg>
+            </button>
+        </div>
+
         <div class="arcade__stage">
             <canvas class="arcade__canvas" data-arcade-canvas aria-hidden="true"></canvas>
             <p class="arcade__loading mono" data-arcade-loading>Insert coin…</p>
@@ -59,15 +68,13 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
                 <button type="button" class="arcade__btn" data-arcade-next aria-label="Next project">→</button>
                 <a href={first.href} class="arcade__open mono" data-arcade-open>Open project <span aria-hidden="true">→</span></a>
             </div>
+            <p class="arcade__hint mono" data-arcade-hint hidden>Try the sticks and buttons · the screen opens a project</p>
         </div>
 
-        <div class="arcade__foot wrap mono">
-            <p class="arcade__hint" data-arcade-hint hidden>Sticks and buttons flip through · 1P or the screen opens</p>
-            <p class="arcade__credit">
-                Arcade: <a href="https://sketchfab.com/3d-models/arcade-invaders-8c96ac36c52e4cf2a33cf605bd762014" target="_blank" rel="noopener">“Arcade Invaders” by tef</a>,
-                <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>, restyled
-            </p>
-        </div>
+        <p class="arcade__credit wrap mono">
+            Arcade: <a href="https://sketchfab.com/3d-models/arcade-invaders-8c96ac36c52e4cf2a33cf605bd762014" target="_blank" rel="noopener">“Arcade Invaders” by tef</a>,
+            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>, restyled
+        </p>
     </section>
     <PixelEdge seed={12} rows={6} tone="night" direction="up" />
 
@@ -91,8 +98,6 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
         const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         const total = String(games.length).padStart(2, "0");
 
-        // the projects that match the filter, in order, and where we are among them
-        let order = games.map((_, i) => i);
         let current = 0;
         let arcade: Arcade | null = null;
 
@@ -121,29 +126,20 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
             arcade?.show(i);
         };
         const step = (dir: number, byVisitor: boolean) => {
-            if (!order.length) return;
             if (byVisitor) attract = false;
-            const at = order.indexOf(current);
-            const n = order.length;
-            select(order[(((at < 0 ? 0 : at + dir) % n) + n) % n]);
+            const n = games.length;
+            select((((current + dir) % n) + n) % n);
             schedule();
         };
 
         root.querySelector("[data-arcade-prev]")!.addEventListener("click", () => step(-1, true));
         root.querySelector("[data-arcade-next]")!.addEventListener("click", () => step(1, true));
         root.addEventListener("keydown", (e) => {
-            if (e.target instanceof HTMLInputElement) return;
             if (e.key === "ArrowLeft") step(-1, true);
             else if (e.key === "ArrowRight") step(1, true);
         });
         canvas.addEventListener("pointerenter", () => (hovering = true));
         canvas.addEventListener("pointerleave", () => (hovering = false));
-
-        // the page's filter: keep to the matching projects
-        root.addEventListener("arcade:filter", (e) => {
-            order = (e as CustomEvent<number[]>).detail;
-            if (order.length && !order.includes(current)) select(order[0]);
-        });
 
         // load three.js and the model once the arcade is about to be seen
         const start = async () => {
@@ -181,15 +177,56 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
 </script>
 
 <style>
+    /* the Game Boy's colours: its pale screen blue on the dark block */
+    .arcade {
+        --lcd: #d2d5f7;
+        --lcd-ink: #1d1f5c;
+    }
+
     .arcade__block {
         position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .arcade__top {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: var(--gutter);
+        padding-block: 8px 0;
+        color: var(--muted);
+    }
+
+    .arcade__label {
+        margin: 0;
+    }
+
+    .arcade__view {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 0 2px;
+        border: 0;
+        border-bottom: 1px solid currentColor;
+        background: none;
+        color: var(--text);
+        font: inherit;
+        text-transform: inherit;
+        letter-spacing: inherit;
+        cursor: pointer;
+        transition: color 0.3s var(--ease);
+    }
+
+    .arcade__view:hover {
+        color: var(--lcd);
     }
 
     /* the screen's glow on the dark behind the cabinet */
     .arcade__stage {
         position: relative;
-        height: clamp(460px, 80vh, 860px);
-        background: radial-gradient(60% 55% at 50% 42%, rgba(160, 255, 60, 0.13), transparent 70%);
+        height: clamp(400px, 64vh, 620px);
+        background: radial-gradient(60% 55% at 50% 42%, rgba(120, 128, 255, 0.16), transparent 70%);
     }
 
     .arcade__canvas {
@@ -224,9 +261,7 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
 
     .arcade__bar {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        align-items: end;
-        gap: 16px var(--gutter);
+        gap: 18px;
         padding-block: 20px;
         border-top: 1px solid var(--line);
     }
@@ -239,12 +274,13 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
     }
 
     .arcade__num,
-    .arcade__meta {
+    .arcade__meta,
+    .arcade__hint {
         color: var(--muted);
     }
 
     .arcade__title {
-        font-size: clamp(1.6rem, 0.9rem + 3vw, 3.75rem);
+        font-size: clamp(1.6rem, 0.9rem + 3vw, 3.5rem);
         font-weight: 800;
         line-height: 0.95;
         letter-spacing: -0.03em;
@@ -252,10 +288,11 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
         text-decoration: none;
         color: var(--text);
         overflow-wrap: anywhere;
+        transition: color 0.3s var(--ease);
     }
 
     .arcade__title:hover {
-        color: #c3f23a;
+        color: var(--lcd);
     }
 
     .arcade__controls {
@@ -291,16 +328,16 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
         color: var(--bg);
     }
 
-    /* the one lit-up button: phosphor green, square, like the screen */
+    /* the one lit-up button: square and pale blue, like the screen */
     .arcade__open {
         display: inline-flex;
         align-items: center;
         gap: 10px;
         height: 48px;
-        margin-left: 6px;
+        margin-left: auto;
         padding: 0 18px;
-        background: #c3f23a;
-        color: #15300d;
+        background: var(--lcd);
+        color: var(--lcd-ink);
         text-decoration: none;
         text-transform: uppercase;
         transition: box-shadow 0.3s var(--ease);
@@ -308,19 +345,10 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
 
     .arcade__open:hover,
     .arcade__open:focus-visible {
-        box-shadow: 0 0 24px rgba(195, 242, 58, 0.55);
+        box-shadow: 0 0 24px rgba(160, 166, 255, 0.55);
     }
 
-    .arcade__foot {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        gap: 8px var(--gutter);
-        padding-bottom: 24px;
-        color: var(--muted);
-    }
-
-    .arcade__foot p {
+    .arcade__hint {
         margin: 0;
     }
 
@@ -328,21 +356,71 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
         display: none;
     }
 
+    .arcade__credit {
+        margin: 0;
+        padding-bottom: 24px;
+        color: var(--muted);
+    }
+
     .arcade__credit a {
         color: inherit;
     }
 
-    @media (max-width: 719px) {
+    /* wide screens: the arcade fills the screen, the cabinet stands right of
+       centre and the project sits on the left, like the Game Boy on the home page */
+    @media (min-width: 1100px) {
+        .arcade__block {
+            grid-template-rows: auto auto;
+        }
+
+        .arcade__top,
+        .arcade__stage,
+        .arcade__bar {
+            grid-area: 1 / 1;
+        }
+
+        .arcade__top,
+        .arcade__bar {
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .arcade__top > *,
+        .arcade__bar > * {
+            pointer-events: auto;
+        }
+
+        .arcade__top {
+            align-self: start;
+        }
+
         .arcade__stage {
-            height: clamp(400px, 66vh, 620px);
+            --view-shift: 0.15;
+            height: clamp(560px, calc(100svh - 190px), 1000px);
         }
 
         .arcade__bar {
-            grid-template-columns: minmax(0, 1fr);
+            align-self: end;
+            justify-items: start;
+            width: min(40%, 520px);
+            margin-left: 0;
+            padding-bottom: clamp(32px, 6vh, 64px);
+            border-top: 0;
         }
 
         .arcade__open {
-            margin-left: auto;
+            margin-left: 6px;
+        }
+
+        .arcade__credit {
+            grid-area: 2 / 1;
+            text-align: right;
+        }
+    }
+
+    @media (max-width: 1099px) {
+        .arcade__top {
+            padding-bottom: 8px;
         }
     }
 </style>

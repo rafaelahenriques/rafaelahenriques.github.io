@@ -194,6 +194,29 @@ export async function createGameBoy(o: GameBoyOptions) {
     };
     // each button gets its own material, so it can light up on hover
     for (const btn of Object.values(buttons)) btn.material = (btn.material as THREE.MeshStandardMaterial).clone();
+
+    // On the dark theme its block turns light, so the Game Boy turns black. Its
+    // colours come from one palette strip (shared by every part): repaint the
+    // cream body near-black there, and the D-pad blacker still so it shows.
+    const palette = (part("Body").material as THREE.MeshStandardMaterial).map!;
+    const cream = palette.image as HTMLImageElement | ImageBitmap;
+    const strip = Object.assign(document.createElement("canvas"), { width: cream.width, height: cream.height });
+    const sg = strip.getContext("2d")!;
+    const BLACK_GB: Record<number, string> = { 89: "#2a2a2d", 194: "#0b0b0c", 253: "#0b0b0c", 254: "#050505" };
+    const paint = () => {
+        sg.clearRect(0, 0, strip.width, strip.height);
+        sg.drawImage(cream, 0, 0);
+        if (document.documentElement.classList.contains("dark")) {
+            for (const [x, color] of Object.entries(BLACK_GB)) {
+                sg.fillStyle = color;
+                sg.fillRect(+x, 0, 1, strip.height);
+            }
+        }
+        palette.image = strip;
+        palette.needsUpdate = true;
+    };
+    paint();
+    new MutationObserver(paint).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     const rest = new Map(Object.values(buttons).map((btn) => [btn, btn.position.z]));
 
     // ---- the picture

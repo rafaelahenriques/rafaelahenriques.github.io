@@ -1,8 +1,9 @@
 /**
  * The projects arcade: a close-up of an arcade cabinet ("Arcade Invaders" by
  * tef, CC BY 4.0) in three.js whose screen flips through the projects. Each
- * project is drawn as a phosphor-green screen (its image dithered into four
- * greens, number, title, category, "press start"); changing project rolls the
+ * project is drawn as a pale blue screen in the Game Boy's colours (its image
+ * dithered into four blues, number, title, category, "press start"); changing
+ * project rolls the
  * picture up like a CRT losing vertical hold. The cabinet works: the left
  * stick and buttons go back, the right ones forward, 1P / 2P and the screen
  * open the project. Until the visitor touches it, it flips on its own. It only
@@ -38,14 +39,17 @@ const SCREEN_ASPECT = 1.4172; // the screen, width / height (from the model)
 const MARQUEE_ASPECT = 3.3408;
 // how much has to stay in view around the screen, half width / half height
 const FRAME = { x: 0.2, y: 0.23 };
-const INK = "#15300d";
-const PHOSPHOR = "#c3f23a";
-// four greens for the dithered pictures, dark to light
-const GREENS = [
-    [21, 48, 13],
-    [62, 112, 26],
-    [128, 190, 44],
-    [214, 255, 128],
+// the Game Boy's colours: its indigo, cream and red, and a pale blue screen
+const INK = "#1d1f5c";
+const LCD = "#d2d5f7";
+const INDIGO = "#4e4f97";
+const RED = "#b8324f";
+// four blues for the dithered pictures, dark to light
+const BLUES = [
+    [29, 31, 92],
+    [78, 79, 151],
+    [142, 145, 216],
+    [222, 224, 252],
 ];
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16);
 
@@ -92,7 +96,7 @@ const fragmentShader = /* glsl */ `
         col *= 0.985 + 0.015 * sin(uTime * 53.0);
         // static while it rolls
         float n = hash(floor(p * vec2(300.0, 220.0)) + floor(uTime * 30.0));
-        col = mix(col, vec3(0.75, 1.0, 0.45) * n, sin(uRoll * 3.14159) * 0.55);
+        col = mix(col, vec3(0.78, 0.8, 1.0) * n, sin(uRoll * 3.14159) * 0.55);
         // darker towards the rounded corners, a touch brighter on hover
         col *= smoothstep(0.85, 0.35, length(c * vec2(1.0, 1.25))) * 0.5 + 0.5;
         col *= 1.0 + uHover * 0.08;
@@ -110,7 +114,7 @@ const loadImage = (src: string) =>
         img.src = src;
     });
 
-/** the image, covered into w × h and dithered into the four greens, in chunky pixels */
+/** the image, covered into w × h and dithered into the four blues, in chunky pixels */
 function dither(img: HTMLImageElement, w: number, h: number, px: number) {
     const cw = Math.ceil(w / px);
     const ch = Math.ceil(h / px);
@@ -124,10 +128,10 @@ function dither(img: HTMLImageElement, w: number, h: number, px: number) {
         for (let x = 0; x < cw; x++) {
             const i = (y * cw + x) * 4;
             const l = (0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]) / 255;
-            // a bit of contrast, then pick one of four greens with an ordered dither
+            // a bit of contrast, then pick one of four blues with an ordered dither
             const v = Math.min(1, Math.max(0, (l - 0.5) * 1.25 + 0.5)) * 3;
             const level = Math.min(3, Math.floor(v + BAYER[(y % 4) * 4 + (x % 4)] - 0.5 + 0.5));
-            const [r, g, b] = GREENS[Math.max(0, level)];
+            const [r, g, b] = BLUES[Math.max(0, level)];
             d[i] = r;
             d[i + 1] = g;
             d[i + 2] = b;
@@ -143,11 +147,11 @@ async function drawScreen(game: ArcadeGame, total: number) {
     const H = Math.round(W / SCREEN_ASPECT);
     const canvas = Object.assign(document.createElement("canvas"), { width: W, height: H });
     const g = canvas.getContext("2d")!;
-    g.fillStyle = PHOSPHOR;
+    g.fillStyle = LCD;
     g.fillRect(0, 0, W, H);
     const glow = g.createRadialGradient(W * 0.5, H * 0.45, 0, W * 0.5, H * 0.45, W * 0.6);
-    glow.addColorStop(0, "rgba(240, 255, 190, 0.35)");
-    glow.addColorStop(1, "rgba(240, 255, 190, 0)");
+    glow.addColorStop(0, "rgba(245, 246, 255, 0.4)");
+    glow.addColorStop(1, "rgba(245, 246, 255, 0)");
     g.fillStyle = glow;
     g.fillRect(0, 0, W, H);
 
@@ -169,7 +173,7 @@ async function drawScreen(game: ArcadeGame, total: number) {
         g.imageSmoothingEnabled = false;
         g.drawImage(pixels, box.x, box.y, box.w, box.h);
     } else {
-        g.fillStyle = "rgba(21, 48, 13, 0.15)";
+        g.fillStyle = "rgba(29, 31, 92, 0.15)";
         g.fillRect(box.x, box.y, box.w, box.h);
     }
     g.fillStyle = INK;
@@ -212,7 +216,7 @@ async function drawScreen(game: ArcadeGame, total: number) {
         const label = "IN PROGRESS";
         const lw = g.measureText(label).width + 28;
         g.fillRect(tx, y + 44, lw, 42);
-        g.fillStyle = PHOSPHOR;
+        g.fillStyle = LCD;
         g.fillText(label, tx + 14, y + 74);
         g.fillStyle = INK;
     }
@@ -238,13 +242,13 @@ async function drawScreen(game: ArcadeGame, total: number) {
     return tex;
 }
 
-/** the marquee: "PROJECTS" in phosphor, with a row of pixels dissolving along the bottom */
+/** the marquee: "PROJECTS" lit up, over a row of pixels like the Game Boy's stripes */
 function drawMarquee() {
     const W = 1024;
     const H = Math.round(W / MARQUEE_ASPECT);
     const canvas = Object.assign(document.createElement("canvas"), { width: W, height: H });
     const g = canvas.getContext("2d")!;
-    g.fillStyle = "#0d1a0a";
+    g.fillStyle = "#0d0f2e";
     g.fillRect(0, 0, W, H);
     // two rows of pixels at the foot: the bottom one mostly lit, the one above sparse
     const cell = 16;
@@ -253,16 +257,16 @@ function drawMarquee() {
         for (let x = 8; x < W - 8; x += cell) {
             const r = Math.abs(Math.sin(x * 12.9898 + row * 78.233) * 43758.5453) % 1;
             if (r < (row === 0 ? 0.7 : 0.18)) {
-                g.fillStyle = r < 0.25 ? PHOSPHOR : "#2f5a17";
+                g.fillStyle = r < 0.08 ? RED : r < 0.3 ? LCD : INDIGO;
                 g.fillRect(x, y, cell - 3, cell - 3);
             }
         }
     }
     g.textAlign = "center";
-    g.fillStyle = PHOSPHOR;
+    g.fillStyle = LCD;
     g.font = "800 132px Inter, system-ui, sans-serif";
     g.letterSpacing = "-5px";
-    g.shadowColor = "rgba(195, 242, 58, 0.6)";
+    g.shadowColor = "rgba(150, 156, 255, 0.75)";
     g.shadowBlur = 24;
     g.fillText("PROJECTS", W / 2, 200);
     const tex = new THREE.CanvasTexture(canvas);
@@ -280,13 +284,13 @@ export async function createArcade(o: ArcadeOptions) {
     renderer.toneMapping = THREE.NeutralToneMapping;
 
     const scene = new THREE.Scene();
-    scene.add(new THREE.AmbientLight(0x2a3a26, 0.6));
-    const top = new THREE.SpotLight(0xe8ffd0, 3, 3, 0.7, 0.6);
+    scene.add(new THREE.AmbientLight(0x2a2d4a, 0.7));
+    const top = new THREE.SpotLight(0xeef0ff, 3, 3, 0.7, 0.6);
     top.position.set(0, 1.5, 0.9);
     top.target.position.set(0, 0.6, 0);
     scene.add(top, top.target);
     // the screen's light spilling onto the cabinet (it's close: a little goes a long way)
-    const spill = new THREE.PointLight(0xb6ff3a, 0.06);
+    const spill = new THREE.PointLight(0x9aa0ff, 0.06);
     spill.position.set(0, 0.73, 0.25);
     scene.add(spill);
 
@@ -298,18 +302,18 @@ export async function createArcade(o: ArcadeOptions) {
     const gltf = await new GLTFLoader().loadAsync(MODEL);
     scene.add(gltf.scene);
 
-    // the cabinet, restyled by material: dark green, pale trim, lime and purple buttons
+    // the cabinet, restyled by material like the Game Boy: indigo, cream trim, red buttons
     const palette: Record<string, THREE.MeshStandardMaterialParameters> = {
-        Body: { color: 0x0f2410, roughness: 0.55, metalness: 0.05 },
-        Side: { color: 0x0b1a0b, roughness: 0.55, metalness: 0.05 },
-        Trim: { color: 0xd3dcc9, roughness: 0.4 },
-        Button: { color: 0x8ff23f, roughness: 0.35, emissive: 0x3a7a10, emissiveIntensity: 0.4 },
-        ButtonPlayer: { color: 0x9a6cff, roughness: 0.35, emissive: 0x3a1f8a, emissiveIntensity: 0.4 },
-        Metal: { color: 0xb9c2b2, roughness: 0.3, metalness: 0.75 },
-        Coin: { color: 0x1d231b, roughness: 0.5 },
-        ScreenBack: { color: 0x020402, roughness: 0.9 },
-        Screen: { color: 0x050a04, roughness: 0.9 },
-        Marquee: { color: 0x0d1a0a, roughness: 0.9 },
+        Body: { color: 0x2a2c78, roughness: 0.55, metalness: 0.05 },
+        Side: { color: 0x17184a, roughness: 0.55, metalness: 0.05 },
+        Trim: { color: 0xfff2e3, roughness: 0.45 },
+        Button: { color: 0xb8324f, roughness: 0.35, emissive: 0x4a0d1c, emissiveIntensity: 0.4 },
+        ButtonPlayer: { color: 0xfff2e3, roughness: 0.35 },
+        Metal: { color: 0xb7b9c6, roughness: 0.3, metalness: 0.75 },
+        Coin: { color: 0x1b1c2e, roughness: 0.5 },
+        ScreenBack: { color: 0x020210, roughness: 0.9 },
+        Screen: { color: 0x050514, roughness: 0.9 },
+        Marquee: { color: 0x0d0f2e, roughness: 0.9 },
     };
     const made = new Map<string, THREE.MeshStandardMaterial>();
     const restyle = (m: THREE.Material) => {
@@ -364,7 +368,7 @@ export async function createArcade(o: ArcadeOptions) {
         if (!screens.has(i)) screens.set(i, drawScreen(o.games[i], o.games.length));
         return screens.get(i)!;
     };
-    const blank = new THREE.DataTexture(new Uint8Array([195, 242, 58, 255]), 1, 1);
+    const blank = new THREE.DataTexture(new Uint8Array([210, 213, 247, 255]), 1, 1);
     blank.colorSpace = THREE.SRGBColorSpace;
     blank.needsUpdate = true;
     const uniforms = {
@@ -406,15 +410,20 @@ export async function createArcade(o: ArcadeOptions) {
         screenFor((i + 1) % o.games.length);
     };
 
-    // ---- size: keep the screen, marquee and controls in frame at any aspect ratio
+    // ---- size: keep the screen, marquee and controls in frame at any aspect ratio.
+    // The page can move the cabinet off-centre to the right (CSS --view-shift,
+    // a fraction of the width), to leave room for text on the left.
     const home = new THREE.Vector3();
     const fit = () => {
         const { clientWidth: w, clientHeight: h } = o.canvas;
         if (!w || !h) return;
         renderer.setSize(w, h, false);
         camera.aspect = w / h;
+        const shift = parseFloat(getComputedStyle(o.canvas).getPropertyValue("--view-shift")) || 0;
+        if (shift) camera.setViewOffset(w, h, -shift * w, 0, w, h);
+        else camera.clearViewOffset();
         const vfov = THREE.MathUtils.degToRad(camera.fov);
-        const hfov = 2 * Math.atan(Math.tan(vfov / 2) * camera.aspect);
+        const hfov = 2 * Math.atan(Math.tan(vfov / 2) * camera.aspect * (1 - 2 * shift));
         const d = Math.max(FRAME.x / Math.tan(hfov / 2), FRAME.y / Math.tan(vfov / 2));
         home.copy(target).addScaledVector(viewDir, d);
         camera.position.copy(home);
