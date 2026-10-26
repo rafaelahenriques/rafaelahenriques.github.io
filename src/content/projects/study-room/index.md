@@ -29,7 +29,7 @@ I expanded the exercise into a complete environment with dynamic lighting, weath
 
 ## Building the room
 
-I modelled the room and its props in Blender, baked ambient occlusion using Cycles, and exported the scene as a GLB with eight animation clips.
+I modelled the room and its props in Blender, baked ambient occlusion using Cycles, and exported the scene as a GLB with ten animation clips.
 
 In Three.js, I integrated the model, dynamic lighting, shaders, and physics. Baking only ambient occlusion allowed the lighting to change with the time of day without losing depth and contact shadows.
 
@@ -69,6 +69,8 @@ A raycast connects pointer input to the shader. Dragging vertically changes the 
 
 I also ported a second Shadertoy shader for snowfall, adapting its loop logic and skipping unnecessary calculations when snow is inactive.
 
+A third port turns spilled coffee into ripples. The water simulation renders into a render target and reads its own previous frame, so two targets swap after every step, and the image pass reads the result as `iChannel0`.
+
 ## Bringing the room to life
 
 - **Weather and lighting:** Open-Meteo provides weather data, while the sun and interior lights respond to local time and conditions.
@@ -76,6 +78,15 @@ I also ported a second Shadertoy shader for snowfall, adapting its loop logic an
 - **Audio:** Music from Audius drives headphone animations through an audio analyser.
 - **Monitor:** A canvas-based desktop displays animated applications, including a code editor showing the shader.
 - **Sensors:** An optional ESP32 and MQTT integration supports motion and sound input. Hardware testing remains outstanding.
+
+## Things to try
+
+Every object that does something glows when you hover over it, with a short label. *What can I click?* shows all of them at once, and they also appear briefly after the room loads.
+
+- **Easel:** the camera moves to the canvas and you can doodle in the room's colours, with three brush sizes, an eraser and undo. The drawing stays on the easel in your browser and can be saved as a PNG.
+- **Mug:** tapping it tips the mug over and spills the coffee into a rippling puddle. A loud noise sends new ripples through it.
+- **Calendar:** shows today's date in the room's city. Pressing it flips to the next day, and the light swings through a day change.
+- **Globe and chair:** the globe spins once and the chair turns on its swivel.
 
 ## Technical decisions
 
@@ -99,4 +110,4 @@ No measurable resource growth was observed after 30 paper-ball throws and four o
 
 ## Credits
 
-Rain: [Heartfelt](https://www.shadertoy.com/view/ltffzl) by Martijn Steinrucken (BigWings). Snow: Shadertoy [Mdt3Df](https://www.shadertoy.com/view/Mdt3Df). Both shaders are licensed under [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/). Weather by [Open-Meteo](https://open-meteo.com), music by [Audius](https://audius.co), physics by [Rapier](https://rapier.rs).
+Rain: [Heartfelt](https://www.shadertoy.com/view/ltffzl) by Martijn Steinrucken (BigWings). Snow: Shadertoy [Mdt3Df](https://www.shadertoy.com/view/Mdt3Df). Coffee ripples: [Simple Water Ripple Effect](https://www.shadertoy.com/view/wdtyDH) by Polygon. All three shaders are licensed under [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/). Weather by [Open-Meteo](https://open-meteo.com), music by [Audius](https://audius.co), physics by [Rapier](https://rapier.rs).

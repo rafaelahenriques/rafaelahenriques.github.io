@@ -3,7 +3,8 @@
  * Study Room case study. Same shape as Mongmo: parts and numbered chapters,
  * each ## section of index.md beside what it explains. The visuals are
  * recordings of the real room (a day as a timelapse, dragging on the rain,
- * the monitor typing the shader, the physics), stills of its weather, the
+ * the monitor typing the shader, the physics, a doodle, spilled coffee, the
+ * calendar), the clickable hotspots, stills of its weather, the
  * Blender render and AO atlas, and a few things drawn in HTML: the asset
  * pipeline, a glass pane that shows Shadertoy's iMouse as you drag, what
  * happens when a service is down, and the performance numbers.
@@ -23,6 +24,10 @@ import timelapsePoster from "../../content/projects/study-room/media/timelapse-p
 import rainPoster from "../../content/projects/study-room/media/rain-poster.jpg";
 import monitorPoster from "../../content/projects/study-room/media/monitor-poster.jpg";
 import physicsPoster from "../../content/projects/study-room/media/physics-poster.jpg";
+import doodlePoster from "../../content/projects/study-room/media/doodle-poster.jpg";
+import coffeePoster from "../../content/projects/study-room/media/coffee-poster.jpg";
+import calendarPoster from "../../content/projects/study-room/media/calendar-poster.jpg";
+import hints from "../../content/projects/study-room/media/hints.jpg";
 import blenderRender from "../../content/projects/study-room/media/blender-render.jpg";
 import aoAtlas from "../../content/projects/study-room/media/ao-atlas.jpg";
 import roomRain from "../../content/projects/study-room/media/room-day-rain.jpg";
@@ -51,6 +56,7 @@ const placed = [
     "Building the room",
     "Porting the shader",
     "Bringing the room to life",
+    "Things to try",
     "Technical decisions",
     "Performance",
     "Next steps",
@@ -60,7 +66,7 @@ const placed = [
 const extra = [...parts.keys()].filter((heading) => !placed.includes(heading));
 
 const pipeline = [
-    { step: "Blender", detail: "Room, props, eight animation clips" },
+    { step: "Blender", detail: "Room, props, ten animation clips" },
     { step: "Cycles AO bake", detail: "One 2048² atlas" },
     { step: "GLB", detail: "The scene, 4.1 MB" },
     { step: "Three.js", detail: "WebGPU, live lighting, shaders, physics" },
@@ -220,7 +226,26 @@ const stats = [
             </div>
         </Chapter>
 
-        <Chapter id="sr-decisions" num={5} title="Technical decisions" html={t("Technical decisions")} fold={false}>
+        <Chapter id="sr-try" num={5} title="Things to try" html={t("Things to try")} fold={false}>
+            <Shot slot="media" img={hints} alt="The room with every clickable object marked by a dot and a label: Clock, Drag for rain, Books, Spin, Screen, Lamp, Throw paper, Coffee, Next day, Doodle, Drawers" caption="What can I click? Every hotspot at once" sizes="(min-width: 900px) 50vw, 100vw" />
+        </Chapter>
+
+        <section class="wrap sr-try" aria-label="Things to try, recorded">
+            <figure class="sr-try__item sr-try__item--main">
+                <LoopVideo src="/media/study-room/doodle.mp4" poster={doodlePoster} label="Doodling on the easel: the camera flies to the canvas, a sun, hills, a house and two birds are drawn, then Done steps back" />
+                <figcaption class="mono muted">Easel · doodle mode</figcaption>
+            </figure>
+            <figure class="sr-try__item">
+                <LoopVideo src="/media/study-room/coffee.mp4" poster={coffeePoster} label="Hovering over the mug shows Spill the coffee; it tips over and the puddle ripples" />
+                <figcaption class="mono muted">Mug · the third shader port</figcaption>
+            </figure>
+            <figure class="sr-try__item">
+                <LoopVideo src="/media/study-room/calendar.mp4" poster={calendarPoster} label="Pressing the calendar twice: the page flips to the next day and the room's light dips through a day change" />
+                <figcaption class="mono muted">Calendar · next day</figcaption>
+            </figure>
+        </section>
+
+        <Chapter id="sr-decisions" num={6} title="Technical decisions" html={t("Technical decisions")} fold={false}>
             <figure class="sr-diagram" slot="media" data-sr-diagram>
                 <div class="sr-table" role="table" aria-label="What happens when a part is unavailable">
                     <div class="sr-table__row sr-table__row--head mono" role="row">
@@ -240,7 +265,7 @@ const stats = [
             </figure>
         </Chapter>
 
-        <Chapter id="sr-performance" num={6} title="Performance" html={t("Performance")} side="left" fold={false}>
+        <Chapter id="sr-performance" num={7} title="Performance" html={t("Performance")} side="left" fold={false}>
             <figure class="sr-diagram" slot="media" data-sr-diagram>
                 <ul class="sr-stats">
                     {
@@ -267,9 +292,9 @@ const stats = [
             <p class="sr-part mono">Looking back</p>
         </div>
 
-        <Chapter id="sr-next" num={7} title="Next steps" html={t("Next steps")} fold={false} />
-        <Chapter id="sr-credits" num={8} title="Credits" html={t("Credits")} fold={false} />
-        {extra.map((heading, i) => <Chapter id={`sr-extra-${i}`} num={9 + i} title={heading} html={t(heading)} />)}
+        <Chapter id="sr-next" num={8} title="Next steps" html={t("Next steps")} fold={false} />
+        <Chapter id="sr-credits" num={9} title="Credits" html={t("Credits")} fold={false} />
+        {extra.map((heading, i) => <Chapter id={`sr-extra-${i}`} num={10 + i} title={heading} html={t(heading)} />)}
 
         <!-- OPEN IT -->
         {
@@ -811,7 +836,41 @@ const stats = [
         }
     }
 
-    /* --- 05 DECISIONS: what still works --- */
+    /* --- 05 THINGS TO TRY: one big clip, two beside it --- */
+
+    .sr-try {
+        display: grid;
+        gap: clamp(16px, 2vw, 28px);
+        margin-top: clamp(32px, 5vw, 64px);
+    }
+
+    .sr-try__item {
+        display: grid;
+        gap: 10px;
+        margin: 0;
+    }
+
+    .sr-try__item :global(.phone-video__video) {
+        box-shadow: var(--media-shadow);
+    }
+
+    @media (min-width: 900px) {
+        .sr-try {
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+            align-items: start;
+        }
+
+        .sr-try__item {
+            grid-column: 9 / -1;
+        }
+
+        .sr-try__item--main {
+            grid-column: 1 / span 8;
+            grid-row: span 2;
+        }
+    }
+
+    /* --- 06 DECISIONS: what still works --- */
 
     .sr-diagram {
         display: grid;
@@ -836,7 +895,7 @@ const stats = [
         color: var(--muted);
     }
 
-    /* --- 06 PERFORMANCE --- */
+    /* --- 07 PERFORMANCE --- */
 
     .sr-stats {
         display: grid;

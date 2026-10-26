@@ -77,7 +77,8 @@ const pieces = [
 ];
 ---
 
-<Base title={title} description={description} {...projectSeo(project)}>
+{/* link previews keep the landscape board; the 4:5 cover is for the cards */}
+<Base title={title} description={description} {...projectSeo(project)} image={mainGame}>
     <article class="ws">
         <!-- INTRO -->
         <header class="page-head wrap">
