@@ -1,13 +1,13 @@
 ---
 /**
- * Selected projects on an old TV. Each project is a channel: its clip plays on
- * the screen (src/scripts/tv.ts), and beside it a short note says what it is,
- * when and with what. The channel buttons under the TV are tabs; the arrows,
- * the dial on the TV and the arrow keys change channel too, and the screen
- * opens the project. Until the visitor picks a channel the TV moves on by
- * itself when a clip ends; Pause stops it. With reduced motion it shows stills
- * and waits. Without JS (or WebGL) the notes are still all here, and the clip
- * plays in a plain video.
+ * Selected projects on a Game Boy. Each project's clip plays on its screen
+ * (src/scripts/gameboy.ts), and beside it a short note says what it is, when
+ * and with what. The numbered buttons under it are tabs; the arrows, the arrow
+ * keys and the Game Boy's own buttons change project too (A and → next, B and
+ * ← back), Start or the screen opens the project and Select pauses. Until the
+ * visitor picks a project it moves on by itself when a clip ends. With reduced
+ * motion it shows stills and waits. Without JS (or WebGL) the notes are still
+ * all here, and the clip plays in a plain video.
  */
 import { pad, slugOf, type ProjectEntry } from "../lib/content";
 
@@ -17,12 +17,10 @@ interface Props {
 
 const { projects } = Astro.props;
 
-const channels = projects.map((p, i) => {
-    const num = pad(p.data.order ?? i + 1);
-    const clip = p.data.tv;
+const games = projects.map((p, i) => {
+    const clip = p.data.clip;
     return {
-        num,
-        label: `CH ${num}`,
+        num: pad(p.data.order ?? i + 1),
         title: p.data.title,
         category: p.data.category,
         year: p.data.year,
@@ -34,121 +32,123 @@ const channels = projects.map((p, i) => {
         poster: clip?.replace(/\.mp4$/, ".jpg"),
     };
 });
-const first = channels[0];
+const first = games[0];
 ---
 
-<section class="tv-section wrap" aria-labelledby="selected" data-tv>
-    <div class="tv-head">
+<section class="gb-section wrap" aria-labelledby="selected" data-gb>
+    <div class="gb-head">
         <h2 id="selected" class="mono muted">Selected projects</h2>
         <a href="/projects/" class="mono link">All projects →</a>
     </div>
 
-    <div class="tv-layout">
-        <div class="tv-info">
+    <div class="gb-layout">
+        <div class="gb-info">
             {
-                channels.map((c, i) => (
-                    <article class="tv-panel" id={`tv-panel-${i}`} role="tabpanel" aria-labelledby={`tv-tab-${i}`} hidden={i !== 0} data-tv-panel>
-                        <p class="tv-panel__kicker mono muted">
-                            {c.label} — {c.category}
-                            {c.inProgress && <span class="wip">In progress</span>}
+                games.map((g, i) => (
+                    <article class="gb-panel" id={`gb-panel-${i}`} role="tabpanel" aria-labelledby={`gb-tab-${i}`} hidden={i !== 0} data-gb-panel>
+                        <p class="gb-panel__kicker mono muted">
+                            {g.num} — {g.category}
+                            {g.inProgress && <span class="wip">In progress</span>}
                         </p>
-                        <h3 class="tv-panel__title">{c.title}</h3>
-                        <dl class="tv-panel__facts mono">
+                        <h3 class="gb-panel__title">{g.title}</h3>
+                        <dl class="gb-panel__facts mono">
                             <div>
                                 <dt class="muted">Year</dt>
-                                <dd>{c.year}</dd>
+                                <dd>{g.year}</dd>
                             </div>
                             <div>
                                 <dt class="muted">Built with</dt>
-                                <dd>{c.tech.join(" · ")}</dd>
+                                <dd>{g.tech.join(" · ")}</dd>
                             </div>
                         </dl>
-                        <p class="tv-panel__brief">{c.brief}</p>
-                        <a href={c.href} class="mono link">View project →</a>
+                        <p class="gb-panel__brief">{g.brief}</p>
+                        <a href={g.href} class="mono link">View project →</a>
                     </article>
                 ))
             }
         </div>
 
-        <div class="tv-col">
-            <div class="tv-stage" data-tv-stage>
-                <canvas class="tv-canvas" data-tv-canvas aria-hidden="true"></canvas>
+        <div class="gb-col">
+            <div class="gb-stage">
+                <canvas class="gb-canvas" data-gb-canvas aria-hidden="true"></canvas>
                 <!-- no WebGL: the clip in a plain frame -->
-                <div class="tv-fallback" data-tv-fallback hidden>
-                    <video muted playsinline loop preload="none" poster={first.poster} data-tv-fallback-video aria-hidden="true"></video>
+                <div class="gb-fallback" data-gb-fallback hidden>
+                    <video muted playsinline loop preload="none" poster={first.poster} data-gb-fallback-video aria-hidden="true"></video>
                 </div>
             </div>
 
-            <div class="tv-controls">
-                <button type="button" class="tv-btn" data-tv-prev aria-label="Previous channel">←</button>
-                <div class="tv-channels" role="tablist" aria-label="Selected projects">
+            <div class="gb-controls">
+                <button type="button" class="gb-btn" data-gb-prev aria-label="Previous project">←</button>
+                <div class="gb-tabs" role="tablist" aria-label="Selected projects">
                     {
-                        channels.map((c, i) => (
+                        games.map((g, i) => (
                             <button
                                 type="button"
                                 role="tab"
-                                class="tv-ch mono"
-                                id={`tv-tab-${i}`}
+                                class="gb-tab mono"
+                                id={`gb-tab-${i}`}
                                 aria-selected={i === 0 ? "true" : "false"}
-                                aria-controls={`tv-panel-${i}`}
+                                aria-controls={`gb-panel-${i}`}
                                 tabindex={i === 0 ? "0" : "-1"}
-                                data-tv-tab={i}
+                                data-gb-tab={i}
                             >
-                                <span aria-hidden="true">{c.num}</span>
-                                <span class="visually-hidden">{c.title}</span>
+                                <span aria-hidden="true">{g.num}</span>
+                                <span class="visually-hidden">{g.title}</span>
                             </button>
                         ))
                     }
                 </div>
-                <button type="button" class="tv-btn" data-tv-next aria-label="Next channel">→</button>
-                <button type="button" class="tv-pause mono" data-tv-pause aria-pressed="false">Pause</button>
+                <button type="button" class="gb-btn" data-gb-next aria-label="Next project">→</button>
+                <button type="button" class="gb-pause mono" data-gb-pause aria-pressed="false">Pause</button>
             </div>
-            <p class="tv-credit mono muted">
-                TV: <a href="https://sketchfab.com/3d-models/old-tv-d0ff257bc4fc4b5d9f9a0d319f174a00" target="_blank" rel="noopener">“Old TV” by Blank2574</a>,
+            <p class="gb-hint mono muted" data-gb-hint hidden>Try its buttons: A next · B back · Start opens</p>
+            <p class="gb-credit mono muted">
+                Game Boy: <a href="https://sketchfab.com/3d-models/game-boy-in-voxel-0a99ab3b9cac4bdeacc90118df63a8c9" target="_blank" rel="noopener">“GAME BOY in voxel” by Dani</a>,
                 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>
             </p>
         </div>
     </div>
 
-    <script type="application/json" data-tv-channels set:html={JSON.stringify(channels.map(({ label, title, clip, poster, href }) => ({ label, title, clip, poster, href })))} />
+    <script type="application/json" data-gb-games set:html={JSON.stringify(games.map(({ num, title, clip, poster, href }) => ({ num, title, clip, poster, href })))} />
 </section>
 
 <script>
     import { gsap } from "gsap";
-    import type { TV } from "../scripts/tv";
+    import type { GameBoy } from "../scripts/gameboy";
 
-    type ChannelData = { label: string; title: string; clip?: string; poster?: string; href: string };
+    type Game = { num: string; title: string; clip?: string; poster?: string; href: string };
 
-    const root = document.querySelector<HTMLElement>("[data-tv]");
+    const root = document.querySelector<HTMLElement>("[data-gb]");
     if (root) {
-        const channels: ChannelData[] = JSON.parse(root.querySelector("[data-tv-channels]")!.textContent!);
-        const tabs = [...root.querySelectorAll<HTMLButtonElement>("[data-tv-tab]")];
-        const panels = [...root.querySelectorAll<HTMLElement>("[data-tv-panel]")];
-        const canvas = root.querySelector<HTMLCanvasElement>("[data-tv-canvas]")!;
-        const pauseBtn = root.querySelector<HTMLButtonElement>("[data-tv-pause]")!;
-        const fallback = root.querySelector<HTMLElement>("[data-tv-fallback]")!;
-        const fallbackVideo = root.querySelector<HTMLVideoElement>("[data-tv-fallback-video]")!;
+        const games: Game[] = JSON.parse(root.querySelector("[data-gb-games]")!.textContent!);
+        const tabs = [...root.querySelectorAll<HTMLButtonElement>("[data-gb-tab]")];
+        const panels = [...root.querySelectorAll<HTMLElement>("[data-gb-panel]")];
+        const canvas = root.querySelector<HTMLCanvasElement>("[data-gb-canvas]")!;
+        const pauseBtn = root.querySelector<HTMLButtonElement>("[data-gb-pause]")!;
+        const hint = root.querySelector<HTMLElement>("[data-gb-hint]")!;
+        const fallback = root.querySelector<HTMLElement>("[data-gb-fallback]")!;
+        const fallbackVideo = root.querySelector<HTMLVideoElement>("[data-gb-fallback-video]")!;
         const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
         let current = 0;
         let playing = !reduceMotion;
-        let tv: TV | null = null;
+        let gb: GameBoy | null = null;
         let useFallback = false;
 
         const showFallback = () => {
-            const ch = channels[current];
-            fallbackVideo.poster = ch.poster ?? "";
-            if (ch.clip) {
-                fallbackVideo.src = ch.clip;
+            const g = games[current];
+            fallbackVideo.poster = g.poster ?? "";
+            if (g.clip) {
+                fallbackVideo.src = g.clip;
                 if (playing) fallbackVideo.play().catch(() => {});
             } else fallbackVideo.removeAttribute("src");
         };
 
         const select = (i: number, byVisitor: boolean) => {
-            const n = channels.length;
+            const n = games.length;
             i = ((i % n) + n) % n;
-            if (byVisitor) tv?.setAuto(false);
-            if (i === current && tv) return;
+            if (byVisitor) gb?.setAuto(false);
+            if (i === current && gb) return;
             current = i;
             tabs.forEach((t, j) => {
                 t.setAttribute("aria-selected", String(j === i));
@@ -156,53 +156,57 @@ const first = channels[0];
             });
             panels.forEach((p, j) => (p.hidden = j !== i));
             if (!reduceMotion) gsap.from(panels[i].children, { autoAlpha: 0, y: 12, duration: 0.6, ease: "expo.out", stagger: 0.05, overwrite: true });
-            if (tv) tv.tune(i);
+            if (gb) gb.tune(i);
             else if (useFallback) showFallback();
         };
 
         tabs.forEach((t, i) => t.addEventListener("click", () => select(i, true)));
-        // tabs pattern: the arrow keys move along the channels
+        // tabs pattern: the arrow keys move along the projects
         root.querySelector("[role=tablist]")!.addEventListener("keydown", (e) => {
             const k = (e as KeyboardEvent).key;
-            const to = k === "ArrowRight" ? current + 1 : k === "ArrowLeft" ? current - 1 : k === "Home" ? 0 : k === "End" ? channels.length - 1 : null;
+            const to = k === "ArrowRight" ? current + 1 : k === "ArrowLeft" ? current - 1 : k === "Home" ? 0 : k === "End" ? games.length - 1 : null;
             if (to === null) return;
             e.preventDefault();
             select(to, true);
             tabs[current].focus();
         });
-        root.querySelector("[data-tv-prev]")!.addEventListener("click", () => select(current - 1, true));
-        root.querySelector("[data-tv-next]")!.addEventListener("click", () => select(current + 1, true));
+        root.querySelector("[data-gb-prev]")!.addEventListener("click", () => select(current - 1, true));
+        root.querySelector("[data-gb-next]")!.addEventListener("click", () => select(current + 1, true));
 
         const syncPause = () => {
             pauseBtn.textContent = playing ? "Pause" : "Play";
             pauseBtn.setAttribute("aria-pressed", String(!playing));
         };
-        pauseBtn.addEventListener("click", () => {
+        const togglePlaying = () => {
             playing = !playing;
             syncPause();
-            if (tv) {
-                if (!playing) tv.setAuto(false);
-                tv.setPlaying(playing);
+            if (gb) {
+                if (!playing) gb.setAuto(false);
+                gb.setPlaying(playing);
             } else if (useFallback) playing ? fallbackVideo.play().catch(() => {}) : fallbackVideo.pause();
-        });
+        };
+        pauseBtn.addEventListener("click", togglePlaying);
         syncPause();
 
-        // load three.js and the model when the TV gets close to the screen
+        // load three.js and the model when the Game Boy gets close to the screen
         const start = async () => {
             try {
-                const { createTV } = await import("../scripts/tv");
-                tv = await createTV({
+                const { createGameBoy } = await import("../scripts/gameboy");
+                gb = await createGameBoy({
                     canvas,
-                    channels,
+                    channels: games,
                     reduceMotion,
-                    onDial: () => select(current + 1, true),
-                    onScreen: () => (window.location.href = channels[current].href),
+                    onNext: () => select(current + 1, true),
+                    onPrev: () => select(current - 1, true),
+                    onOpen: () => (window.location.href = games[current].href),
+                    onToggle: togglePlaying,
                     onEnded: () => select(current + 1, false),
                 });
-                tv.tune(current);
+                gb.tune(current);
                 root.classList.add("is-live");
+                hint.hidden = false;
             } catch (err) {
-                console.warn("TV: no WebGL, showing the plain video instead", err);
+                console.warn("Game Boy: no WebGL, showing the plain video instead", err);
                 useFallback = true;
                 fallback.hidden = false;
                 canvas.hidden = true;
@@ -222,11 +226,11 @@ const first = channels[0];
 </script>
 
 <style>
-    .tv-section {
+    .gb-section {
         padding-block: var(--section);
     }
 
-    .tv-head {
+    .gb-head {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
@@ -235,34 +239,34 @@ const first = channels[0];
         border-top: 1px solid var(--line);
     }
 
-    .tv-head h2 {
+    .gb-head h2 {
         margin: 0;
     }
 
-    .tv-layout {
+    .gb-layout {
         display: grid;
         gap: clamp(32px, 5vw, 56px) var(--gutter);
         margin-top: clamp(32px, 5vw, 64px);
     }
 
-    /* --- the note beside the TV --- */
+    /* --- the note beside it --- */
 
-    .tv-info {
+    .gb-info {
         min-width: 0;
     }
 
     /* the reset makes articles display: block, which would beat [hidden] */
-    .tv-panel[hidden] {
+    .gb-panel[hidden] {
         display: none;
     }
 
     /* without JS every note shows, one after another */
-    :global(html:not(.js)) .tv-panel[hidden] {
+    :global(html:not(.js)) .gb-panel[hidden] {
         display: block;
         margin-top: 48px;
     }
 
-    .tv-panel__kicker {
+    .gb-panel__kicker {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
@@ -270,7 +274,7 @@ const first = channels[0];
         margin: 0;
     }
 
-    .tv-panel__title {
+    .gb-panel__title {
         margin: 14px 0 0;
         font-size: clamp(2.25rem, 1.2rem + 3vw, 4rem);
         font-weight: 500;
@@ -278,7 +282,7 @@ const first = channels[0];
         letter-spacing: -0.05em;
     }
 
-    .tv-panel__facts {
+    .gb-panel__facts {
         display: grid;
         gap: 10px;
         margin: clamp(20px, 2.4vw, 32px) 0 0;
@@ -286,30 +290,33 @@ const first = channels[0];
         border-top: 1px solid var(--line);
     }
 
-    .tv-panel__facts dd {
+    .gb-panel__facts dd {
         margin: 2px 0 0;
     }
 
-    .tv-panel__brief {
+    .gb-panel__brief {
         max-width: 34ch;
         margin: clamp(20px, 2.4vw, 28px) 0;
         font-size: var(--fs-body);
         line-height: 1.4;
     }
 
-    /* --- the TV and its controls --- */
+    /* --- the Game Boy and its controls --- */
 
-    .tv-col {
+    .gb-col {
         order: -1;
         min-width: 0;
     }
 
-    .tv-stage {
+    .gb-stage {
         position: relative;
-        aspect-ratio: 16 / 11;
+        /* it's tall: square, but never taller than most of the screen */
+        aspect-ratio: 1 / 1;
+        max-height: min(74svh, 720px);
+        width: 100%;
     }
 
-    .tv-canvas {
+    .gb-canvas {
         position: absolute;
         inset: 0;
         width: 100%;
@@ -319,30 +326,30 @@ const first = channels[0];
         transition: opacity 0.6s var(--ease);
     }
 
-    .tv-section.is-live .tv-canvas {
+    .gb-section.is-live .gb-canvas {
         opacity: 1;
     }
 
-    .tv-fallback {
+    .gb-fallback[hidden] {
+        display: none;
+    }
+
+    .gb-fallback {
         position: absolute;
-        inset: 8% 10%;
+        inset: 10% 18%;
         display: grid;
         place-items: center;
     }
 
-    .tv-fallback[hidden] {
-        display: none;
-    }
-
-    .tv-fallback video {
+    .gb-fallback video {
         width: 100%;
         max-height: 100%;
-        border-radius: 18px;
-        background: #111;
-        box-shadow: 0 0 0 14px #2b2420, var(--media-shadow);
+        border-radius: 12px;
+        background: #b5caa0;
+        box-shadow: 0 0 0 16px #8b8b93, var(--media-shadow);
     }
 
-    .tv-controls {
+    .gb-controls {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
@@ -351,14 +358,14 @@ const first = channels[0];
         margin-top: 8px;
     }
 
-    .tv-channels {
+    .gb-tabs {
         display: flex;
         gap: 6px;
     }
 
-    .tv-btn,
-    .tv-ch,
-    .tv-pause {
+    .gb-btn,
+    .gb-tab,
+    .gb-pause {
         display: grid;
         place-items: center;
         min-width: 44px;
@@ -375,71 +382,80 @@ const first = channels[0];
             color 0.3s var(--ease);
     }
 
-    .tv-btn {
+    .gb-btn {
         border-radius: 50%;
         padding: 0;
     }
 
-    .tv-pause {
+    .gb-pause {
         margin-left: 6px;
         border-radius: 999px;
         color: var(--muted);
     }
 
-    .tv-btn:hover,
-    .tv-btn:focus-visible,
-    .tv-ch:hover,
-    .tv-ch:focus-visible,
-    .tv-pause:hover,
-    .tv-pause:focus-visible {
+    .gb-btn:hover,
+    .gb-btn:focus-visible,
+    .gb-tab:hover,
+    .gb-tab:focus-visible,
+    .gb-pause:hover,
+    .gb-pause:focus-visible {
         border-color: var(--text);
         color: var(--text);
     }
 
-    .tv-ch[aria-selected="true"] {
+    .gb-tab[aria-selected="true"] {
         background: var(--text);
         border-color: var(--text);
         color: var(--bg);
     }
 
-    .tv-credit {
+    .gb-hint[hidden] {
+        display: none;
+    }
+
+    .gb-hint {
         margin: 14px 0 0;
+        text-align: center;
+    }
+
+    .gb-credit {
+        margin: 8px 0 0;
         font-size: 0.68rem;
         text-align: center;
     }
 
-    .tv-credit a {
+    .gb-credit a {
         text-decoration: underline;
         text-underline-offset: 0.2em;
     }
 
     @media (min-width: 900px) {
-        .tv-layout {
+        .gb-layout {
             grid-template-columns: repeat(12, minmax(0, 1fr));
             align-items: center;
         }
 
-        .tv-info {
-            grid-column: 1 / span 4;
+        .gb-info {
+            grid-column: 1 / span 5;
         }
 
-        .tv-col {
-            grid-column: 5 / -1;
+        .gb-col {
+            grid-column: 6 / -1;
             order: 0;
         }
     }
 
     @media (max-width: 420px) {
-        .tv-controls {
+        .gb-controls {
             gap: 6px;
         }
 
-        .tv-channels {
+        .gb-tabs {
             gap: 4px;
         }
 
-        .tv-btn,
-        .tv-ch {
+        .gb-btn,
+        .gb-tab {
             min-width: 40px;
             height: 40px;
             padding: 0 8px;

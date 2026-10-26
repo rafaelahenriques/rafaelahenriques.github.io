@@ -20,7 +20,7 @@ media:
 tags: ["WebGPU", "Three.js", "Shaders"]
 customPage: true
 tagline: "An isometric study room that follows your local time and weather. Drag on the window to change the rain."
-tv: "/media/tv/study-room.mp4"
+clip: "/media/clips/study-room.mp4"
 ---
 
 ## The challenge
