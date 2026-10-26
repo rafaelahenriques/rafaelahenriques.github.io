@@ -6,9 +6,10 @@
  * big title, filters, then rows (big titles, thumbnail on the right) or a
  * staggered grid. Filtering fades out what no longer matches and glides the
  * rest into place (GSAP Flip); switching layout fades the cards out and back
- * in. The filter is kept in the URL hash (/projects/#web), and a link with one
- * opens the list; the layout is kept in localStorage. Without JS (or WebGL)
- * it's the list.
+ * in. Both live in the URL, so Back returns to them: the list or grid as
+ * ?view=list / ?view=grid, the filter as a hash (/projects/#web, which on its
+ * own opens the list). /projects/ itself is always the arcade. Without JS (or
+ * WebGL) it's the list.
  */
 import Base from "../../layouts/BaseLayout.astro";
 import ProjectArcade from "../../components/ProjectArcade.astro";
@@ -73,15 +74,11 @@ const strip = await Promise.all(
         breadcrumbSchema([{ name: "Home", path: "/" }, { name: "Projects", path: "/projects/" }]),
     ]}
 >
-    <!-- the saved layout, before anything paints, so the wrong one never flashes -->
+    <!-- the layout from the URL, before anything paints, so the wrong one never flashes -->
     <script is:inline define:vars={{ filterKeys: PROJECT_TYPES.map((t) => t.key) }}>
-        let view = null;
-        try {
-            view = localStorage.getItem("projects-layout");
-        } catch {}
-        if (!["arcade", "list", "grid"].includes(view)) view = "arcade";
-        // a link to a filter (/projects/#web) means the list
-        if (view === "arcade" && filterKeys.includes(location.hash.slice(1))) view = "list";
+        let view = new URLSearchParams(location.search).get("view");
+        // the arcade, unless the URL asks for the list or grid, or links to a filter (/projects/#web)
+        if (!["list", "grid"].includes(view)) view = filterKeys.includes(location.hash.slice(1)) ? "list" : "arcade";
         document.documentElement.dataset.projectsView = view;
     </script>
 
@@ -281,7 +278,7 @@ const strip = await Promise.all(
         if (row.scrollWidth > row.clientWidth) {
             row.scrollTo({ left: active.offsetLeft - row.offsetLeft - 16, behavior: animate && !reduceMotion ? "smooth" : "auto" });
         }
-        history.replaceState(null, "", next === "all" ? location.pathname : `#${next}`);
+        history.replaceState(null, "", location.pathname + location.search + (next === "all" ? "" : `#${next}`));
 
         const changed = next !== filter;
         filter = next;
@@ -343,9 +340,10 @@ const strip = await Promise.all(
         if (layout === html.dataset.projectsView) return;
         finish();
         if (save) {
-            try {
-                localStorage.setItem("projects-layout", layout);
-            } catch {}
+            const url = new URL(location.href);
+            if (layout === "arcade") url.searchParams.delete("view");
+            else url.searchParams.set("view", layout);
+            history.replaceState(null, "", url);
         }
         html.dataset.projectsView = layout;
 
@@ -401,7 +399,7 @@ const strip = await Promise.all(
     document.querySelectorAll<HTMLElement>("[data-show-layout]").forEach((b) => b.addEventListener("click", () => applyLayout(b.dataset.showLayout!)));
     window.addEventListener("hashchange", () => applyFilter(location.hash.slice(1) || "all"));
 
-    // no WebGL: no arcade, the list instead (without forgetting the visitor's choice)
+    // no WebGL: no arcade, the list instead (not put in the URL: it's not the visitor's choice)
     document.addEventListener("arcade:unavailable", () => {
         layoutButtons.find((b) => b.dataset.layout === "arcade")!.hidden = true;
         if (inArcade()) applyLayout("list", false, false);

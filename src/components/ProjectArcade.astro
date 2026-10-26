@@ -1,12 +1,13 @@
 ---
 /**
  * The projects as an arcade: a close-up of a black cabinet lit in neon
- * whose screen flips through them (src/scripts/arcade.ts), on a dark block that
- * dissolves into the page in pixels. Beside it (under it on smaller screens)
+ * whose screen flips through them (src/scripts/arcade.ts), on a dark block.
+ * Beside it (under it on smaller screens)
  * the project on screen, back / next and a link to open it. The cabinet's own
  * controls work too: left stick and buttons go back, right ones forward, the
  * screen opens the project. Until the visitor touches anything it flips on its
- * own (not with reduced motion).
+ * own (not with reduced motion). It starts right under the header and
+ * dissolves into the page in pixels at the bottom.
  *
  * "View as list" carries data-show-layout, for the projects page to switch
  * views. If WebGL isn't there it sends "arcade:unavailable" and the page shows
@@ -42,7 +43,6 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
 ---
 
 <div class="arcade" data-arcade>
-    <PixelEdge seed={11} rows={4} tone="night" />
     <section class="arcade__block night" aria-label="Projects arcade">
         <div class="arcade__top wrap mono">
             <p class="arcade__label">Projects <span class="arcade__count">({pad(games.length)})</span></p>
@@ -391,13 +391,17 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
             pointer-events: auto;
         }
 
+        /* the label and "View as list" stay in the left column, clear of the cabinet */
         .arcade__top {
             align-self: start;
+            width: min(40%, 520px);
+            padding-top: 20px;
         }
 
         .arcade__stage {
             --view-shift: 0.15;
-            height: clamp(560px, calc(100svh - 190px), 1000px);
+            /* the screen's height under the fixed header */
+            height: clamp(560px, calc(100svh - 56px), 1000px);
         }
 
         .arcade__bar {

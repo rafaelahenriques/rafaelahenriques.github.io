@@ -37,7 +37,7 @@ const MODEL = "/models/arcade.glb";
 const SCREEN_ASPECT = 1.4172; // the screen, width / height (from the model)
 const MARQUEE_ASPECT = 3.3408;
 // how much has to stay in view around the screen, half width / half height
-const FRAME = { x: 0.2, y: 0.23 };
+const FRAME = { x: 0.2, y: 0.25 };
 // a black cabinet lit in one neon colour (light blue; for pink: 255, 46, 136 with
 // #6e0f3f, #ffc2dd, #0f0a10 and pink tones), with yellow sticks and red buttons
 const NEON_RGB = "92, 200, 255";
