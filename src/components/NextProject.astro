@@ -1,6 +1,10 @@
 ---
-/** Inverted full-width band linking to the next project in site order. */
+/**
+ * Inverted full-width band linking to the next project in site order. The page
+ * dissolves into it in pixels, and it runs straight on into the footer.
+ */
 import { getProjects, slugOf } from "../lib/content";
+import PixelEdge from "./PixelEdge.astro";
 
 interface Props {
     /** slug of the current project */
@@ -13,7 +17,8 @@ const index = all.findIndex((p) => slugOf(p) === current);
 const next = all[(index + 1) % all.length];
 ---
 
-<nav class="next-project" aria-label="Next project">
+<PixelEdge seed={index + 3} rows={5} class="next-project__edge" />
+<nav class="next-project" aria-label="Next project" data-joins-footer>
     <a href={`/projects/${slugOf(next)}/`} class="next-project__link wrap">
         <span class="mono next-project__label">Next project</span>
         <span class="next-project__title">

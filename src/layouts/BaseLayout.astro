@@ -8,6 +8,7 @@ import Header from "../components/header.astro";
 import Footer from "../components/footer.astro";
 import Loader from "../components/Loader.astro";
 import CommandMenu from "../components/CommandMenu.astro";
+import PixelEdge from "../components/PixelEdge.astro";
 import portrait from "../assets/me/rafaela.jpg";
 import { NAME, personSchema, type Schema } from "../lib/seo";
 
@@ -116,6 +117,8 @@ const jsonLd = [personSchema(personImage), ...schema];
         <main id="main">
             <slot />
         </main>
+        <!-- the page dissolves into the footer, unless it already ends in a dark block -->
+        <PixelEdge class="footer-edge" seed={7} rows={6} />
         <Footer />
         <CommandMenu />
 

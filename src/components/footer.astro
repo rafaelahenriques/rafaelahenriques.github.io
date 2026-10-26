@@ -5,7 +5,7 @@ import { site } from "../lib/site";
 const year = new Date().getFullYear();
 ---
 
-<footer class="site-footer wrap">
+<footer class="site-footer wrap inverse">
     <div class="row">
         <p class="row__label mono muted">Contact</p>
         <div class="row__body">
@@ -45,8 +45,9 @@ const year = new Date().getFullYear();
 </footer>
 
 <style>
+    /* inverted; the page dissolves into it (the pixel edge right above it) */
     .site-footer {
-        margin-top: var(--section);
+        padding-top: clamp(48px, 7vw, 104px);
     }
 
     .site-footer__cta {

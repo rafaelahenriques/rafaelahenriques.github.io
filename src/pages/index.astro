@@ -1,6 +1,7 @@
 ---
 import Base from "../layouts/BaseLayout.astro";
 import ProjectGameBoy from "../components/ProjectGameBoy.astro";
+import PixelEdge from "../components/PixelEdge.astro";
 import SpreadName from "../components/SpreadName.astro";
 import babyPhoto from "../assets/me/rafaela-2006.jpg";
 import { getFeatured } from "../lib/content";
@@ -42,8 +43,12 @@ const featured = await getFeatured();
         </div>
     </section>
 
-    <!-- SELECTED PROJECTS: on a Game Boy -->
-    <ProjectGameBoy projects={featured} />
+    <!-- SELECTED PROJECTS: on a Game Boy, in a dark block the page dissolves into
+         (it runs on into the footer) -->
+    <PixelEdge class="selected-edge" seed={3} rows={7} />
+    <div class="inverse" data-joins-footer>
+        <ProjectGameBoy projects={featured} />
+    </div>
 </Base>
 
 <style>
@@ -54,6 +59,10 @@ const featured = await getFeatured();
 
     .hello__text {
         margin-top: clamp(48px, 7vw, 96px);
+    }
+
+    .selected-edge {
+        margin-top: clamp(56px, 9vw, 140px);
     }
 
     .hello__more {

@@ -1,13 +1,16 @@
 ---
 /**
  * All projects. A moving strip of every project's images, a big title, then
- * one list that can be shown two ways: rows (big titles, thumbnail on the
- * right) or a staggered grid. Filtering fades out what no longer matches and
- * glides the rest into place (GSAP Flip); switching layout fades the cards
- * out and back in. The filter is kept in the URL hash
- * (/projects/#web), the layout in localStorage.
+ * the projects three ways: an arcade that flips through them (the default,
+ * components/ProjectArcade.astro), rows (big titles, thumbnail on the right)
+ * or a staggered grid. Filtering fades out what no longer matches and glides
+ * the rest into place (GSAP Flip), and keeps the arcade to the matching ones;
+ * switching layout fades the cards out and back in. The filter is kept in the
+ * URL hash (/projects/#web), the layout in localStorage. Without JS (or
+ * WebGL) it's the list.
  */
 import Base from "../../layouts/BaseLayout.astro";
+import ProjectArcade from "../../components/ProjectArcade.astro";
 import { Picture, getImage } from "astro:assets";
 import { getProjects, pad, slugOf, PROJECT_TYPES } from "../../lib/content";
 import { SITE_URL, breadcrumbSchema } from "../../lib/seo";
@@ -69,6 +72,17 @@ const strip = await Promise.all(
         breadcrumbSchema([{ name: "Home", path: "/" }, { name: "Projects", path: "/projects/" }]),
     ]}
 >
+    <!-- the saved layout, before anything paints, so the wrong one never flashes -->
+    <script is:inline>
+        (() => {
+            let view = null;
+            try {
+                view = localStorage.getItem("projects-layout");
+            } catch {}
+            document.documentElement.dataset.projectsView = ["arcade", "list", "grid"].includes(view) ? view : "arcade";
+        })();
+    </script>
+
     <!-- STRIP: every project's images, drifting past -->
     <div class="strip" data-strip aria-label="Project images">
         <div class="strip__track" data-strip-track>
@@ -107,13 +121,17 @@ const strip = await Promise.all(
             }
         </div>
         <div class="pc__layout mono" role="group" aria-label="Display as">
+            <button type="button" class="pc__layout-btn" data-layout="arcade" aria-pressed="false">Arcade</button>
             <button type="button" class="pc__layout-btn" data-layout="list" aria-pressed="true">List</button>
             <button type="button" class="pc__layout-btn" data-layout="grid" aria-pressed="false">Grid</button>
         </div>
     </div>
 
-    <!-- THE PROJECTS -->
-    <section class="wrap" aria-label="All projects">
+    <!-- THE PROJECTS: on the arcade, or as a list / grid -->
+    <div class="view-arcade">
+        <ProjectArcade projects={projects} />
+    </div>
+    <section class="wrap view-list" aria-label="All projects">
         <ul class="works" data-works data-layout="list">
             {
                 items.map((it, i) => (
@@ -213,7 +231,11 @@ const strip = await Promise.all(
     const layoutButtons = [...document.querySelectorAll<HTMLButtonElement>("[data-layout]")];
     const status = document.querySelector<HTMLElement>("[data-filter-status]")!;
     const empty = document.querySelector<HTMLElement>("[data-empty]")!;
+    const arcade = document.querySelector<HTMLElement>("[data-arcade]");
     const keys = filterButtons.map((b) => b.dataset.filter!);
+    // the layout: "arcade", "list" or "grid" (set before paint, at the top of the page)
+    const html = document.documentElement;
+    const inArcade = () => html.dataset.projectsView === "arcade";
 
     let filter = "all";
 
@@ -241,6 +263,9 @@ const strip = await Promise.all(
         const shown = items.filter((i) => !i.hidden).length;
         status.textContent = `Showing ${shown} of ${items.length} projects`;
         empty.hidden = shown > 0;
+        // the arcade keeps to the same projects
+        const matching = items.flatMap((item, i) => (matches(item, key) ? [i] : []));
+        arcade?.dispatchEvent(new CustomEvent("arcade:filter", { detail: matching }));
     };
 
     function applyFilter(key: string, animate = true) {
@@ -257,7 +282,8 @@ const strip = await Promise.all(
 
         const changed = next !== filter;
         filter = next;
-        if (!animate || reduceMotion || !changed) {
+        // (on the arcade the list is out of sight: no need to animate it)
+        if (!animate || reduceMotion || !changed || inArcade()) {
             show(next);
             ScrollTrigger.refresh();
             return;
@@ -308,14 +334,34 @@ const strip = await Promise.all(
         } else swap();
     }
 
-    function applyLayout(layout: string, animate = true) {
-        if (layout !== "list" && layout !== "grid") return;
+    function applyLayout(layout: string, animate = true, save = true) {
+        if (!["arcade", "list", "grid"].includes(layout) || (layout === "arcade" && !arcade)) return;
         layoutButtons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.layout === layout)));
-        if (list.dataset.layout === layout) return;
+        const fromArcade = inArcade();
+        if (layout === html.dataset.projectsView) return;
         finish();
-        try {
-            localStorage.setItem("projects-layout", layout);
-        } catch {}
+        if (save) {
+            try {
+                localStorage.setItem("projects-layout", layout);
+            } catch {}
+        }
+        html.dataset.projectsView = layout;
+
+        // to the arcade, or from it to the list / grid: the one fades in where the other was
+        if (layout === "arcade" || fromArcade) {
+            if (layout !== "arcade") list.dataset.layout = layout;
+            ScrollTrigger.refresh();
+            if (!animate || reduceMotion) return;
+            const incoming = layout === "arcade" ? [arcade!] : items.filter((i) => !i.hidden);
+            remember(
+                gsap.fromTo(
+                    incoming,
+                    { autoAlpha: 0, y: 24 },
+                    { autoAlpha: 1, y: 0, duration: 0.6, ease: "power3.out", stagger: 0.05, onComplete: () => tidy(incoming) },
+                ),
+            );
+            return;
+        }
 
         if (!animate || reduceMotion) {
             list.dataset.layout = layout;
@@ -349,11 +395,15 @@ const strip = await Promise.all(
     layoutButtons.forEach((b) => b.addEventListener("click", () => applyLayout(b.dataset.layout!)));
     window.addEventListener("hashchange", () => applyFilter(location.hash.slice(1) || "all"));
 
-    let saved: string | null = null;
-    try {
-        saved = localStorage.getItem("projects-layout");
-    } catch {}
-    if (saved) applyLayout(saved, false);
+    // no WebGL: no arcade, the list instead (without forgetting the visitor's choice)
+    document.addEventListener("arcade:unavailable", () => {
+        layoutButtons.find((b) => b.dataset.layout === "arcade")!.hidden = true;
+        if (inArcade()) applyLayout("list", false, false);
+    });
+
+    const initial = html.dataset.projectsView ?? "arcade";
+    layoutButtons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.layout === initial)));
+    if (initial !== "arcade") list.dataset.layout = initial;
     applyFilter(location.hash.slice(1) || "all", false);
 </script>
 
@@ -588,6 +638,24 @@ const strip = await Promise.all(
     }
 
     /* --- THE PROJECTS --- */
+
+    /* the arcade, or the list / grid (the list without JS) */
+    .view-arcade {
+        display: none;
+    }
+
+    :global(html.js[data-projects-view="arcade"]) .view-arcade {
+        display: block;
+    }
+
+    :global(html.js[data-projects-view="arcade"]) .view-list {
+        display: none;
+    }
+
+    :global(html:not(.js)) .pc__layout-btn[data-layout="arcade"],
+    .pc__layout-btn[hidden] {
+        display: none;
+    }
 
     [data-item][hidden] {
         display: none;
