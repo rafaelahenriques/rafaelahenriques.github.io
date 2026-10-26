@@ -20,7 +20,7 @@ media:
 tags: ["Creative Development", "GSAP", "Editorial"]
 customPage: true
 tagline: "An interactive longread about fashion designer Marina Yee, made for MoMu, the Fashion Museum Antwerp."
-tv: "/media/tv/marina-yee.mp4"
+clip: "/media/clips/marina-yee.mp4"
 ---
 
 ## The project

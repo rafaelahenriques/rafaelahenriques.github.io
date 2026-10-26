@@ -25,7 +25,7 @@ media:
 tags: ["Mobile", "React Native", "Supabase"]
 customPage: true
 tagline: "A cross-platform app for Mongmo's pop-ups: find events, complete challenges, earn rewards and order ahead."
-tv: "/media/tv/mongmo.mp4"
+clip: "/media/clips/mongmo.mp4"
 ---
 
 ## The project
