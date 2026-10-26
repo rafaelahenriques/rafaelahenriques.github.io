@@ -1,6 +1,7 @@
 ---
 import Base from "../layouts/BaseLayout.astro";
 import ContactLinks from "../components/ContactLinks.astro";
+import GitHubStats from "../components/GitHubStats.astro";
 import { Image } from "astro:assets";
 import { getCollection } from "astro:content";
 import { pad } from "../lib/content";
@@ -110,6 +111,9 @@ const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-mind
             }
         </ol>
     </section>
+
+    <!-- GITHUB: commits, languages and the last year, from the public profile -->
+    <GitHubStats />
 
     <section class="section wrap about-last" aria-labelledby="availability">
         <div class="row">

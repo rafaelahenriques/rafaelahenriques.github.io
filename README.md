@@ -11,6 +11,7 @@ It's a static Astro site with GSAP for motion, deployed on Cloudflare Workers. E
 - A projects index shown as an arcade cabinet whose screen flips through the projects (sticks and buttons work), or as a list or grid, with a type filter
 - Pixel edges where the page dissolves into the dark blocks (footer, next project, the arcade)
 - A command menu for searching projects, pages and contact actions
+- GitHub numbers on the about page (commits, contributions, most used languages, the last year day by day), refreshed from GitHub's public data before every build (`scripts/github-stats.mjs`)
 - Light and dark themes, and animations that respect reduced-motion settings
 - A script that generates typographic cover images for projects without screenshots yet (`scripts/build-covers.mjs`)
 
