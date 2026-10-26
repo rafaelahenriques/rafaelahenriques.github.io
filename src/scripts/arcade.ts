@@ -1,10 +1,9 @@
 /**
  * The projects arcade: a close-up of an arcade cabinet ("Arcade Invaders" by
  * tef, CC BY 4.0) in three.js whose screen flips through the projects. Each
- * project is drawn as a pale blue screen in the Game Boy's colours (its image
- * dithered into four blues, number, title, category, "press start"); changing
- * project rolls the
- * picture up like a CRT losing vertical hold. The cabinet works: the left
+ * project is drawn as a dark screen in neon pink (its image dithered into four
+ * pinks, its title in pixel letters, number, category, "press start");
+ * changing project rolls the picture up like a CRT losing vertical hold. The cabinet works: the left
  * stick and buttons go back, the right ones forward, 1P / 2P and the screen
  * open the project. Until the visitor touches it, it flips on its own. It only
  * renders while it's on screen.
@@ -39,17 +38,20 @@ const SCREEN_ASPECT = 1.4172; // the screen, width / height (from the model)
 const MARQUEE_ASPECT = 3.3408;
 // how much has to stay in view around the screen, half width / half height
 const FRAME = { x: 0.2, y: 0.23 };
-// the Game Boy's colours: its indigo, cream and red, and a pale blue screen
-const INK = "#1d1f5c";
-const LCD = "#d2d5f7";
-const INDIGO = "#4e4f97";
-const RED = "#b8324f";
-// four blues for the dithered pictures, dark to light
-const BLUES = [
-    [29, 31, 92],
-    [78, 79, 151],
-    [142, 145, 216],
-    [222, 224, 252],
+// a black cabinet lit in neon pink, with a yellow stick (one accent: swap NEON
+// and its tints for another colour)
+const NEON = "#ff2e88";
+const NEON_DEEP = "#6e0f3f";
+const NEON_PALE = "#ffc2dd";
+const YELLOW = "#ffd23f";
+const SCREEN_BG = "#0f0a10";
+const WHITE = "#f6eff3";
+// four pinks for the dithered pictures, dark to light
+const PINKS = [
+    [15, 10, 16],
+    [96, 18, 62],
+    [232, 46, 136],
+    [255, 196, 224],
 ];
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16);
 
@@ -96,7 +98,7 @@ const fragmentShader = /* glsl */ `
         col *= 0.985 + 0.015 * sin(uTime * 53.0);
         // static while it rolls
         float n = hash(floor(p * vec2(300.0, 220.0)) + floor(uTime * 30.0));
-        col = mix(col, vec3(0.78, 0.8, 1.0) * n, sin(uRoll * 3.14159) * 0.55);
+        col = mix(col, vec3(1.0, 0.8, 0.92) * n, sin(uRoll * 3.14159) * 0.55);
         // darker towards the rounded corners, a touch brighter on hover
         col *= smoothstep(0.85, 0.35, length(c * vec2(1.0, 1.25))) * 0.5 + 0.5;
         col *= 1.0 + uHover * 0.08;
@@ -114,7 +116,7 @@ const loadImage = (src: string) =>
         img.src = src;
     });
 
-/** the image, covered into w × h and dithered into the four blues, in chunky pixels */
+/** the image, covered into w × h and dithered into the four pinks, in chunky pixels */
 function dither(img: HTMLImageElement, w: number, h: number, px: number) {
     const cw = Math.ceil(w / px);
     const ch = Math.ceil(h / px);
@@ -128,10 +130,10 @@ function dither(img: HTMLImageElement, w: number, h: number, px: number) {
         for (let x = 0; x < cw; x++) {
             const i = (y * cw + x) * 4;
             const l = (0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]) / 255;
-            // a bit of contrast, then pick one of four blues with an ordered dither
+            // a bit of contrast, then pick one of four pinks with an ordered dither
             const v = Math.min(1, Math.max(0, (l - 0.5) * 1.25 + 0.5)) * 3;
             const level = Math.min(3, Math.floor(v + BAYER[(y % 4) * 4 + (x % 4)] - 0.5 + 0.5));
-            const [r, g, b] = BLUES[Math.max(0, level)];
+            const [r, g, b] = PINKS[Math.max(0, level)];
             d[i] = r;
             d[i + 1] = g;
             d[i + 2] = b;
@@ -141,28 +143,70 @@ function dither(img: HTMLImageElement, w: number, h: number, px: number) {
     return small;
 }
 
+/**
+ * Text in big square pixels, like an arcade font: drawn tiny (one canvas pixel
+ * per cell), kept solid, for drawing scaled up without smoothing.
+ */
+function pixelText(lines: string[], size: number, color: string) {
+    const font = `800 ${size}px Inter, system-ui, sans-serif`;
+    const m = document.createElement("canvas").getContext("2d")!;
+    m.font = font;
+    m.letterSpacing = "1px";
+    const w = Math.ceil(Math.max(...lines.map((l) => m.measureText(l).width))) + 2;
+    const lineH = Math.round(size * 0.95);
+    const small = Object.assign(document.createElement("canvas"), { width: w, height: lineH * lines.length + 2 });
+    const s = small.getContext("2d", { willReadFrequently: true })!;
+    s.font = font;
+    s.letterSpacing = "1px";
+    s.textBaseline = "top";
+    s.fillStyle = color;
+    lines.forEach((l, i) => s.fillText(l, 1, 1 + i * lineH - size * 0.08));
+    // every cell either on or off
+    const data = s.getImageData(0, 0, small.width, small.height);
+    for (let i = 3; i < data.data.length; i += 4) data.data[i] = data.data[i] > 100 ? 255 : 0;
+    s.putImageData(data, 0, 0);
+    return small;
+}
+
+/** pixel text, scaled up cell by cell, with a deeper copy one cell down-right for depth */
+function drawPixelText(g: CanvasRenderingContext2D, lines: string[], size: number, cell: number, x: number, y: number, glow = 0) {
+    g.imageSmoothingEnabled = false;
+    const back = pixelText(lines, size, NEON_DEEP);
+    const front = pixelText(lines, size, NEON);
+    g.drawImage(back, x + cell, y + cell, back.width * cell, back.height * cell);
+    g.save();
+    if (glow) {
+        g.shadowColor = "rgba(255, 46, 136, 0.7)";
+        g.shadowBlur = glow;
+    }
+    g.drawImage(front, x, y, front.width * cell, front.height * cell);
+    g.restore();
+    return { w: front.width * cell, h: front.height * cell };
+}
+
 /** one project's screen */
 async function drawScreen(game: ArcadeGame, total: number) {
     const W = 1024;
     const H = Math.round(W / SCREEN_ASPECT);
     const canvas = Object.assign(document.createElement("canvas"), { width: W, height: H });
     const g = canvas.getContext("2d")!;
-    g.fillStyle = LCD;
+    g.fillStyle = SCREEN_BG;
     g.fillRect(0, 0, W, H);
     const glow = g.createRadialGradient(W * 0.5, H * 0.45, 0, W * 0.5, H * 0.45, W * 0.6);
-    glow.addColorStop(0, "rgba(245, 246, 255, 0.4)");
-    glow.addColorStop(1, "rgba(245, 246, 255, 0)");
+    glow.addColorStop(0, "rgba(255, 46, 136, 0.16)");
+    glow.addColorStop(1, "rgba(255, 46, 136, 0)");
     g.fillStyle = glow;
     g.fillRect(0, 0, W, H);
 
     const pad = 64;
-    g.fillStyle = INK;
+    g.fillStyle = NEON_PALE;
     g.font = "500 26px 'IBM Plex Mono', ui-monospace, monospace";
     g.textBaseline = "alphabetic";
     g.fillText(`PROJECT ${game.num} / ${String(total).padStart(2, "0")}`, pad, pad + 10);
     g.textAlign = "right";
     g.fillText(game.year, W - pad, pad + 10);
     g.textAlign = "left";
+    g.fillStyle = NEON;
     g.fillRect(pad, pad + 30, W - pad * 2, 3);
 
     // the picture, dithered, on the left
@@ -173,57 +217,60 @@ async function drawScreen(game: ArcadeGame, total: number) {
         g.imageSmoothingEnabled = false;
         g.drawImage(pixels, box.x, box.y, box.w, box.h);
     } else {
-        g.fillStyle = "rgba(29, 31, 92, 0.15)";
+        g.fillStyle = "rgba(255, 46, 136, 0.12)";
         g.fillRect(box.x, box.y, box.w, box.h);
     }
-    g.fillStyle = INK;
     g.lineWidth = 5;
-    g.strokeStyle = INK;
+    g.strokeStyle = NEON;
     g.strokeRect(box.x, box.y, box.w, box.h);
 
-    // the title, as big as fits beside it
+    // the title in pixel letters, as big as fits beside it
     const tx = box.x + box.w + 52;
     const tw = W - pad - tx;
-    let size = 104;
-    let lines: string[] = [];
+    const cell = 5;
     const words = game.title.toUpperCase().split(/\s+/);
-    for (; size >= 40; size -= 4) {
-        g.font = `800 ${size}px Inter, system-ui, sans-serif`;
-        g.letterSpacing = `${-size * 0.04}px`;
+    const m = document.createElement("canvas").getContext("2d")!;
+    m.letterSpacing = "1px";
+    let size = 26;
+    let lines: string[] = [];
+    for (; size >= 7; size--) {
+        m.font = `800 ${size}px Inter, system-ui, sans-serif`;
         lines = [];
         let line = "";
         for (const word of words) {
             const tryLine = line ? `${line} ${word}` : word;
-            if (g.measureText(tryLine).width <= tw) line = tryLine;
+            if (m.measureText(tryLine).width * cell <= tw) line = tryLine;
             else {
                 if (line) lines.push(line);
                 line = word;
             }
         }
         if (line) lines.push(line);
-        const fits = lines.every((l) => g.measureText(l).width <= tw);
-        if (fits && lines.length * size * 0.92 <= 300) break;
+        const fits = lines.every((l) => m.measureText(l).width * cell <= tw);
+        if (fits && lines.length * size * 0.95 * cell <= 300) break;
     }
-    let y = box.y + size * 0.82;
-    for (const l of lines) {
-        g.fillText(l, tx, y);
-        y += size * 0.92;
-    }
-    g.letterSpacing = "0px";
+    const title = drawPixelText(g, lines, size, cell, tx, box.y);
+    let y = box.y + title.h + 34;
+    g.fillStyle = NEON_PALE;
     g.font = "500 26px 'IBM Plex Mono', ui-monospace, monospace";
-    g.fillText(game.category.toUpperCase(), tx, y + 18);
+    g.fillText(game.category.toUpperCase(), tx, y);
     if (game.inProgress) {
         const label = "IN PROGRESS";
         const lw = g.measureText(label).width + 28;
-        g.fillRect(tx, y + 44, lw, 42);
-        g.fillStyle = LCD;
-        g.fillText(label, tx + 14, y + 74);
-        g.fillStyle = INK;
+        g.fillStyle = YELLOW;
+        g.fillRect(tx, y + 26, lw, 42);
+        g.fillStyle = SCREEN_BG;
+        g.fillText(label, tx + 14, y + 56);
     }
 
     // press start, with a big arrow
     const by = box.y + box.h;
+    g.fillStyle = WHITE;
+    g.shadowColor = "rgba(255, 255, 255, 0.6)";
+    g.shadowBlur = 10;
     g.fillText("PRESS START", tx, by - 6);
+    g.shadowBlur = 0;
+    g.strokeStyle = NEON;
     g.lineWidth = 12;
     g.lineCap = "square";
     const ax = tx + 250;
@@ -242,33 +289,40 @@ async function drawScreen(game: ArcadeGame, total: number) {
     return tex;
 }
 
-/** the marquee: "PROJECTS" lit up, over a row of pixels like the Game Boy's stripes */
+/** the marquee: "PROJECTS" in pink pixel letters in a neon frame, with a yellow star either side */
 function drawMarquee() {
     const W = 1024;
     const H = Math.round(W / MARQUEE_ASPECT);
     const canvas = Object.assign(document.createElement("canvas"), { width: W, height: H });
     const g = canvas.getContext("2d")!;
-    g.fillStyle = "#0d0f2e";
+    g.fillStyle = "#070608";
     g.fillRect(0, 0, W, H);
-    // two rows of pixels at the foot: the bottom one mostly lit, the one above sparse
-    const cell = 16;
-    for (let row = 0; row < 2; row++) {
-        const y = H - cell * (row + 1) - 6;
-        for (let x = 8; x < W - 8; x += cell) {
-            const r = Math.abs(Math.sin(x * 12.9898 + row * 78.233) * 43758.5453) % 1;
-            if (r < (row === 0 ? 0.7 : 0.18)) {
-                g.fillStyle = r < 0.08 ? RED : r < 0.3 ? LCD : INDIGO;
-                g.fillRect(x, y, cell - 3, cell - 3);
-            }
-        }
+    // (the top of the texture sits behind the cabinet's lip, so the frame starts lower)
+    const frame = { x: 28, y: 84, w: W - 56, h: H - 84 - 16 };
+    g.save();
+    g.shadowColor = "rgba(255, 46, 136, 0.8)";
+    g.shadowBlur = 18;
+    g.strokeStyle = NEON;
+    g.lineWidth = 7;
+    g.strokeRect(frame.x, frame.y, frame.w, frame.h);
+    g.restore();
+    g.strokeStyle = YELLOW;
+    g.lineWidth = 2;
+    g.strokeRect(frame.x + 14, frame.y + 14, frame.w - 28, frame.h - 28);
+
+    const cell = 8;
+    const text = pixelText(["PROJECTS"], 13, NEON);
+    const tw = text.width * cell;
+    const th = text.height * cell;
+    const cy = frame.y + frame.h / 2;
+    drawPixelText(g, ["PROJECTS"], 13, cell, (W - tw) / 2, cy - th / 2, 22);
+
+    // a pixel star each side
+    const STAR = ["..#..", ".###.", "#####", ".###.", "#.#.#"];
+    g.fillStyle = YELLOW;
+    for (const sx of [(W - tw) / 2 - 110, (W + tw) / 2 + 70]) {
+        STAR.forEach((row, r) => [...row].forEach((c, k) => c === "#" && g.fillRect(sx + k * cell, cy - 20 + r * cell, cell, cell)));
     }
-    g.textAlign = "center";
-    g.fillStyle = LCD;
-    g.font = "800 132px Inter, system-ui, sans-serif";
-    g.letterSpacing = "-5px";
-    g.shadowColor = "rgba(150, 156, 255, 0.75)";
-    g.shadowBlur = 24;
-    g.fillText("PROJECTS", W / 2, 200);
     const tex = new THREE.CanvasTexture(canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.flipY = false; // glTF UVs run top-down
@@ -284,13 +338,13 @@ export async function createArcade(o: ArcadeOptions) {
     renderer.toneMapping = THREE.NeutralToneMapping;
 
     const scene = new THREE.Scene();
-    scene.add(new THREE.AmbientLight(0x2a2d4a, 0.7));
-    const top = new THREE.SpotLight(0xeef0ff, 3, 3, 0.7, 0.6);
+    scene.add(new THREE.AmbientLight(0x2e2a30, 0.7));
+    const top = new THREE.SpotLight(0xfff4f8, 3, 3, 0.7, 0.6);
     top.position.set(0, 1.5, 0.9);
     top.target.position.set(0, 0.6, 0);
     scene.add(top, top.target);
     // the screen's light spilling onto the cabinet (it's close: a little goes a long way)
-    const spill = new THREE.PointLight(0x9aa0ff, 0.06);
+    const spill = new THREE.PointLight(0xff4fa0, 0.06);
     spill.position.set(0, 0.73, 0.25);
     scene.add(spill);
 
@@ -302,18 +356,18 @@ export async function createArcade(o: ArcadeOptions) {
     const gltf = await new GLTFLoader().loadAsync(MODEL);
     scene.add(gltf.scene);
 
-    // the cabinet, restyled by material like the Game Boy: indigo, cream trim, red buttons
+    // the cabinet, restyled by material: black, with neon pink trim and pink-red buttons
     const palette: Record<string, THREE.MeshStandardMaterialParameters> = {
-        Body: { color: 0x2a2c78, roughness: 0.55, metalness: 0.05 },
-        Side: { color: 0x17184a, roughness: 0.55, metalness: 0.05 },
-        Trim: { color: 0xfff2e3, roughness: 0.45 },
-        Button: { color: 0xb8324f, roughness: 0.35, emissive: 0x4a0d1c, emissiveIntensity: 0.4 },
-        ButtonPlayer: { color: 0xfff2e3, roughness: 0.35 },
-        Metal: { color: 0xb7b9c6, roughness: 0.3, metalness: 0.75 },
-        Coin: { color: 0x1b1c2e, roughness: 0.5 },
-        ScreenBack: { color: 0x020210, roughness: 0.9 },
-        Screen: { color: 0x050514, roughness: 0.9 },
-        Marquee: { color: 0x0d0f2e, roughness: 0.9 },
+        Body: { color: 0x0e0d10, roughness: 0.5, metalness: 0.1 },
+        Side: { color: 0x121114, roughness: 0.5, metalness: 0.1 },
+        Trim: { color: NEON, roughness: 0.4, emissive: NEON, emissiveIntensity: 0.55 },
+        Button: { color: 0xf0245c, roughness: 0.35, emissive: 0x5a0a22, emissiveIntensity: 0.4 },
+        ButtonPlayer: { color: YELLOW, roughness: 0.35 },
+        Metal: { color: 0x9a96a0, roughness: 0.3, metalness: 0.75 },
+        Coin: { color: 0x1a191c, roughness: 0.5 },
+        ScreenBack: { color: 0x050406, roughness: 0.9 },
+        Screen: { color: 0x050406, roughness: 0.9 },
+        Marquee: { color: 0x070608, roughness: 0.9 },
     };
     const made = new Map<string, THREE.MeshStandardMaterial>();
     const restyle = (m: THREE.Material) => {
@@ -360,6 +414,20 @@ export async function createArcade(o: ArcadeOptions) {
             if (mesh.isMesh) mesh.material = Array.isArray(mesh.material) ? mesh.material.map((m) => m.clone()) : (mesh.material as THREE.Material).clone();
         });
     }
+    // the sticks' balls in yellow, like the reference's joystick
+    for (const stick of [stickL, stickR]) {
+        stick.traverse((child) => {
+            const mesh = child as THREE.Mesh;
+            if (!mesh.isMesh) return;
+            for (const m of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
+                const std = m as THREE.MeshStandardMaterial;
+                if (std.name === "Button") {
+                    std.color.set(YELLOW);
+                    std.emissive.set(0x4a3600);
+                }
+            }
+        });
+    }
     const rest = new Map([...controls.keys()].map((obj) => [obj, obj.position.clone()]));
 
     // ---- the screen
@@ -368,7 +436,7 @@ export async function createArcade(o: ArcadeOptions) {
         if (!screens.has(i)) screens.set(i, drawScreen(o.games[i], o.games.length));
         return screens.get(i)!;
     };
-    const blank = new THREE.DataTexture(new Uint8Array([210, 213, 247, 255]), 1, 1);
+    const blank = new THREE.DataTexture(new Uint8Array([15, 10, 16, 255]), 1, 1);
     blank.colorSpace = THREE.SRGBColorSpace;
     blank.needsUpdate = true;
     const uniforms = {

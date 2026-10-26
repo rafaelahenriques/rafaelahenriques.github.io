@@ -1,6 +1,6 @@
 ---
 /**
- * The projects as an arcade: a close-up of a cabinet in the Game Boy's colours
+ * The projects as an arcade: a close-up of a black cabinet lit in neon pink
  * whose screen flips through them (src/scripts/arcade.ts), on a dark block that
  * dissolves into the page in pixels. Beside it (under it on smaller screens)
  * the project on screen, back / next and a link to open it. The cabinet's own
@@ -177,10 +177,10 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
 </script>
 
 <style>
-    /* the Game Boy's colours: its pale screen blue on the dark block */
+    /* the cabinet's neon pink, on the dark block */
     .arcade {
-        --lcd: #d2d5f7;
-        --lcd-ink: #1d1f5c;
+        --neon: #ff2e88;
+        --neon-ink: #0f0a10;
     }
 
     .arcade__block {
@@ -219,14 +219,14 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
     }
 
     .arcade__view:hover {
-        color: var(--lcd);
+        color: var(--neon);
     }
 
     /* the screen's glow on the dark behind the cabinet */
     .arcade__stage {
         position: relative;
         height: clamp(400px, 64vh, 620px);
-        background: radial-gradient(60% 55% at 50% 42%, rgba(120, 128, 255, 0.16), transparent 70%);
+        background: radial-gradient(60% 55% at 50% 42%, rgba(255, 46, 136, 0.13), transparent 70%);
     }
 
     .arcade__canvas {
@@ -292,7 +292,7 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
     }
 
     .arcade__title:hover {
-        color: var(--lcd);
+        color: var(--neon);
     }
 
     .arcade__controls {
@@ -328,7 +328,7 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
         color: var(--bg);
     }
 
-    /* the one lit-up button: square and pale blue, like the screen */
+    /* the one lit-up button: square and neon, like the cabinet's trim */
     .arcade__open {
         display: inline-flex;
         align-items: center;
@@ -336,8 +336,8 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
         height: 48px;
         margin-left: auto;
         padding: 0 18px;
-        background: var(--lcd);
-        color: var(--lcd-ink);
+        background: var(--neon);
+        color: var(--neon-ink);
         text-decoration: none;
         text-transform: uppercase;
         transition: box-shadow 0.3s var(--ease);
@@ -345,7 +345,7 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
 
     .arcade__open:hover,
     .arcade__open:focus-visible {
-        box-shadow: 0 0 24px rgba(160, 166, 255, 0.55);
+        box-shadow: 0 0 24px rgba(255, 46, 136, 0.6);
     }
 
     .arcade__hint {
