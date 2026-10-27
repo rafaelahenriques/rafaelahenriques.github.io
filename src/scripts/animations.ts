@@ -45,6 +45,8 @@ function splitReveals() {
 
 /** [data-reveal]: fade up in batches as they scroll into view. */
 function fadeReveals() {
+    // (some pages have none)
+    if (!document.querySelector("[data-reveal]")) return;
     gsap.set("[data-reveal]", { autoAlpha: 0, y: 32 });
     ScrollTrigger.batch("[data-reveal]", {
         start: "top 92%",

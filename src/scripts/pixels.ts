@@ -49,7 +49,7 @@ function mount(el: HTMLElement) {
     const rows = Number(el.dataset.rows ?? 7);
     // "down": empty at the top, solid at the bottom (a block below); "up": the other way
     const down = el.dataset.direction !== "up";
-    const tone = el.dataset.tone === "night" ? "--night-bg" : "--bg-inverse";
+    const tone = el.dataset.tone === "night" ? "--night-bg" : el.dataset.tone === "page" ? "--bg" : "--bg-inverse";
 
     let cols = 0;
     let cell = 0;

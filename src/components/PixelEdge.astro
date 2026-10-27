@@ -2,14 +2,15 @@
 /**
  * Where the page dissolves into a dark block, in big pixels (src/scripts/pixels.ts).
  * Put it right before a block (direction "down") or right after one ("up").
- * tone: the block's colour, "inverse" (footer, next project) or "night" (the arcade).
+ * tone: the block's colour, "inverse" (footer, next project), "night" (the arcade)
+ * or "page" (laid over a picture, to dissolve it into the page).
  * Decorative: without JS the block simply starts with a straight edge.
  */
 interface Props {
     seed?: number;
     rows?: number;
     direction?: "down" | "up";
-    tone?: "inverse" | "night";
+    tone?: "inverse" | "night" | "page";
     class?: string;
 }
 

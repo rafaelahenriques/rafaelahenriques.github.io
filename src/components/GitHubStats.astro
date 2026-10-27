@@ -1,8 +1,9 @@
 ---
 /**
- * GitHub, in brief: one sentence with the numbers, and the most used languages
- * as a single bar of square pixels. The numbers come from src/data/github.json,
- * which scripts/github-stats.mjs refreshes before every build (public data only).
+ * GitHub, in brief, on a screen like the arcade's: one sentence with the
+ * numbers, and the most used languages as a single bar of square pixels. The
+ * numbers come from src/data/github.json, which scripts/github-stats.mjs
+ * refreshes before every build (public data only).
  */
 import github from "../data/github.json";
 import { site } from "../lib/site";
@@ -17,7 +18,7 @@ const exact = languages.map((l) => (l.percent / total) * CELLS);
 const cells = exact.map(Math.floor);
 const byRemainder = exact.map((x, i) => [x - Math.floor(x), i]).sort((a, b) => b[0] - a[0]);
 for (let k = 0; k < CELLS - cells.reduce((a, b) => a + b, 0); k++) cells[byRemainder[k][1]]++;
-// each language a shade of the site's blue, strongest first; everything else faint
+// each language a shade of the screen's blue, strongest first; everything else faint
 const tone = (i: number) => (languages[i].name === "Other" ? "other" : String(i));
 const squares = cells.flatMap((n, i) => Array.from({ length: n }, () => tone(i)));
 ---
@@ -25,14 +26,14 @@ const squares = cells.flatMap((n, i) => Array.from({ length: n }, () => tone(i))
 <section class="section wrap" aria-labelledby="github">
     <div class="row">
         <h2 id="github" class="row__label mono muted">On GitHub</h2>
-        <div class="row__body">
-            <p class="lead gh__summary" data-reveal>
+        <div class="row__body crt gh__screen" data-reveal>
+            <p class="lead gh__summary">
                 <strong>{github.commits}</strong> commits to my <strong>{github.repos}</strong> public repos, and
                 <strong>{github.contributions}</strong> contributions in the last year.
             </p>
 
-            <div class="gh__langs" data-reveal>
-                <p class="gh__label mono muted">Most used languages</p>
+            <div class="gh__langs">
+                <p class="gh__label mono">Most used languages</p>
                 <div class="gh__bar" aria-hidden="true">
                     {squares.map((t) => <span class={`gh__px gh__tone--${t}`} />)}
                 </div>
@@ -41,14 +42,14 @@ const squares = cells.flatMap((n, i) => Array.from({ length: n }, () => tone(i))
                         languages.map((l, i) => (
                             <li>
                                 <span class={`gh__px gh__tone--${tone(i)}`} aria-hidden="true" />
-                                {l.name} <span class="muted">{Math.round(l.percent)}%</span>
+                                {l.name} <span class="gh__pct">{Math.round(l.percent)}%</span>
                             </li>
                         ))
                     }
                 </ul>
             </div>
 
-            <p class="gh__foot mono muted">
+            <p class="gh__foot mono">
                 <a href={site.github} class="link" target="_blank" rel="noopener">@{github.user} ↗</a> · as of {asOf}
             </p>
         </div>
@@ -56,13 +57,22 @@ const squares = cells.flatMap((n, i) => Array.from({ length: n }, () => tone(i))
 </section>
 
 <style>
+    /* the screen: dark glass, the text light, the numbers in neon pixel letters */
+    .gh__screen {
+        padding: clamp(24px, 3.5vw, 52px);
+        color: #f1f6f9;
+    }
+
     .gh__summary {
         max-width: 30ch;
         margin: 0;
     }
 
     .gh__summary strong {
-        font-weight: 800;
+        color: var(--neon);
+        font-family: var(--pixel);
+        font-weight: 700;
+        text-shadow: 0 0 16px rgba(var(--neon-rgb), 0.5);
     }
 
     .gh__langs {
@@ -70,8 +80,18 @@ const squares = cells.flatMap((n, i) => Array.from({ length: n }, () => tone(i))
         margin-top: clamp(32px, 4vw, 56px);
     }
 
+    .gh__label,
+    .gh__pct,
+    .gh__foot {
+        color: var(--neon-pale);
+    }
+
     .gh__label {
         margin: 0 0 14px;
+    }
+
+    .gh__pct {
+        opacity: 0.7;
     }
 
     /* the languages as one row of big pixels, like the edges of the dark blocks */
@@ -86,29 +106,30 @@ const squares = cells.flatMap((n, i) => Array.from({ length: n }, () => tone(i))
         aspect-ratio: 1;
     }
 
-    /* shades of the site's blue (the pixel that lights up under the cursor), strongest first */
+    /* shades of the screen's neon blue, strongest first */
     .gh__tone--0 {
-        background: var(--pixel-accent);
+        background: var(--neon);
+        box-shadow: 0 0 10px rgba(var(--neon-rgb), 0.45);
     }
 
     .gh__tone--1 {
-        background: color-mix(in oklab, var(--pixel-accent) 76%, var(--bg));
+        background: color-mix(in oklab, var(--neon) 74%, var(--screen-bg));
     }
 
     .gh__tone--2 {
-        background: color-mix(in oklab, var(--pixel-accent) 56%, var(--bg));
+        background: color-mix(in oklab, var(--neon) 54%, var(--screen-bg));
     }
 
     .gh__tone--3 {
-        background: color-mix(in oklab, var(--pixel-accent) 40%, var(--bg));
+        background: color-mix(in oklab, var(--neon) 38%, var(--screen-bg));
     }
 
     .gh__tone--4 {
-        background: color-mix(in oklab, var(--pixel-accent) 26%, var(--bg));
+        background: color-mix(in oklab, var(--neon) 26%, var(--screen-bg));
     }
 
     .gh__tone--other {
-        background: var(--line);
+        background: rgba(var(--neon-rgb), 0.1);
     }
 
     .gh__legend {

@@ -2,6 +2,7 @@
 import Base from "../layouts/BaseLayout.astro";
 import ContactLinks from "../components/ContactLinks.astro";
 import GitHubStats from "../components/GitHubStats.astro";
+import PixelEdge from "../components/PixelEdge.astro";
 import { Image } from "astro:assets";
 import { getCollection } from "astro:content";
 import { pad } from "../lib/content";
@@ -39,6 +40,8 @@ const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-mind
                     quality={88}
                 />
                 </div>
+                <!-- the photo dissolves into the page in pixels, like the dark blocks do -->
+                <PixelEdge class="about-portrait__edge" seed={9} rows={3} tone="page" />
             </div>
         </figure>
     </header>
@@ -94,8 +97,11 @@ const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-mind
         </p>
     </section>
 
+    <!-- SKILLS and GITHUB, on a dark block like the arcade's -->
+    <PixelEdge class="about-night-edge" seed={5} rows={6} tone="night" />
+    <div class="night about-night">
     <!-- SKILLS: numbered like a playbook -->
-    <section class="section wrap" aria-labelledby="skills">
+    <section class="section wrap about-skills" aria-labelledby="skills">
         <h2 id="skills" class="mono muted about-skills__label">What I work with</h2>
         <ol class="playbook">
             {
@@ -114,6 +120,8 @@ const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-mind
 
     <!-- GITHUB: the numbers and most used languages, from the public profile -->
     <GitHubStats />
+    </div>
+    <PixelEdge seed={6} rows={6} tone="night" direction="up" />
 
     <section class="section wrap about-last" aria-labelledby="availability">
         <div class="row">
@@ -176,8 +184,16 @@ const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-mind
     }
 
     .about-portrait__frame {
+        position: relative;
         aspect-ratio: 3 / 4;
         overflow: hidden;
+    }
+
+    /* (inside the frame, to beat the edge's own position: relative) */
+    .about-portrait__frame :global(.about-portrait__edge) {
+        position: absolute;
+        inset: auto 0 -1px;
+        z-index: 1;
     }
 
     /* taller than the frame so the parallax never shows an edge */
@@ -270,6 +286,20 @@ const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-mind
         font-weight: 500;
     }
 
+    /* --- THE DARK BLOCK: skills and GitHub --- */
+
+    :global(.about-night-edge) {
+        margin-top: var(--section);
+    }
+
+    .about-night {
+        padding-bottom: clamp(48px, 7vw, 104px);
+    }
+
+    .about-skills {
+        padding-top: clamp(48px, 7vw, 104px);
+    }
+
     /* --- SKILLS PLAYBOOK --- */
 
     .about-skills__label {
@@ -299,6 +329,16 @@ const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-mind
         line-height: 0.95;
         letter-spacing: -0.04em;
         text-transform: uppercase;
+    }
+
+    /* the numbers in the arcade's pixel letters, lit up */
+    .playbook__num {
+        color: var(--neon);
+        font-family: var(--pixel);
+        font-size: clamp(1.5rem, 0.8rem + 2.6vw, 3.25rem);
+        font-weight: 700;
+        letter-spacing: 0;
+        text-shadow: 0 0 18px rgba(var(--neon-rgb), 0.45);
     }
 
     .playbook__name {
