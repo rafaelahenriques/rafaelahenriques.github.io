@@ -1,20 +1,22 @@
 ---
 /**
- * The projects as an arcade: a close-up of a black cabinet lit in neon
- * whose screen flips through them (src/scripts/arcade.ts), on a dark block.
- * Beside it (under it on smaller screens)
- * the project on screen, back / next and a link to open it. The cabinet's own
- * controls work too: left stick and buttons go back, right ones forward, the
- * screen opens the project. Until the visitor touches anything it flips on its
- * own (not with reduced motion). It starts right under the header and
- * dissolves into the page in pixels at the bottom.
+ * The projects page: an arcade. By default a close-up of a black cabinet lit
+ * in neon whose screen flips through the projects (src/scripts/arcade.ts),
+ * with the project on screen, back / next and a link beside it (under it on
+ * smaller screens). The cabinet's own controls work too: left stick and
+ * buttons go back, right ones forward, the screen opens the project. Until the
+ * visitor touches anything it flips on its own (not with reduced motion).
  *
- * "View as list" carries data-show-layout, for the projects page to switch
- * views. If WebGL isn't there it sends "arcade:unavailable" and the page shows
- * the list instead.
+ * "View as list" moves in on the screen until it fills the middle of the page
+ * and shows every project on it, like a game's select screen: back to the
+ * arcade on the left, the filters on the right. The list is plain HTML, laid
+ * over the 3D screen to its measurements (LIST in arcade.ts); on smaller
+ * screens it's just the screen, without the camera move. The view is kept in
+ * the URL (?view=list), the filter as a hash (/projects/#web, which on its own
+ * opens the list). Without JS or WebGL it's the list.
  */
 import { getImage } from "astro:assets";
-import { pad, slugOf, type ProjectEntry } from "../lib/content";
+import { pad, slugOf, PROJECT_TYPES, type ProjectEntry } from "../lib/content";
 import PixelEdge from "./PixelEdge.astro";
 
 interface Props {
@@ -32,21 +34,37 @@ const games = await Promise.all(
             category: p.data.category ?? "",
             year: p.data.year ?? "",
             href: `/projects/${slugOf(p)}/`,
+            types: p.data.types as string[],
+            inProgress: p.data.status === "in-progress",
             // small: the screen dithers it into big pixels anyway
             image: image && (await getImage({ src: image, width: 480, format: "webp", quality: 75 })).src,
-            inProgress: p.data.status === "in-progress",
+            // the list's thumbnail: tiny on purpose, shown in big pixels
+            thumb: image && (await getImage({ src: image, width: 36, format: "png" })).src,
         };
     }),
 );
 const first = games[0];
 const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean).join(" · ");
+
+const filters = [
+    { key: "all", label: "All", count: games.length },
+    ...PROJECT_TYPES.map((t) => ({ key: t.key as string, label: t.label as string, count: games.filter((g) => g.types.includes(t.key)).length })),
+].filter((f) => f.count > 0);
+const filterKeys = filters.map((f) => f.key);
 ---
 
+<!-- the view from the URL, before anything paints, so the wrong one never flashes -->
+<script is:inline define:vars={{ filterKeys }}>
+    // the arcade, unless the URL asks for the list or links to a filter (/projects/#web)
+    const linked = new URLSearchParams(location.search).get("view") === "list" || (location.hash.length > 1 && filterKeys.includes(location.hash.slice(1)));
+    document.documentElement.dataset.projectsView = linked ? "list" : "arcade";
+</script>
+
 <div class="arcade" data-arcade>
-    <section class="arcade__block night" aria-label="Projects arcade">
+    <section class="arcade__block night" aria-labelledby="projects-title">
         <div class="arcade__top wrap mono">
-            <p class="arcade__label">Projects <span class="arcade__count">({pad(games.length)})</span></p>
-            <button type="button" class="arcade__view" data-show-layout="list">
+            <h1 id="projects-title" class="arcade__label">Projects <span class="arcade__count">({pad(games.length)})</span></h1>
+            <button type="button" class="arcade__view arcade__for-arcade" data-view-to="list">
                 View as list
                 <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M0 1.5h12M0 6h12M0 10.5h12" stroke="currentColor" stroke-width="1.5" /></svg>
             </button>
@@ -57,7 +75,7 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
             <p class="arcade__loading mono" data-arcade-loading>Insert coin…</p>
         </div>
 
-        <div class="arcade__bar wrap">
+        <div class="arcade__bar arcade__for-arcade wrap">
             <p class="arcade__now" aria-live="polite">
                 <span class="arcade__num mono" data-arcade-num>{first.num} / {pad(games.length)}</span>
                 <a href={first.href} class="arcade__title" data-arcade-title>{first.title}</a>
@@ -70,6 +88,55 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
             </div>
             <p class="arcade__hint mono" data-arcade-hint hidden>Try the sticks and buttons · the screen opens a project</p>
         </div>
+
+        <!-- THE LIST: back to the arcade on the left, the screen, the filters on the right -->
+        <div class="arcade__side arcade__side--left arcade__for-list">
+            <button type="button" class="arcade__back mono" data-view-to="arcade">
+                <span aria-hidden="true">←</span> Back to arcade
+            </button>
+        </div>
+
+        <div class="arcade__side arcade__side--right arcade__for-list">
+            <p class="arcade__side-label mono">Filter</p>
+            <div class="arcade__filters" role="group" aria-label="Filter projects">
+                {
+                    filters.map((f) => (
+                        <button type="button" class="arcade__filter mono" data-filter={f.key} data-label={f.label} aria-pressed={f.key === "all" ? "true" : "false"}>
+                            <span>{f.label}</span>
+                            <span class="arcade__filter-count">{pad(f.count)}</span>
+                        </button>
+                    ))
+                }
+            </div>
+        </div>
+
+        <div class="arcade__screen crt arcade__for-list" data-arcade-screen>
+            <div class="screen">
+                <p class="screen__head">
+                    <span data-screen-label>Select project</span>
+                    <span data-screen-count>{pad(games.length)} / {pad(games.length)}</span>
+                </p>
+                <ul class="screen__rows" aria-label="All projects">
+                    {
+                        games.map((g) => (
+                            <li data-row>
+                                <a href={g.href} class="screen__row">
+                                    <span class="screen__thumb">{g.thumb && <img src={g.thumb} alt="" width="36" height="24" loading="lazy" decoding="async" />}</span>
+                                    <span class="screen__num">{g.num}</span>
+                                    <span class="screen__text">
+                                        <span class="screen__title">{g.title}</span>
+                                        <span class="screen__cat">{g.category}</span>
+                                    </span>
+                                    <span class="screen__year">{g.year}</span>
+                                </a>
+                            </li>
+                        ))
+                    }
+                </ul>
+                <p class="screen__hint" aria-hidden="true"><span>↑↓ Choose · Enter start</span><span>Esc arcade</span></p>
+            </div>
+        </div>
+        <p class="visually-hidden" aria-live="polite" data-filter-status></p>
 
         <p class="arcade__credit wrap mono">
             Arcade: <a href="https://sketchfab.com/3d-models/arcade-invaders-8c96ac36c52e4cf2a33cf605bd762014" target="_blank" rel="noopener">“Arcade Invaders” by tef</a>,
@@ -85,9 +152,13 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
     import { gsap } from "gsap";
     import type { Arcade, ArcadeGame } from "../scripts/arcade";
 
+    type Game = ArcadeGame & { types: string[] };
+    type View = "arcade" | "list";
+
     const root = document.querySelector<HTMLElement>("[data-arcade]");
     if (root) {
-        const games: ArcadeGame[] = JSON.parse(root.querySelector("[data-arcade-games]")!.textContent!);
+        const html = document.documentElement;
+        const games: Game[] = JSON.parse(root.querySelector("[data-arcade-games]")!.textContent!);
         const canvas = root.querySelector<HTMLCanvasElement>("[data-arcade-canvas]")!;
         const num = root.querySelector<HTMLElement>("[data-arcade-num]")!;
         const title = root.querySelector<HTMLAnchorElement>("[data-arcade-title]")!;
@@ -95,11 +166,24 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
         const open = root.querySelector<HTMLAnchorElement>("[data-arcade-open]")!;
         const hint = root.querySelector<HTMLElement>("[data-arcade-hint]")!;
         const loading = root.querySelector<HTMLElement>("[data-arcade-loading]")!;
+        const screenEl = root.querySelector<HTMLElement>("[data-arcade-screen]")!;
+        const rows = [...root.querySelectorAll<HTMLElement>("[data-row]")];
+        const filterButtons = [...root.querySelectorAll<HTMLButtonElement>("[data-filter]")];
+        const screenLabel = root.querySelector<HTMLElement>("[data-screen-label]")!;
+        const screenCount = root.querySelector<HTMLElement>("[data-screen-count]")!;
+        const status = root.querySelector<HTMLElement>("[data-filter-status]")!;
+        const arcadeParts = [...root.querySelectorAll<HTMLElement>(".arcade__for-arcade")];
+        const listParts = [...root.querySelectorAll<HTMLElement>(".arcade__for-list")];
         const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        const total = String(games.length).padStart(2, "0");
+        // where the list sits over the cabinet's screen; smaller, it's the screen alone
+        const wide = window.matchMedia("(min-width: 1100px)");
+        const pad = (n: number) => String(n).padStart(2, "0");
 
+        let view: View = html.dataset.projectsView === "list" ? "list" : "arcade";
         let current = 0;
         let arcade: Arcade | null = null;
+
+        /* --- the arcade: flipping through the projects --- */
 
         // attract mode: it flips by itself until the visitor takes over
         const ATTRACT_MS = 4200;
@@ -110,7 +194,7 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
             clearTimeout(timer);
             if (!attract) return;
             timer = window.setTimeout(() => {
-                if (arcade?.visible && !hovering) step(1, false);
+                if (arcade?.visible && !hovering && view === "arcade") step(1, false);
                 schedule();
             }, ATTRACT_MS);
         };
@@ -118,7 +202,7 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
         const select = (i: number) => {
             current = i;
             const g = games[i];
-            num.textContent = `${g.num} / ${total}`;
+            num.textContent = `${g.num} / ${pad(games.length)}`;
             title.textContent = g.title;
             title.href = open.href = g.href;
             meta.textContent = [g.category, g.year].filter(Boolean).join(" · ");
@@ -134,12 +218,113 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
 
         root.querySelector("[data-arcade-prev]")!.addEventListener("click", () => step(-1, true));
         root.querySelector("[data-arcade-next]")!.addEventListener("click", () => step(1, true));
-        root.addEventListener("keydown", (e) => {
-            if (e.key === "ArrowLeft") step(-1, true);
-            else if (e.key === "ArrowRight") step(1, true);
-        });
         canvas.addEventListener("pointerenter", () => (hovering = true));
         canvas.addEventListener("pointerleave", () => (hovering = false));
+
+        /* --- the list: filtering --- */
+
+        let filter = "all";
+        const keys = filterButtons.map((b) => b.dataset.filter!);
+        const shown = () => rows.flatMap((r, i) => (r.hidden ? [] : [i]));
+        const labelFor = (key: string) => (key === "all" ? "Select project" : `Select project · ${filterButtons.find((b) => b.dataset.filter === key)!.dataset.label}`);
+
+        const applyFilter = (key: string, animate = true) => {
+            const next = keys.includes(key) ? key : "all";
+            const changed = next !== filter;
+            filter = next;
+            filterButtons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.filter === next)));
+            rows.forEach((r, i) => (r.hidden = next !== "all" && !games[i].types.includes(next)));
+            const visible = shown();
+            screenLabel.textContent = labelFor(next);
+            screenCount.textContent = `${pad(visible.length)} / ${pad(games.length)}`;
+            status.textContent = `Showing ${visible.length} of ${games.length} projects`;
+            history.replaceState(null, "", location.pathname + location.search + (next === "all" ? "" : `#${next}`));
+            arcade?.setList(visible, labelFor(next));
+            // the rows come back on like an old screen redrawing
+            if (animate && changed && !reduceMotion) {
+                gsap.fromTo(rows.filter((r) => !r.hidden), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.24, ease: "steps(3)", stagger: 0.04, clearProps: "opacity,visibility" });
+            }
+        };
+        filterButtons.forEach((b) => b.addEventListener("click", () => applyFilter(b.dataset.filter!)));
+        window.addEventListener("hashchange", () => applyFilter(location.hash.slice(1) || "all"));
+
+        /* --- switching between the two: in on the screen, and back out --- */
+
+        let busy = false;
+        const setView = async (next: View, { animate = true, save = true } = {}) => {
+            if (next === view || busy) return;
+            busy = true;
+            view = next;
+            if (save) {
+                const url = new URL(location.href);
+                if (next === "list") url.searchParams.set("view", "list");
+                else url.searchParams.delete("view");
+                history.replaceState(null, "", url);
+            }
+            if (window.scrollY > 0) window.scrollTo({ top: 0 });
+            // the camera move only where the list sits over the cabinet's screen
+            const move = !!arcade && wide.matches && animate && !reduceMotion;
+            if (next === "list") {
+                clearTimeout(timer);
+                if (move) {
+                    await gsap.to(arcadeParts, { autoAlpha: 0, duration: 0.25, ease: "power2.in" });
+                    gsap.set(listParts, { autoAlpha: 0 });
+                    html.dataset.projectsView = "list";
+                    arcade!.refit();
+                    await arcade!.setMode("list");
+                    // the screen was drawn to match: swap the picture for the real list
+                    await gsap.to(screenEl, { autoAlpha: 1, duration: 0.15 });
+                    gsap.fromTo(listParts.filter((el) => el !== screenEl), { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: "expo.out", stagger: 0.08 });
+                } else {
+                    html.dataset.projectsView = "list";
+                    arcade?.refit();
+                    arcade?.setMode("list", false);
+                    // an old screen switching on: a bright line opening out
+                    if (animate && !reduceMotion) gsap.fromTo(screenEl, { scaleY: 0.02, filter: "brightness(3)" }, { scaleY: 1, filter: "brightness(1)", duration: 0.5, ease: "expo.out", clearProps: "transform,filter" });
+                }
+                gsap.set(arcadeParts, { clearProps: "opacity,visibility,transform" });
+                rows.find((r) => !r.hidden)?.querySelector("a")?.focus({ preventScroll: true });
+            } else {
+                if (move) {
+                    await gsap.to(listParts, { autoAlpha: 0, duration: 0.2, ease: "power2.in" });
+                    gsap.set(arcadeParts, { autoAlpha: 0 });
+                    html.dataset.projectsView = "arcade";
+                    await arcade!.setMode("arcade");
+                    gsap.to(arcadeParts, { autoAlpha: 1, duration: 0.4, ease: "power2.out", clearProps: "opacity,visibility" });
+                } else {
+                    html.dataset.projectsView = "arcade";
+                    arcade?.setMode("arcade", false);
+                }
+                gsap.set(listParts, { clearProps: "opacity,visibility,transform" });
+                schedule();
+            }
+            busy = false;
+        };
+        root.querySelectorAll<HTMLElement>("[data-view-to]").forEach((b) => b.addEventListener("click", () => setView(b.dataset.viewTo as View)));
+
+        /* --- keys: ← → on the arcade; ↑ ↓ through the list, Esc back to the arcade --- */
+
+        document.addEventListener("keydown", (e) => {
+            if (e.target instanceof HTMLInputElement || e.metaKey || e.ctrlKey || e.altKey) return;
+            if (view === "arcade") {
+                if (!root.contains(document.activeElement) && document.activeElement !== document.body) return;
+                if (e.key === "ArrowLeft") step(-1, true);
+                else if (e.key === "ArrowRight") step(1, true);
+                return;
+            }
+            if (e.key === "Escape" && arcade && !root.classList.contains("is-flat")) setView("arcade");
+            if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+            const links = rows.filter((r) => !r.hidden).map((r) => r.querySelector("a")!);
+            const at = links.indexOf(document.activeElement as HTMLAnchorElement);
+            if (at < 0 && !screenEl.contains(document.activeElement)) return;
+            e.preventDefault();
+            const to = e.key === "ArrowDown" ? Math.min(links.length - 1, at + 1) : Math.max(0, at - 1);
+            links[to]?.focus();
+        });
+
+        /* --- start --- */
+
+        applyFilter(location.hash.slice(1) || "all", false);
 
         // load three.js and the model once the arcade is about to be seen
         const start = async () => {
@@ -152,14 +337,20 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
                     onPrev: () => step(-1, true),
                     onNext: () => step(1, true),
                     onOpen: () => (window.location.href = games[current].href),
+                    screenBox: () => (wide.matches ? screenEl.getBoundingClientRect() : null),
                 });
+                await arcade.setList(shown(), labelFor(filter));
+                if (view === "list") await arcade.setMode("list", false);
                 arcade.show(current);
                 root.classList.add("is-live");
                 hint.hidden = false;
                 schedule();
             } catch (err) {
+                // no WebGL: the list, on its own
                 console.warn("Arcade: no WebGL, showing the list instead", err);
-                root.dispatchEvent(new CustomEvent("arcade:unavailable", { bubbles: true }));
+                arcade = null;
+                root.classList.add("is-flat");
+                setView("list", { animate: false, save: false });
             } finally {
                 loading.hidden = true;
             }
@@ -177,17 +368,16 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
 </script>
 
 <style>
-    /* the cabinet's neon (as in src/scripts/arcade.ts), on the dark block */
     .arcade {
-        --neon-rgb: 92, 200, 255;
-        --neon: rgb(var(--neon-rgb));
-        --neon-ink: #080d12;
+        --neon-ink: var(--screen-bg);
     }
 
     .arcade__block {
+        --stage-h: clamp(400px, 64vh, 620px);
         position: relative;
         display: grid;
         grid-template-columns: minmax(0, 1fr);
+        container-type: inline-size;
     }
 
     .arcade__top {
@@ -201,6 +391,9 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
 
     .arcade__label {
         margin: 0;
+        font: inherit;
+        letter-spacing: inherit;
+        text-transform: inherit;
     }
 
     .arcade__view {
@@ -226,19 +419,32 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
     /* the screen's glow on the dark behind the cabinet */
     .arcade__stage {
         position: relative;
-        height: clamp(400px, 64vh, 620px);
+        height: var(--stage-h);
         background: radial-gradient(60% 55% at 50% 42%, rgba(var(--neon-rgb), 0.13), transparent 70%);
     }
 
+    /* the close-up cuts off softly at the bottom; moved in on the screen, it doesn't */
+    @property --fade {
+        syntax: "<percentage>";
+        inherits: false;
+        initial-value: 82%;
+    }
+
     .arcade__canvas {
+        --fade: 82%;
         display: block;
         width: 100%;
         height: 100%;
-        /* the close-up cuts off softly at the bottom */
-        mask-image: linear-gradient(to bottom, #000 82%, transparent);
+        mask-image: linear-gradient(to bottom, #000 var(--fade), transparent);
         opacity: 0;
-        transition: opacity 1.2s var(--ease);
+        transition:
+            opacity 1.2s var(--ease),
+            --fade 1.2s var(--ease);
         touch-action: pan-y;
+    }
+
+    :global(html[data-projects-view="list"]) .arcade__canvas {
+        --fade: 100%;
     }
 
     .is-live .arcade__canvas {
@@ -254,11 +460,12 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
         color: var(--muted);
     }
 
-    .arcade__loading[hidden] {
+    .arcade__loading[hidden],
+    .arcade__hint[hidden] {
         display: none;
     }
 
-    /* --- the project on screen, and the controls --- */
+    /* --- the arcade's project on screen, and its controls --- */
 
     .arcade__bar {
         display: grid;
@@ -353,13 +560,9 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
         margin: 0;
     }
 
-    .arcade__hint[hidden] {
-        display: none;
-    }
-
     .arcade__credit {
         margin: 0;
-        padding-bottom: 24px;
+        padding-block: 24px;
         color: var(--muted);
     }
 
@@ -367,22 +570,334 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
         color: inherit;
     }
 
+    /* --- the list's controls: back to the arcade, and the filters --- */
+
+    .arcade__side {
+        display: grid;
+        gap: 12px;
+        align-content: start;
+    }
+
+    .arcade__side-label {
+        margin: 0;
+        color: var(--muted);
+    }
+
+    .arcade__back,
+    .arcade__filter {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 11px 14px;
+        border: 1px solid var(--line);
+        background: none;
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: var(--fs-mono);
+        text-align: left;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        cursor: pointer;
+        transition:
+            border-color 0.3s var(--ease),
+            background-color 0.3s var(--ease),
+            color 0.3s var(--ease),
+            box-shadow 0.3s var(--ease);
+    }
+
+    .arcade__back {
+        justify-self: start;
+    }
+
+    .arcade__back:hover,
+    .arcade__back:focus-visible,
+    .arcade__filter:hover {
+        border-color: var(--neon);
+        color: var(--neon);
+    }
+
+    .arcade__filters {
+        display: grid;
+        gap: 8px;
+    }
+
+    .arcade__filter {
+        justify-content: space-between;
+    }
+
+    .arcade__filter-count {
+        opacity: 0.6;
+    }
+
+    /* the chosen filter lights up like the cabinet's one neon button */
+    .arcade__filter[aria-pressed="true"] {
+        border-color: var(--neon);
+        background: var(--neon);
+        color: var(--neon-ink);
+        box-shadow: 0 0 20px rgba(var(--neon-rgb), 0.35);
+    }
+
+    /* --- the screen with the list ---
+       --u is one of the 3D screen's pixels (it's drawn 1024 wide), so the list
+       lines up with the picture of it (LIST in arcade.ts). */
+
+    .arcade__screen {
+        container-type: inline-size;
+        margin-inline: var(--gutter);
+    }
+
+    .screen {
+        --u: calc(100cqw / 560);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: 0 calc(64 * var(--u)) calc(110 * var(--u));
+        font-family: var(--mono);
+        line-height: 1;
+        text-transform: uppercase;
+    }
+
+    .screen__head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: calc(20 * var(--u));
+        height: calc(97 * var(--u));
+        margin: 0;
+        padding-bottom: calc(14 * var(--u));
+        border-bottom: calc(3 * var(--u)) solid var(--neon);
+        color: var(--neon-pale);
+        font-size: calc(26 * var(--u));
+    }
+
+    .screen__rows {
+        flex: 1;
+        min-height: 0;
+        margin: calc(21 * var(--u)) 0 0;
+        padding: 0;
+        list-style: none;
+        overflow-y: auto;
+        scrollbar-width: none;
+    }
+
+    [data-row][hidden] {
+        display: none;
+    }
+
+    .screen__row {
+        position: relative;
+        display: grid;
+        grid-template-columns: calc(72 * var(--u)) calc(30 * var(--u)) minmax(0, 1fr) auto;
+        align-items: center;
+        column-gap: calc(20 * var(--u));
+        height: calc(62 * var(--u));
+        border-bottom: 1px solid rgba(var(--neon-rgb), 0.15);
+        color: var(--neon-pale);
+        text-decoration: none;
+        outline: none;
+    }
+
+    /* the cursor of a game's menu: an arrow by the chosen row, blinking */
+    .screen__row::before {
+        content: "▶";
+        position: absolute;
+        left: calc(-44 * var(--u));
+        color: var(--neon);
+        font-size: calc(22 * var(--u));
+        opacity: 0;
+    }
+
+    .screen__row:hover,
+    .screen__row:focus-visible {
+        background: rgba(var(--neon-rgb), 0.12);
+    }
+
+    .screen__row:hover::before,
+    .screen__row:focus-visible::before {
+        opacity: 1;
+        animation: screen-blink 0.9s steps(2, jump-none) infinite;
+    }
+
+    @keyframes screen-blink {
+        50% {
+            opacity: 0;
+        }
+    }
+
+    /* the thumbnail: tiny and blown up into big pixels, in the screen's blue */
+    .screen__thumb {
+        display: block;
+        width: calc(72 * var(--u));
+        height: calc(48 * var(--u));
+        overflow: hidden;
+        background: var(--neon);
+        box-shadow: inset 0 0 0 calc(2 * var(--u)) rgba(var(--neon-rgb), 0.6);
+    }
+
+    .screen__thumb img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        image-rendering: pixelated;
+        filter: grayscale(1) contrast(1.25);
+        mix-blend-mode: multiply;
+    }
+
+    .screen__num,
+    .screen__year {
+        font-size: calc(22 * var(--u));
+    }
+
+    .screen__text {
+        display: grid;
+        gap: calc(6 * var(--u));
+        min-width: 0;
+    }
+
+    .screen__title {
+        overflow: hidden;
+        color: var(--neon);
+        font-family: var(--pixel);
+        font-size: calc(28 * var(--u));
+        font-weight: 700;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .screen__row:hover .screen__title,
+    .screen__row:focus-visible .screen__title {
+        color: #f1f6f9;
+    }
+
+    .screen__cat {
+        font-size: calc(17 * var(--u));
+    }
+
+    .screen__hint {
+        position: absolute;
+        right: calc(64 * var(--u));
+        bottom: calc(38 * var(--u));
+        left: calc(64 * var(--u));
+        display: flex;
+        justify-content: space-between;
+        margin: 0;
+        color: var(--neon-pale);
+        font-size: calc(22 * var(--u));
+    }
+
+    .screen__hint span:first-child {
+        color: #f1f6f9;
+    }
+
+    /* --- which parts show: the arcade's or the list's (the list without JS) --- */
+
+    :global(html[data-projects-view="arcade"]) .arcade__for-list,
+    :global(html[data-projects-view="list"]) .arcade__for-arcade,
+    :global(html:not(.js)) .arcade__for-arcade,
+    :global(html:not(.js)) .arcade__stage,
+    :global(html:not(.js)) .arcade__back,
+    .is-flat .arcade__back,
+    .is-flat .arcade__view {
+        display: none;
+    }
+
+    /* smaller screens: the list is the screen on its own, in the page */
+    @media (max-width: 1099px) {
+        .arcade__top {
+            padding-bottom: 8px;
+        }
+
+        /* rows grow to fit whole titles; no keys to hint at on a phone */
+        .screen {
+            padding-bottom: calc(40 * var(--u));
+        }
+
+        .screen__row {
+            height: auto;
+            min-height: calc(62 * var(--u));
+            padding-block: calc(10 * var(--u));
+        }
+
+        .screen__title {
+            white-space: normal;
+            line-height: 1.1;
+        }
+
+        .screen__hint {
+            display: none;
+        }
+
+        :global(html[data-projects-view="list"]) .arcade__stage {
+            display: none;
+        }
+
+        .arcade__side {
+            padding: 16px var(--gutter) 0;
+        }
+
+        .arcade__side--right {
+            padding-bottom: 20px;
+        }
+
+        .arcade__side-label {
+            display: none;
+        }
+
+        /* the filters on one line that scrolls sideways */
+        .arcade__filters {
+            display: flex;
+            gap: 8px;
+            margin-inline: calc(-1 * var(--gutter));
+            padding-inline: var(--gutter);
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .arcade__filter {
+            flex: none;
+        }
+    }
+
     /* wide screens: the arcade fills the screen, the cabinet stands right of
-       centre and the project sits on the left, like the Game Boy on the home page */
+       centre and the project sits on the left, like the Game Boy on the home
+       page; the list sits over the cabinet's screen, moved in on */
     @media (min-width: 1100px) {
         .arcade__block {
+            /* the screen's height under the fixed header */
+            --stage-h: clamp(560px, calc(100svh - 56px), 1000px);
+            --screen-w: min(58cqw, (var(--stage-h) - 104px) * 1024 / 723);
             grid-template-rows: auto auto;
         }
 
         .arcade__top,
         .arcade__stage,
-        .arcade__bar {
+        .arcade__bar,
+        .arcade__side,
+        .arcade__screen {
             grid-area: 1 / 1;
+        }
+
+        .arcade__block {
+            overflow: clip;
+        }
+
+        .arcade__bar,
+        .arcade__screen {
+            z-index: 1;
+        }
+
+        /* above the screen's spotlight */
+        .arcade__top,
+        .arcade__side,
+        .arcade__credit {
+            position: relative;
+            z-index: 2;
         }
 
         .arcade__top,
         .arcade__bar {
-            z-index: 1;
             pointer-events: none;
         }
 
@@ -400,8 +915,6 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
 
         .arcade__stage {
             --view-shift: 0.15;
-            /* the screen's height under the fixed header */
-            height: clamp(560px, calc(100svh - 56px), 1000px);
         }
 
         .arcade__bar {
@@ -417,15 +930,43 @@ const meta = (g: (typeof games)[number]) => [g.category, g.year].filter(Boolean)
             margin-left: 6px;
         }
 
+        /* the screen, centred: exactly where the camera brings the cabinet's.
+           Everything around it dims, like a spotlight on it. */
+        .arcade__screen {
+            align-self: center;
+            justify-self: center;
+            width: var(--screen-w);
+            aspect-ratio: 1024 / 723;
+            margin: 0;
+            box-shadow:
+                0 0 0 1px rgba(var(--neon-rgb), 0.22),
+                0 0 48px rgba(var(--neon-rgb), 0.1),
+                0 0 0 100vmax rgba(4, 4, 7, 0.8);
+        }
+
+        .screen {
+            --u: calc(100cqw / 1024);
+            padding-bottom: calc(96 * var(--u));
+        }
+
+        .arcade__side {
+            align-self: center;
+            width: calc((100cqw - var(--screen-w)) / 2 - 2 * var(--gutter));
+        }
+
+        .arcade__side--left {
+            justify-self: start;
+            margin-left: var(--gutter);
+        }
+
+        .arcade__side--right {
+            justify-self: end;
+            margin-right: var(--gutter);
+        }
+
         .arcade__credit {
             grid-area: 2 / 1;
             text-align: right;
-        }
-    }
-
-    @media (max-width: 1099px) {
-        .arcade__top {
-            padding-bottom: 8px;
         }
     }
 </style>
