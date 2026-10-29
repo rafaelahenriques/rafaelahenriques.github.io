@@ -118,38 +118,21 @@ body,
     color: var(--text);
 }
 
-/* film grain over the whole page, flickering in steps */
+/* film grain over the whole page: dark specks on paper, light ones on ink.
+   One still layer, no blending, so scrolling stays cheap */
 body::after {
     content: "";
     position: fixed;
-    inset: -50%;
+    inset: 0;
     z-index: 3000;
     pointer-events: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    opacity: 0.3;
-    mix-blend-mode: multiply;
-    animation: grain 0.6s steps(3) infinite;
+    opacity: 0.22;
 }
 
 html.dark body::after {
-    opacity: 0.09;
-    mix-blend-mode: screen;
-    filter: invert(1);
-}
-
-@keyframes grain {
-    33% {
-        transform: translate(-3%, 2%);
-    }
-    66% {
-        transform: translate(2%, -3%);
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    body::after {
-        animation: none;
-    }
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.08;
 }
 
 @media print {

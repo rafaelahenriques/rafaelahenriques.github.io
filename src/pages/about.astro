@@ -6,6 +6,7 @@ import PixelEdge from "../components/PixelEdge.astro";
 import { Image } from "astro:assets";
 import { getCollection } from "astro:content";
 import { pad } from "../lib/content";
+import { site } from "../lib/site";
 import portrait from "../assets/me/rafaela.jpg";
 import { profilePageSchema } from "../lib/seo";
 
@@ -19,125 +20,119 @@ const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-mind
 ---
 
 <Base title="About" type="profile" image={portrait} schema={[profilePageSchema("/about/")]} description="Rafaela Henriques, an Angolan-Portuguese developer based in Belgium, studying Digital Design & Development at Howest: Creative Development major, Experience Design minor.">
-    <!-- HEADER: name on the left, portrait on the right -->
-    <header class="page-head wrap about-head">
-        <div class="about-head__title">
-            <p class="mono muted" data-reveal>About</p>
-            <h1 class="display about-name" data-split>Rafaela Henriques<span class="stop" aria-hidden="true"></span></h1>
-            <div class="about-head__links" data-reveal>
-                <ContactLinks class="mono" />
-            </div>
-        </div>
-        <figure class="about-portrait photo" data-about-portrait data-cursor="Hi">
-            <div class="about-portrait__frame" data-reveal-img>
-                <div class="about-portrait__inner" data-about-parallax>
-                <Image
-                    src={portrait}
-                    alt="Rafaela sitting on a stone quay by the water in the evening sun"
-                    widths={[500, 900, 1400, 1800]}
-                    sizes="(min-width: 900px) 34vw, 100vw"
-                    loading="eager"
-                    quality={88}
-                />
-                </div>
-                <!-- the photo dissolves into the page in pixels, like the dark blocks do -->
-                <PixelEdge class="about-portrait__edge" seed={9} rows={5} tone="page" />
-            </div>
-        </figure>
-    </header>
-
-    <section class="wrap" aria-label="Profile">
-        <div class="row">
-            <p class="row__label mono muted">Profile</p>
-            <div class="row__body">
-                <p class="lead about-lead" data-split>
-                    I’m Rafaela, an Angolan-Portuguese developer based in Belgium,
-                    currently studying Digital Design &amp; Development at Howest,
-                    majoring in Creative Development and minoring in Experience
-                    Design.
-                </p>
-                <div class="about__columns" data-reveal>
-                    <p>
-                        I’m always looking to learn, improve, and understand things
-                        more deeply. I’m not someone who likes to stay comfortable
-                        with what I already know. I want to keep pushing myself and
-                        become better at what I do. That mindset is what led me to
-                        move to Belgium on my own and challenge myself beyond what I
-                        was used to.
-                    </p>
-                    <p>
-                        Development is where I feel most at home: building, solving
-                        problems, and turning ideas into something real. But I also
-                        care about how people experience what I create. That’s why
-                        the combination of Creative Development and Experience
-                        Design feels so natural to me.
-                    </p>
-                </div>
-                <p class="about-closing" data-split>
-                    Ultimately, I want to become an excellent developer and build
-                    something of my own. Something I believe in, and something that
-                    genuinely brings value to others.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- TRAITS: one big centred statement -->
-    <section class="section wrap about-traits" aria-labelledby="traits">
-        <h2 id="traits" class="mono muted about-center-label">Traits</h2>
-        <p class="caps about-traits__text" data-split>
-            {
-                // the slash stays with the word before it, so no line starts with one
-                traits.map((t, i) => (
-                    <>
-                        <span class="about-traits__word">{t}{i < traits.length - 1 && <span class="about-traits__slash">{"\u00a0/"}</span>}</span>{" "}
-                    </>
-                ))
-            }
+    <!-- ALL OF IT ON ONE SCREEN, MORE OR LESS: the photo on the left (it stays
+         put while the text scrolls), the profile, skills and availability on
+         the right. The longer profile opens under "Read more". -->
+    <section class="about wrap" aria-labelledby="about-title">
+        <p class="about__head mono">
+            <span>About</span>
+            <span class="muted">{site.location}</span>
         </p>
-    </section>
 
-    <!-- SKILLS and GITHUB, on an inverted block, like the footer -->
-    <PixelEdge class="about-night-edge" seed={5} rows={9} tone="inverse" />
-    <div class="inverse about-night">
-    <!-- SKILLS: numbered like a playbook -->
-    <section class="section wrap about-skills" aria-labelledby="skills">
-        <h2 id="skills" class="mono muted about-skills__label">What I work with</h2>
-        <ol class="playbook">
-            {
-                skills.map((group, i) => (
-                    <li class="playbook__item" data-reveal>
-                        <span class="playbook__num">{pad(i + 1)}</span>
-                        <h3 class="playbook__name">{group.data.category}</h3>
-                        <p class="playbook__items mono">
-                            <span aria-hidden="true">→</span> {group.data.items.join(", ")}
+        <figure class="about__photo photo" data-about-portrait data-cursor="Hi">
+            <div class="about__frame" data-reveal-img>
+                <div class="about__inner" data-about-parallax>
+                    <Image
+                        src={portrait}
+                        alt="Rafaela sitting on a stone quay by the water in the evening sun"
+                        widths={[500, 900, 1400]}
+                        sizes="(min-width: 900px) 30vw, 100vw"
+                        loading="eager"
+                        quality={88}
+                    />
+                </div>
+                <!-- the photo dissolves into the page in pixels -->
+                <PixelEdge class="about__edge" seed={9} rows={5} tone="page" />
+            </div>
+            <figcaption class="about__caption mono">
+                <span class="muted">Fig. 02 — Rafaela</span>
+                <span class="about__traits">
+                    <span class="visually-hidden">Traits: </span>
+                    {
+                        traits.map((t, i) => (
+                            <>
+                                <span class="about__trait">{t}</span>
+                                {i < traits.length - 1 && <span class="muted" aria-hidden="true"> / </span>}
+                            </>
+                        ))
+                    }
+                </span>
+            </figcaption>
+        </figure>
+
+        <div class="about__text">
+            <h1 id="about-title" class="display about__title" data-rise>
+                <span class="about__line"><span data-rise-line>About<span class="stop" aria-hidden="true"></span></span></span>
+                <span class="visually-hidden"> Rafaela Henriques</span>
+            </h1>
+
+            <p class="about__lead" data-reveal>
+                I’m Rafaela, an Angolan-Portuguese developer based in Belgium,
+                currently studying Digital Design &amp; Development at Howest,
+                majoring in Creative Development and minoring in Experience
+                Design.
+            </p>
+
+            <!-- the rest of the profile, folded away until asked for -->
+            <details class="about__more" data-about-more data-reveal>
+                <summary class="btn">
+                    <span class="about__more-open">Read more</span>
+                    <span class="about__more-close">Read less</span>
+                    <span class="about__more-sign" aria-hidden="true"></span>
+                </summary>
+                <div class="about__more-body">
+                    <div class="about__columns">
+                        <p>
+                            I’m always looking to learn, improve, and understand things
+                            more deeply. I’m not someone who likes to stay comfortable
+                            with what I already know. I want to keep pushing myself and
+                            become better at what I do. That mindset is what led me to
+                            move to Belgium on my own and challenge myself beyond what I
+                            was used to.
                         </p>
-                    </li>
-                ))
-            }
-        </ol>
-    </section>
+                        <p>
+                            Development is where I feel most at home: building, solving
+                            problems, and turning ideas into something real. But I also
+                            care about how people experience what I create. That’s why
+                            the combination of Creative Development and Experience
+                            Design feels so natural to me.
+                        </p>
+                    </div>
+                    <p class="about__closing">
+                        Ultimately, I want to become an excellent developer and build
+                        something of my own. Something I believe in, and something that
+                        genuinely brings value to others.
+                    </p>
+                </div>
+            </details>
 
-    <!-- GITHUB: the numbers and most used languages, from the public profile -->
-    <GitHubStats />
-    </div>
-    <PixelEdge seed={6} rows={9} tone="inverse" direction="up" />
+            <h2 id="skills" class="about__label mono muted">What I work with</h2>
+            <ol class="skills" aria-labelledby="skills">
+                {
+                    skills.map((group, i) => (
+                        <li class="skills__item" data-reveal>
+                            <span class="skills__num mono muted">{pad(i + 1)}</span>
+                            <h3 class="skills__name">{group.data.category}</h3>
+                            <p class="skills__items mono">{group.data.items.join(", ")}</p>
+                        </li>
+                    ))
+                }
+            </ol>
 
-    <section class="section wrap about-last" aria-labelledby="availability">
-        <div class="row">
-            <h2 id="availability" class="row__label mono muted">Availability</h2>
-            <div class="row__body">
-                <p class="lead about-availability" data-split>
+            <div class="about__availability" data-reveal>
+                <h2 id="availability" class="about__label mono muted">Availability</h2>
+                <p>
                     Open to software and web development roles in the UK,
                     US and Belgium, and to projects where I can ship real features
                     as part of a team.
                 </p>
-                <div data-reveal>
-                    <ContactLinks class="about__links mono" />
-                </div>
+                <ContactLinks class="about__links mono" />
             </div>
         </div>
     </section>
+
+    <!-- GITHUB: the numbers and most used languages, from the public profile -->
+    <GitHubStats />
 </Base>
 
 <script>
@@ -160,50 +155,63 @@ const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-mind
             },
         );
     });
+
+    // "Read more": the rest of the profile comes in a line at a time, in steps
+    const more = document.querySelector<HTMLDetailsElement>("[data-about-more]");
+    more?.addEventListener("toggle", () => {
+        if (!more.open || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        gsap.from(more.querySelectorAll(".about__more-body p"), { autoAlpha: 0, y: 10, duration: 0.4, ease: "steps(4)", stagger: 0.08 });
+        ScrollTrigger.refresh();
+    });
 </script>
 
 <style>
-    /* --- HEADER --- */
-
-    .about-head {
+    .about {
         display: grid;
-        gap: clamp(32px, 5vw, 64px) var(--gutter);
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        column-gap: var(--gutter);
+        padding-block: 0 var(--section);
     }
 
-    .about-name {
-        margin-top: 18px;
-        max-width: 8ch;
-        font-size: clamp(4rem, 1rem + 11vw, 13rem);
-    }
-
-    .about-head__links {
-        margin-top: clamp(20px, 3vw, 32px);
-    }
-
-    .about-portrait {
+    .about__head {
+        grid-column: 1 / -1;
+        display: flex;
+        justify-content: space-between;
+        gap: var(--gutter);
         margin: 0;
+        padding-block: 12px;
+        border-bottom: 1px solid var(--line);
     }
 
-    .about-portrait__frame {
+    /* --- the photo, and the traits under it --- */
+
+    .about__photo {
+        grid-column: 1 / span 5;
+        align-self: start;
+        margin: 28px 0 0;
+    }
+
+    .about__frame {
         position: relative;
         aspect-ratio: 3 / 4;
         overflow: hidden;
+        background: var(--text);
     }
 
     /* (inside the frame, to beat the edge's own position: relative) */
-    .about-portrait__frame :global(.about-portrait__edge) {
+    .about__frame :global(.about__edge) {
         position: absolute;
         inset: auto 0 -1px;
         z-index: 1;
     }
 
     /* taller than the frame so the parallax never shows an edge */
-    .about-portrait__inner {
+    .about__inner {
         height: 112%;
         margin-top: -6%;
     }
 
-    .about-portrait__frame :global(img) {
+    .about__frame :global(img) {
         display: block;
         width: 100%;
         height: 100%;
@@ -211,163 +219,216 @@ const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-mind
         object-position: 50% 60%;
     }
 
-    @media (min-width: 900px) {
-        .about-head {
-            grid-template-columns: repeat(12, minmax(0, 1fr));
-            align-items: end;
-        }
-
-        .about-head__title {
-            grid-column: 1 / span 7;
-        }
-
-        .about-portrait {
-            grid-column: 9 / span 4;
-        }
+    .about__caption {
+        display: grid;
+        gap: 6px;
+        margin-top: 10px;
     }
 
-    /* --- PROFILE --- */
+    /* --- the text --- */
 
-    .about-lead {
-        max-width: 34ch;
+    .about__text {
+        grid-column: 7 / -1;
+        min-width: 0;
+        margin-top: 28px;
     }
 
-    /* two paragraphs side by side: why I push myself, why dev + experience */
+    .about__title {
+        margin: 0 0 clamp(24px, 3vw, 40px);
+        font-size: clamp(4.5rem, 1rem + 10vw, 11rem);
+    }
+
+    .about__line {
+        display: block;
+        overflow: hidden;
+        padding-bottom: 0.05em;
+    }
+
+    .about__line > span {
+        display: block;
+    }
+
+    .about__lead {
+        max-width: 30ch;
+        margin: 0;
+        font-size: clamp(1.375rem, 1rem + 1.2vw, 2.125rem);
+        font-weight: 500;
+        line-height: 1.15;
+        letter-spacing: -0.025em;
+    }
+
+    /* "Read more": a square button with a plus that turns into a minus */
+    .about__more {
+        margin-top: clamp(20px, 2.4vw, 32px);
+    }
+
+    .about__more > summary {
+        list-style: none;
+    }
+
+    .about__more > summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .about__more-sign {
+        position: relative;
+        width: 10px;
+        height: 10px;
+    }
+
+    .about__more-sign::before,
+    .about__more-sign::after {
+        content: "";
+        position: absolute;
+        inset: 4px 0 auto;
+        height: 2px;
+        background: currentColor;
+    }
+
+    .about__more-sign::after {
+        transform: rotate(90deg);
+    }
+
+    .about__more[open] .about__more-sign::after,
+    .about__more-close,
+    .about__more[open] .about__more-open {
+        display: none;
+    }
+
+    .about__more[open] .about__more-close {
+        display: inline;
+    }
+
+    .about__more-body {
+        padding-top: clamp(20px, 2.4vw, 32px);
+    }
+
     .about__columns {
         display: grid;
         gap: 1em var(--gutter);
-        margin-top: clamp(32px, 4vw, 56px);
-        max-width: 60rem;
         color: var(--muted);
     }
 
-    .about__columns p {
+    .about__columns p,
+    .about__closing {
         margin: 0;
     }
 
-    @media (min-width: 900px) {
+    .about__closing {
+        max-width: 34ch;
+        margin-top: clamp(20px, 2.4vw, 32px);
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+        font-size: clamp(1.125rem, 1rem + 0.5vw, 1.375rem);
+        line-height: 1.3;
+        letter-spacing: -0.015em;
+    }
+
+    @media (min-width: 1200px) {
         .about__columns {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
     }
 
-    /* where it's all heading: set apart, in the text colour */
-    .about-closing {
-        max-width: 34ch;
-        margin: clamp(32px, 4vw, 56px) 0 0;
-        padding-top: 14px;
-        border-top: 1px solid var(--line);
-        font-size: clamp(1.25rem, 1rem + 0.9vw, 1.75rem);
-        line-height: 1.25;
-        letter-spacing: -0.02em;
+    /* --- skills: a numbered list, like every list on the site --- */
+
+    .about__label {
+        margin: clamp(48px, 6vw, 80px) 0 12px;
     }
 
-    .about-availability {
-        max-width: 30ch;
-    }
-
-    /* --- TRAITS --- */
-
-    .about-center-label {
-        margin: 0 0 clamp(20px, 3vw, 32px);
-        text-align: center;
-    }
-
-    .about-traits__text {
-        max-width: 20ch;
-        font-size: clamp(2.5rem, 1rem + 6vw, 7.5rem);
-    }
-
-    .about-traits__word {
-        white-space: nowrap;
-    }
-
-    /* the slashes in blue pixels' place: quiet */
-    .about-traits__slash {
-        color: var(--muted);
-    }
-
-    /* --- THE DARK BLOCK: skills and GitHub --- */
-
-    :global(.about-night-edge) {
-        margin-top: var(--section);
-    }
-
-    .about-night {
-        padding-bottom: clamp(48px, 7vw, 104px);
-    }
-
-    .about-skills {
-        padding-top: clamp(48px, 7vw, 104px);
-    }
-
-    /* --- SKILLS PLAYBOOK --- */
-
-    .about-skills__label {
-        margin: 0 0 14px;
-    }
-
-    .playbook {
+    .skills {
         margin: 0;
         padding: 0;
         list-style: none;
         border-bottom: 1px solid var(--line);
     }
 
-    .playbook__item {
+    .skills__item {
         display: grid;
-        grid-template-columns: auto 1fr;
-        gap: 6px var(--gutter);
+        grid-template-columns: 2.5rem minmax(0, 1fr);
+        gap: 4px var(--gutter);
         align-items: baseline;
-        padding-block: clamp(16px, 2vw, 28px);
+        padding-block: 14px;
         border-top: 1px solid var(--line);
     }
 
-    .playbook__name {
+    .skills__name {
+        margin: 0;
         font-family: var(--display);
-        font-size: clamp(2.25rem, 1rem + 4.4vw, 5.5rem);
+        font-size: clamp(1.5rem, 1rem + 1.5vw, 2.5rem);
         font-weight: 800;
-        line-height: 0.88;
-        letter-spacing: -0.06em;
+        line-height: 0.95;
+        letter-spacing: -0.05em;
         text-transform: lowercase;
     }
 
-    /* small mono numbers, like every list on the site */
-    .playbook__num {
-        font-family: var(--mono);
-        font-size: var(--fs-mono);
-        color: var(--muted);
-        align-self: start;
-        padding-top: 0.6em;
-    }
-
-    .playbook__name {
-        margin: 0;
-    }
-
-    .playbook__items {
+    .skills__items {
         grid-column: 2;
         margin: 0;
         color: var(--muted);
     }
 
-    @media (min-width: 900px) {
-        .playbook__item {
-            grid-template-columns: 4rem minmax(0, 1fr) minmax(0, 1fr);
+    @media (min-width: 1200px) {
+        .skills__item {
+            grid-template-columns: 2.5rem minmax(0, 1.1fr) minmax(0, 1fr);
         }
 
-        .playbook__items {
+        .skills__items {
             grid-column: 3;
-            align-self: end;
-            padding-bottom: 0.6em;
         }
     }
 
-    .about-last {
-        padding-bottom: var(--section);
+    /* --- availability and the links --- */
+
+    .about__availability p {
+        max-width: 34ch;
+        margin: 0;
+        font-size: var(--fs-body);
     }
 
-    :global(.about__links) {
-        margin-top: 32px;
+    .about__availability :global(.about__links) {
+        margin-top: 20px;
+    }
+
+    /* desktop: the photo stays in view while the text goes by */
+    @media (min-width: 900px) {
+        .about__photo {
+            position: sticky;
+            top: calc(var(--header-h) + 24px);
+        }
+    }
+
+    /* phones and tablets: one column, the title first */
+    @media (max-width: 899px) {
+        .about__text {
+            display: contents;
+        }
+
+        .about__title {
+            grid-column: 1 / -1;
+            order: -1;
+            margin-top: 24px;
+        }
+
+        .about__head {
+            order: -2;
+        }
+
+        .about__photo {
+            grid-column: 1 / span 10;
+            margin-top: 0;
+        }
+
+        .about__lead,
+        .about__more,
+        .about__label,
+        .skills,
+        .about__availability {
+            grid-column: 1 / -1;
+        }
+
+        .about__lead {
+            margin-top: clamp(32px, 6vw, 48px);
+        }
     }
 </style>

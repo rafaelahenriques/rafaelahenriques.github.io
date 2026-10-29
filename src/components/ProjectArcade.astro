@@ -25,6 +25,13 @@ interface Props {
 
 const { projects } = Astro.props;
 
+// a line or two on what it is: the tagline, or the start of a long description
+const briefOf = (p: ProjectEntry) => {
+    if (p.data.tagline) return p.data.tagline;
+    const d = p.data.description ?? "";
+    return d.length > 120 ? `${d.split(/[:—]/)[0].trim()}.` : d;
+};
+
 const games = await Promise.all(
     projects.map(async (p, i) => {
         const image = p.data.media?.thumbnail ?? p.data.media?.screenshot;
@@ -33,6 +40,7 @@ const games = await Promise.all(
             title: p.data.title,
             category: p.data.category ?? "",
             year: p.data.year ?? "",
+            brief: briefOf(p),
             href: `/projects/${slugOf(p)}/`,
             types: p.data.types as string[],
             inProgress: p.data.status === "in-progress",
@@ -80,6 +88,7 @@ const filterKeys = filters.map((f) => f.key);
                 <span class="arcade__num mono" data-arcade-num>{first.num} / {pad(games.length)}</span>
                 <a href={first.href} class="arcade__title" data-arcade-title>{first.title}</a>
                 <span class="arcade__meta mono" data-arcade-meta>{meta(first)}</span>
+                <span class="arcade__brief" data-arcade-brief>{first.brief}</span>
             </p>
             <div class="arcade__controls">
                 <button type="button" class="arcade__btn" data-arcade-prev aria-label="Previous project">←</button>
@@ -155,7 +164,7 @@ const filterKeys = filters.map((f) => f.key);
     import type { Arcade, ArcadeGame } from "../scripts/arcade";
     import { go } from "../scripts/wipe";
 
-    type Game = ArcadeGame & { types: string[] };
+    type Game = ArcadeGame & { types: string[]; brief: string };
     type View = "arcade" | "list";
 
     const root = document.querySelector<HTMLElement>("[data-arcade]");
@@ -166,6 +175,7 @@ const filterKeys = filters.map((f) => f.key);
         const num = root.querySelector<HTMLElement>("[data-arcade-num]")!;
         const title = root.querySelector<HTMLAnchorElement>("[data-arcade-title]")!;
         const meta = root.querySelector<HTMLElement>("[data-arcade-meta]")!;
+        const brief = root.querySelector<HTMLElement>("[data-arcade-brief]")!;
         const open = root.querySelector<HTMLAnchorElement>("[data-arcade-open]")!;
         const hint = root.querySelector<HTMLElement>("[data-arcade-hint]")!;
         const loading = root.querySelector<HTMLElement>("[data-arcade-loading]")!;
@@ -209,7 +219,8 @@ const filterKeys = filters.map((f) => f.key);
             title.textContent = g.title;
             title.href = open.href = g.href;
             meta.textContent = [g.category, g.year].filter(Boolean).join(" · ");
-            if (!reduceMotion) gsap.fromTo([num, title, meta], { autoAlpha: 0, y: 8 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: "expo.out", stagger: 0.04, overwrite: true });
+            brief.textContent = g.brief;
+            if (!reduceMotion) gsap.fromTo([num, title, meta, brief], { autoAlpha: 0, y: 8 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: "expo.out", stagger: 0.04, overwrite: true });
             arcade?.show(i);
         };
         const step = (dir: number, byVisitor: boolean) => {
@@ -245,7 +256,8 @@ const filterKeys = filters.map((f) => f.key);
             arcade?.setList(visible, labelFor(next));
             // the rows come back on like an old screen redrawing
             if (animate && changed && !reduceMotion) {
-                gsap.fromTo(rows.filter((r) => !r.hidden), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.24, ease: "steps(3)", stagger: 0.04, clearProps: "opacity,visibility" });
+                // (opacity only: a hidden row can't take focus, and ↑ ↓ may come straight away)
+                gsap.fromTo(rows.filter((r) => !r.hidden), { opacity: 0 }, { opacity: 1, duration: 0.24, ease: "steps(3)", stagger: 0.04, clearProps: "opacity" });
             }
         };
         filterButtons.forEach((b) => b.addEventListener("click", () => applyFilter(b.dataset.filter!)));
@@ -317,12 +329,16 @@ const filterKeys = filters.map((f) => f.key);
             }
             if (e.key === "Escape" && arcade && !root.classList.contains("is-flat")) setView("arcade");
             if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+            // ↑ ↓ move through the list from anywhere on it (a filter just
+            // clicked, the back button): from outside the rows they start at
+            // the top or the bottom
+            if (!root.contains(document.activeElement) && document.activeElement !== document.body) return;
             const links = rows.filter((r) => !r.hidden).map((r) => r.querySelector("a")!);
+            if (!links.length) return;
             const at = links.indexOf(document.activeElement as HTMLAnchorElement);
-            if (at < 0 && !screenEl.contains(document.activeElement)) return;
             e.preventDefault();
-            const to = e.key === "ArrowDown" ? Math.min(links.length - 1, at + 1) : Math.max(0, at - 1);
-            links[to]?.focus();
+            const to = at < 0 ? (e.key === "ArrowDown" ? 0 : links.length - 1) : e.key === "ArrowDown" ? Math.min(links.length - 1, at + 1) : Math.max(0, at - 1);
+            links[to].focus();
         });
 
         /* --- start --- */
@@ -492,6 +508,14 @@ const filterKeys = filters.map((f) => f.key);
     .arcade__meta,
     .arcade__hint {
         color: var(--muted);
+    }
+
+    /* what it is, in a line or two */
+    .arcade__brief {
+        max-width: 38ch;
+        margin-top: 10px;
+        font-size: var(--fs-body);
+        line-height: 1.4;
     }
 
     .arcade__title {

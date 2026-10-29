@@ -29,8 +29,10 @@ const BODY = [
     ".XXXXXXXXXXXXXXXX.",
     "..XXXXXXXXXXXXXX..",
 ];
+// a Z, 5 × 5 (any smaller and the diagonal doesn't read), for when it sleeps
+const Z = ["XXXXX", "...X.", "..X..", ".X...", "XXXXX"];
 const LEFT = 1; // body starts one pixel in
-const TOP = 4; // room above for the z
+const TOP = 7; // room above for the z
 
 if (pet && canvas && g) {
     const still = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -76,15 +78,13 @@ if (pet && canvas && g) {
 
         // shadow: a dotted row under it
         g.fillStyle = fg;
-        for (let x = 3; x < 17; x += 2) g.fillRect(LEFT + x - 1 + state.breath, 18, 1, 1);
+        for (let x = 3; x < 17; x += 2) g.fillRect(LEFT + x - 1 + state.breath, TOP + 14, 1, 1);
 
-        // asleep: a little z drifting up
+        // asleep: a z drifting up from beside its head
         if (asleep && state.z < 3) {
-            const zx = 16;
+            const zx = 15;
             const zy = 2 - state.z;
-            g.fillRect(zx, zy, 3, 1);
-            g.fillRect(zx + 1, zy + 1, 1, 1);
-            g.fillRect(zx, zy + 2, 3, 1);
+            Z.forEach((row, y) => [...row].forEach((c, x) => c === "X" && g.fillRect(zx + x, zy + y, 1, 1)));
         }
     };
 

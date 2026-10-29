@@ -43,6 +43,15 @@ const { seed = 1, rows = 9, direction = "down", tone = "inverse", class: classNa
         height: calc(var(--rows) * var(--cell));
     }
 
+    /* a pixel into the block it meets, so no hairline of page shows between them */
+    .pixel-edge[data-direction="down"] {
+        margin-bottom: -1px;
+    }
+
+    .pixel-edge[data-direction="up"] {
+        margin-top: -1px;
+    }
+
     .pixel-edge canvas {
         position: absolute;
         inset: 0;

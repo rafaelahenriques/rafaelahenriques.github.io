@@ -395,7 +395,8 @@ export async function createArcade(o: ArcadeOptions) {
     await Promise.all([document.fonts.load(`700 40px Silkscreen`), document.fonts.load(`400 24px 'JetBrains Mono'`)]).catch(() => {});
 
     const renderer = new THREE.WebGLRenderer({ canvas: o.canvas, antialias: true, alpha: true, powerPreference: "low-power" });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // 1.5 at most: full retina would be 1.8× the pixels for little visible gain
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.NeutralToneMapping;
 
