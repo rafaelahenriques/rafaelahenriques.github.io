@@ -69,7 +69,7 @@ const first = games[0];
         </div>
 
         <div class="gb-col">
-            <div class="gb-stage">
+            <div class="gb-stage" data-cursor="Play">
                 <canvas class="gb-canvas" data-gb-canvas aria-hidden="true"></canvas>
                 <!-- no WebGL: the clip in a plain frame -->
                 <div class="gb-fallback" data-gb-fallback hidden>
@@ -115,6 +115,7 @@ const first = games[0];
 <script>
     import { gsap } from "gsap";
     import type { GameBoy } from "../scripts/gameboy";
+    import { go } from "../scripts/wipe";
 
     type Game = { num: string; title: string; clip?: string; poster?: string; href: string };
 
@@ -198,7 +199,7 @@ const first = games[0];
                     reduceMotion,
                     onNext: () => select(current + 1, true),
                     onPrev: () => select(current - 1, true),
-                    onOpen: () => (window.location.href = games[current].href),
+                    onOpen: () => go(games[current].href),
                     onToggle: togglePlaying,
                     onEnded: () => select(current + 1, false),
                 });
@@ -276,10 +277,11 @@ const first = games[0];
 
     .gb-panel__title {
         margin: 14px 0 0;
-        font-size: clamp(2.25rem, 1.2rem + 3vw, 4rem);
-        font-weight: 500;
-        line-height: 0.95;
-        letter-spacing: -0.05em;
+        font-family: var(--display);
+        font-size: clamp(2.5rem, 1.2rem + 3.6vw, 4.75rem);
+        font-weight: 800;
+        line-height: 0.9;
+        letter-spacing: -0.055em;
     }
 
     .gb-panel__facts {
@@ -344,9 +346,9 @@ const first = games[0];
     .gb-fallback video {
         width: 100%;
         max-height: 100%;
-        border-radius: 12px;
-        background: #b5caa0;
-        box-shadow: 0 0 0 16px #8b8b93, var(--media-shadow);
+        background: var(--screen-bg);
+        outline: 1px solid var(--line);
+        outline-offset: 12px;
     }
 
     .gb-controls {
@@ -363,6 +365,7 @@ const first = games[0];
         gap: 6px;
     }
 
+    /* square, hairline; blue under the pointer and on the project showing */
     .gb-btn,
     .gb-tab,
     .gb-pause {
@@ -377,19 +380,18 @@ const first = games[0];
         font: inherit;
         cursor: pointer;
         transition:
-            border-color 0.3s var(--ease),
-            background-color 0.3s var(--ease),
-            color 0.3s var(--ease);
+            border-color 0.15s var(--step),
+            background-color 0.15s var(--step),
+            color 0.15s var(--step);
     }
 
     .gb-btn {
-        border-radius: 50%;
         padding: 0;
+        font-family: var(--mono);
     }
 
     .gb-pause {
         margin-left: 6px;
-        border-radius: 999px;
         color: var(--muted);
     }
 
@@ -399,14 +401,15 @@ const first = games[0];
     .gb-tab:focus-visible,
     .gb-pause:hover,
     .gb-pause:focus-visible {
-        border-color: var(--text);
+        border-color: var(--blue);
         color: var(--text);
+        outline: none;
     }
 
     .gb-tab[aria-selected="true"] {
-        background: var(--text);
-        border-color: var(--text);
-        color: var(--bg);
+        background: var(--blue);
+        border-color: var(--blue);
+        color: #e9e7e2;
     }
 
     .gb-hint[hidden] {
@@ -426,6 +429,7 @@ const first = games[0];
 
     .gb-credit a {
         text-decoration: underline;
+        text-decoration-color: var(--blue);
         text-underline-offset: 0.2em;
     }
 

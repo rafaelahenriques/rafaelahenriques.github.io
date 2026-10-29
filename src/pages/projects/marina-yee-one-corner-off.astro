@@ -119,7 +119,7 @@ const sizes = [
                 {pad(order ?? 4)} — {category}
                 {status === "in-progress" && <span class="wip">In progress</span>}
             </p>
-            <h1 class="display my-title" data-split>{title}</h1>
+            <h1 class="display my-title" data-split>{title}<span class="stop" aria-hidden="true"></span></h1>
 
             <div class="row my-intro">
                 <dl class="row__label my-facts mono" data-reveal>
@@ -454,16 +454,18 @@ const sizes = [
         margin-top: 28px;
         padding: 10px 16px;
         border: 1px solid var(--text);
-        border-radius: 999px;
         transition:
-            background-color 0.35s var(--ease),
-            color 0.35s var(--ease);
+            background-color 0.15s var(--step),
+            border-color 0.15s var(--step),
+            color 0.15s var(--step);
     }
 
     .my-visit:hover,
     .my-visit:focus-visible {
-        background: var(--text);
-        color: var(--bg);
+        border-color: var(--blue);
+        background: var(--blue);
+        color: #e9e7e2;
+        outline: none;
     }
 
     /* --- SCREENS: the site sits in a dark frame, like it does on screen --- */

@@ -1,42 +1,37 @@
 ---
+/**
+ * The end screen: inverted, with "let's talk" big, the pet in pixels in the
+ * middle (drag it sideways; it sleeps in dark mode), and the contact links.
+ */
 import ContactLinks from "./ContactLinks.astro";
 import { site } from "../lib/site";
 
 const year = new Date().getFullYear();
 ---
 
-<footer class="site-footer wrap inverse">
-    <div class="row">
-        <p class="row__label mono muted">Contact</p>
-        <div class="row__body">
-            <p class="site-footer__status mono muted">{site.availability}</p>
-            <a href={`mailto:${site.email}`} class="site-footer__cta display" data-split>
-                Let's talk
-            </a>
-            <a href={`mailto:${site.email}`} class="site-footer__email link">{site.email}</a>
-            <ContactLinks class="site-footer__links mono" />
+<footer class="site-footer inverse">
+    <p class="site-footer__status mono wrap">{site.availability}</p>
+
+    <div class="site-footer__mid wrap">
+        <a href={`mailto:${site.email}`} class="site-footer__cta display" data-split>
+            Let's talk<span class="stop" aria-hidden="true"></span>
+        </a>
+
+        <!-- the pet (scripts/creature.js), drawn in pixels; drag it sideways -->
+        <div class="footer-pet" data-pet data-cursor="Drag" aria-hidden="true">
+            <canvas width="20" height="19"></canvas>
+        </div>
+
+        <div class="site-footer__buttons">
+            <a href={`mailto:${site.email}`} class="btn site-footer__email">{site.email} <span aria-hidden="true">✉</span></a>
+            <a href="#top" class="btn">Back to top <span aria-hidden="true">↑</span></a>
         </div>
     </div>
 
-    <div class="site-footer__bar mono">
-        <!-- CREATURE (sits on the rule, drag it sideways) -->
-        <div class="footer-creature" aria-hidden="true">
-            <div class="footer-creature__group">
-                <div class="footer-creature__shadow"></div>
-
-                <div class="footer-creature__body">
-                    <div class="footer-creature__face">
-                        <span class="footer-creature__eye"></span>
-                        <span class="footer-creature__eye"></span>
-                    </div>
-                </div>
-
-                <div class="footer-creature__z">Z</div>
-            </div>
-        </div>
-
+    <div class="site-footer__bar wrap mono">
         <span>© {year} Rafaela Henriques</span>
-        <a href="#top" class="link">Back to top ↑</a>
+        <ContactLinks />
+        <span class="muted">50.83° N, 3.27° E</span>
     </div>
 
     <script>
@@ -45,170 +40,89 @@ const year = new Date().getFullYear();
 </footer>
 
 <style>
-    /* inverted; the page dissolves into it (the pixel edge right above it) */
     .site-footer {
-        padding-top: clamp(48px, 7vw, 104px);
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        min-height: min(100svh, 920px);
+        text-align: center;
     }
 
-    .site-footer__cta {
-        display: block;
-        width: fit-content;
-    }
-
+    /* a blinking blue pixel: open to work */
     .site-footer__status {
-        margin: 0 0 16px;
+        margin: 0;
+        padding-top: clamp(32px, 4vw, 48px);
     }
 
     .site-footer__status::before {
         content: "";
         display: inline-block;
-        width: 7px;
-        height: 7px;
-        margin-right: 8px;
-        border-radius: 50%;
-        background: currentColor;
-        vertical-align: 1px;
+        width: 8px;
+        height: 8px;
+        margin-right: 10px;
+        background: var(--blue);
+        vertical-align: 0;
+        animation: stop-blink 1.1s steps(1) infinite;
+    }
+
+    .site-footer__mid {
+        display: grid;
+        place-items: center;
+        align-content: center;
+        gap: clamp(20px, 3vw, 32px);
+        padding-block: clamp(48px, 7vw, 96px);
+    }
+
+    .site-footer__cta {
+        display: block;
+        width: fit-content;
+        font-size: clamp(4.5rem, 1rem + 12vw, 15rem);
+    }
+
+    .footer-pet {
+        width: clamp(160px, 16vw, 240px);
+        cursor: grab;
+        touch-action: pan-y;
+    }
+
+    .footer-pet canvas {
+        display: block;
+        width: 100%;
+        height: auto;
+        image-rendering: pixelated;
+    }
+
+    .site-footer__buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
     }
 
     .site-footer__email {
-        display: inline-block;
-        margin-top: 20px;
-        font-size: var(--fs-body);
+        text-transform: none;
         overflow-wrap: anywhere;
-    }
-
-    .site-footer :global(.site-footer__links) {
-        margin-top: 32px;
+        white-space: normal;
     }
 
     .site-footer__bar {
-        position: relative;
         display: flex;
         flex-wrap: wrap;
         justify-content: space-between;
+        align-items: center;
         gap: 12px var(--gutter);
-        margin-top: clamp(120px, 14vw, 200px);
-        padding-block: 18px;
+        padding-block: 16px;
         border-top: 1px solid var(--line);
     }
 
-    /* --- CREATURE --- */
-
-    .footer-creature {
-        position: absolute;
-        bottom: 100%;
-        left: calc(50% - 70px);
-        pointer-events: none;
+    @media (prefers-reduced-motion: reduce) {
+        .site-footer__status::before {
+            animation: none;
+        }
     }
 
-    .footer-creature__group {
-        position: relative;
-        width: 140px;
-        height: 90px;
-        pointer-events: auto;
-        cursor: grab;
-    }
-
-    .footer-creature__shadow {
-        position: absolute;
-        bottom: -6px;
-        left: 50%;
-        width: 90px;
-        height: 12px;
-        border-radius: 999px;
-        transform: translateX(-50%);
-        background: radial-gradient(
-            ellipse at center,
-            color-mix(in oklab, var(--text) 35%, transparent),
-            transparent 70%
-        );
-        filter: blur(1px);
-    }
-
-    .footer-creature__body {
-        position: absolute;
-        bottom: 0;
-        left: 50%;
-        width: 80px;
-        height: 52px;
-        border-radius: 999px 999px 0 0;
-        transform: translateX(-50%);
-        transform-origin: 50% 100%;
-        background: var(--text);
-    }
-
-    .footer-creature__face {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 10px;
-    }
-
-    /* Eyes: awake in light mode */
-    .footer-creature__eye {
-        position: relative;
-        width: 8px;
-        height: 13px;
-        border-radius: 4px;
-        background: var(--bg);
-    }
-
-    .footer-creature__eye::before,
-    .footer-creature__eye::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        display: none;
-    }
-
-    /* Excited >< while dragged (light mode only) */
-    .footer-creature--excited .footer-creature__eye {
-        width: 16px;
-        height: 16px;
-        background: none;
-    }
-
-    .footer-creature--excited .footer-creature__eye::after {
-        display: block;
-        content: ">";
-        inset: auto;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-family: var(--mono);
-        font-size: 1.1rem;
-        line-height: 1;
-        white-space: nowrap;
-        color: var(--bg);
-    }
-
-    .footer-creature--excited .footer-creature__eye + .footer-creature__eye::after {
-        content: "<";
-    }
-
-    /* Dark mode: asleep */
-    :global(html.dark) .footer-creature__eye {
-        width: 12px;
-        height: 6px;
-        background: transparent;
-    }
-
-    :global(html.dark) .footer-creature__eye::before {
-        display: block;
-        border-bottom: 2px solid var(--bg);
-        border-radius: 999px;
-    }
-
-    .footer-creature__z {
-        position: absolute;
-        bottom: 56px;
-        left: 68%;
-        font-family: var(--mono);
-        color: var(--muted);
-        opacity: 0;
-        user-select: none;
-        pointer-events: none;
+    @media (max-width: 719px) {
+        .site-footer__bar {
+            flex-direction: column;
+        }
     }
 </style>

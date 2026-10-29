@@ -1,6 +1,7 @@
 ---
 /**
- * Where the page dissolves into a dark block, in big pixels (src/scripts/pixels.ts).
+ * Where the page dissolves into a block, in square pixels (src/scripts/pixels.ts).
+ * The pixels build up row by row the first time it comes into view.
  * Put it right before a block (direction "down") or right after one ("up").
  * tone: the block's colour, "inverse" (footer, next project), "night" (the arcade)
  * or "page" (laid over a picture, to dissolve it into the page).
@@ -14,7 +15,7 @@ interface Props {
     class?: string;
 }
 
-const { seed = 1, rows = 7, direction = "down", tone = "inverse", class: className } = Astro.props;
+const { seed = 1, rows = 9, direction = "down", tone = "inverse", class: className } = Astro.props;
 ---
 
 <div
@@ -37,7 +38,7 @@ const { seed = 1, rows = 7, direction = "down", tone = "inverse", class: classNa
 
 <style>
     .pixel-edge {
-        --cell: clamp(16px, 2.3vw, 32px);
+        --cell: clamp(10px, 1vw, 15px);
         position: relative;
         height: calc(var(--rows) * var(--cell));
     }

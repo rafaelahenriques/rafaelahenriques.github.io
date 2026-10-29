@@ -23,12 +23,12 @@ const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-mind
     <header class="page-head wrap about-head">
         <div class="about-head__title">
             <p class="mono muted" data-reveal>About</p>
-            <h1 class="display about-name" data-split>Rafaela Henriques</h1>
+            <h1 class="display about-name" data-split>Rafaela Henriques<span class="stop" aria-hidden="true"></span></h1>
             <div class="about-head__links" data-reveal>
                 <ContactLinks class="mono" />
             </div>
         </div>
-        <figure class="about-portrait" data-about-portrait>
+        <figure class="about-portrait photo" data-about-portrait data-cursor="Hi">
             <div class="about-portrait__frame" data-reveal-img>
                 <div class="about-portrait__inner" data-about-parallax>
                 <Image
@@ -41,7 +41,7 @@ const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-mind
                 />
                 </div>
                 <!-- the photo dissolves into the page in pixels, like the dark blocks do -->
-                <PixelEdge class="about-portrait__edge" seed={9} rows={3} tone="page" />
+                <PixelEdge class="about-portrait__edge" seed={9} rows={5} tone="page" />
             </div>
         </figure>
     </header>
@@ -97,9 +97,9 @@ const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-mind
         </p>
     </section>
 
-    <!-- SKILLS and GITHUB, on a dark block like the arcade's -->
-    <PixelEdge class="about-night-edge" seed={5} rows={6} tone="night" />
-    <div class="night about-night">
+    <!-- SKILLS and GITHUB, on an inverted block, like the footer -->
+    <PixelEdge class="about-night-edge" seed={5} rows={9} tone="inverse" />
+    <div class="inverse about-night">
     <!-- SKILLS: numbered like a playbook -->
     <section class="section wrap about-skills" aria-labelledby="skills">
         <h2 id="skills" class="mono muted about-skills__label">What I work with</h2>
@@ -121,7 +121,7 @@ const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-mind
     <!-- GITHUB: the numbers and most used languages, from the public profile -->
     <GitHubStats />
     </div>
-    <PixelEdge seed={6} rows={6} tone="night" direction="up" />
+    <PixelEdge seed={6} rows={9} tone="inverse" direction="up" />
 
     <section class="section wrap about-last" aria-labelledby="availability">
         <div class="row">
@@ -173,6 +173,7 @@ const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-mind
     .about-name {
         margin-top: 18px;
         max-width: 8ch;
+        font-size: clamp(4rem, 1rem + 11vw, 13rem);
     }
 
     .about-head__links {
@@ -273,17 +274,17 @@ const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-mind
     }
 
     .about-traits__text {
-        max-width: 22ch;
-        font-size: clamp(2rem, 1rem + 4.4vw, 5.5rem);
+        max-width: 20ch;
+        font-size: clamp(2.5rem, 1rem + 6vw, 7.5rem);
     }
 
     .about-traits__word {
         white-space: nowrap;
     }
 
+    /* the slashes in blue pixels' place: quiet */
     .about-traits__slash {
         color: var(--muted);
-        font-weight: 500;
     }
 
     /* --- THE DARK BLOCK: skills and GitHub --- */
@@ -322,23 +323,22 @@ const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-mind
         border-top: 1px solid var(--line);
     }
 
-    .playbook__num,
     .playbook__name {
-        font-size: clamp(2rem, 1rem + 3.6vw, 4.5rem);
+        font-family: var(--display);
+        font-size: clamp(2.25rem, 1rem + 4.4vw, 5.5rem);
         font-weight: 800;
-        line-height: 0.95;
-        letter-spacing: -0.04em;
-        text-transform: uppercase;
+        line-height: 0.88;
+        letter-spacing: -0.06em;
+        text-transform: lowercase;
     }
 
-    /* the numbers in the arcade's pixel letters, lit up */
+    /* small mono numbers, like every list on the site */
     .playbook__num {
-        color: var(--neon);
-        font-family: var(--pixel);
-        font-size: clamp(1.5rem, 0.8rem + 2.6vw, 3.25rem);
-        font-weight: 700;
-        letter-spacing: 0;
-        text-shadow: 0 0 18px rgba(var(--neon-rgb), 0.45);
+        font-family: var(--mono);
+        font-size: var(--fs-mono);
+        color: var(--muted);
+        align-self: start;
+        padding-top: 0.6em;
     }
 
     .playbook__name {
@@ -353,7 +353,7 @@ const traits = ["Adaptable", "Curious", "Proactive", "Communicative", "User-mind
 
     @media (min-width: 900px) {
         .playbook__item {
-            grid-template-columns: 8rem minmax(0, 1fr) minmax(0, 1fr);
+            grid-template-columns: 4rem minmax(0, 1fr) minmax(0, 1fr);
         }
 
         .playbook__items {

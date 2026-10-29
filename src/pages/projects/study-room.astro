@@ -97,7 +97,7 @@ const stats = [
         <header class="page-head wrap">
             <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
             <p class="sr-kicker mono muted" data-reveal>{pad(order ?? 5)} — {category}</p>
-            <h1 class="display sr-title" data-split>{title}</h1>
+            <h1 class="display sr-title" data-split>{title}<span class="stop" aria-hidden="true"></span></h1>
 
             <div class="row sr-intro">
                 <dl class="row__label sr-facts mono" data-reveal>
@@ -795,9 +795,8 @@ const stats = [
         position: absolute;
         inset: auto auto 12px 12px;
         padding: 4px 10px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.85);
-        color: #3b3a37;
+        background: #0e0e0e;
+        color: #e9e7e2;
         pointer-events: none;
     }
 

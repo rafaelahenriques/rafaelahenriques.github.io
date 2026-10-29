@@ -17,9 +17,9 @@ const index = all.findIndex((p) => slugOf(p) === current);
 const next = all[(index + 1) % all.length];
 ---
 
-<PixelEdge seed={index + 3} rows={5} class="next-project__edge" />
-<nav class="next-project" aria-label="Next project" data-joins-footer>
-    <a href={`/projects/${slugOf(next)}/`} class="next-project__link wrap">
+<PixelEdge seed={index + 3} rows={8} class="next-project__edge" />
+<nav class="next-project inverse" aria-label="Next project" data-joins-footer>
+    <a href={`/projects/${slugOf(next)}/`} class="next-project__link wrap" data-cursor="Next">
         <span class="mono next-project__label">Next project</span>
         <span class="next-project__title">
             {next.data.title}
@@ -30,11 +30,6 @@ const next = all[(index + 1) % all.length];
 </nav>
 
 <style>
-    .next-project {
-        background: var(--text);
-        color: var(--bg);
-    }
-
     .next-project__link {
         display: grid;
         grid-template-columns: 1fr auto;
@@ -50,20 +45,33 @@ const next = all[(index + 1) % all.length];
 
     .next-project__title,
     .next-project__arrow {
-        font-size: clamp(2.25rem, 1rem + 5vw, 6rem);
-        line-height: 0.95;
-        letter-spacing: -0.045em;
+        font-family: var(--display);
+        font-size: clamp(3rem, 1rem + 7vw, 8.5rem);
+        font-weight: 800;
+        line-height: 0.85;
+        letter-spacing: -0.06em;
+    }
+
+    .next-project__title {
+        text-transform: lowercase;
     }
 
     .next-project__arrow {
-        transition: transform 0.6s var(--ease);
+        transition: transform 0.24s steps(4, end);
+    }
+
+    .next-project__link:hover .next-project__title {
+        color: var(--blue);
     }
 
     /* sits with the title, at mid-height of the big type */
     .next-project__wip {
         margin-left: 0.6rem;
         vertical-align: middle;
+        font-family: var(--mono);
+        font-weight: 400;
         letter-spacing: 0.02em;
+        text-transform: uppercase;
     }
 
     .next-project__link:hover .next-project__arrow,

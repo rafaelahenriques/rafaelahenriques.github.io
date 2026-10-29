@@ -249,23 +249,21 @@ const groups = [...new Set(items.map((i) => i.group))];
         border: 1px solid var(--line);
         background: var(--bg);
         color: var(--text);
-        box-shadow: 0 24px 80px -20px rgba(0, 0, 0, 0.45);
         overflow: hidden;
     }
 
     .cmdk::backdrop {
-        background: rgba(10, 10, 9, 0.45);
-        backdrop-filter: blur(3px);
+        background: rgba(14, 14, 14, 0.6);
     }
 
+    /* opens like a screen switching on: a line, then the panel */
     .cmdk[open] {
-        animation: cmdk-in 0.25s var(--ease);
+        animation: cmdk-in 0.24s steps(4, end);
     }
 
     @keyframes cmdk-in {
         from {
-            opacity: 0;
-            transform: translateY(-8px) scale(0.98);
+            transform: scaleY(0.04);
         }
     }
 
@@ -308,7 +306,6 @@ const groups = [...new Set(items.map((i) => i.group))];
     .cmdk__esc {
         padding: 2px 6px;
         border: 1px solid var(--line);
-        border-radius: 4px;
         font-family: var(--mono);
         font-size: 0.7rem;
         color: var(--muted);
@@ -340,8 +337,8 @@ const groups = [...new Set(items.map((i) => i.group))];
     }
 
     .cmdk__option[aria-selected="true"] {
-        background: var(--text);
-        color: var(--bg);
+        background: var(--blue);
+        color: #e9e7e2;
     }
 
     .cmdk__label,

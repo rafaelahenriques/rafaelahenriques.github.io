@@ -1,0 +1,65 @@
+---
+/**
+ * Moving between pages: the screen fills with pixels, and the next page
+ * clears them (src/scripts/wipe.ts). BaseLayout's <head> script adds
+ * html.is-wiping when you arrive from a link here, which covers the page
+ * until the pixels take over. Nothing happens for reduced motion or without JS.
+ */
+---
+
+<canvas class="wipe" data-wipe hidden aria-hidden="true"></canvas>
+
+<script>
+    import { clear, go, uncover } from "../scripts/wipe";
+
+    const root = document.documentElement;
+
+    if (root.classList.contains("is-wiping")) {
+        uncover().then(() => window.dispatchEvent(new Event("wipe:done")));
+    }
+
+    // a page restored from the back/forward cache comes back still covered
+    window.addEventListener("pageshow", (e) => {
+        if (e.persisted) clear();
+    });
+
+    // internal links: cover, then go
+    document.addEventListener("click", (e) => {
+        if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        const link = (e.target as Element).closest<HTMLAnchorElement>("a[href]");
+        if (!link || link.hasAttribute("download") || "noWipe" in link.dataset) return;
+        if (link.target && link.target !== "_self") return;
+        const url = new URL(link.href, window.location.href);
+        if (url.origin !== window.location.origin) return;
+        // same page (a #section), or a file rather than a page
+        if (url.pathname === window.location.pathname && url.search === window.location.search) return;
+        if (/\.[a-z0-9]{2,4}$/i.test(url.pathname) && !url.pathname.endsWith(".html")) return;
+        e.preventDefault();
+        go(url.href);
+    });
+</script>
+
+<style>
+    .wipe {
+        position: fixed;
+        inset: 0;
+        z-index: 3500;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        image-rendering: pixelated;
+    }
+
+    .wipe[hidden] {
+        display: none;
+    }
+
+    /* arriving from another page: covered until the pixels take over */
+    :global(html.is-wiping body)::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 3500;
+        background: var(--text);
+    }
+</style>

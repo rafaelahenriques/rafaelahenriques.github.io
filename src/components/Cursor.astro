@@ -1,0 +1,158 @@
+---
+/**
+ * The cursor: a pixel, and a square that trails it. Over anything marked
+ * data-cursor="Label" (a project, a photo, the pet…) the square fills blue
+ * and says what happens; over other links and buttons it tightens. Only for
+ * a mouse or trackpad; touch screens keep their own.
+ */
+---
+
+<div class="cursor cursor__box" data-cursor-box aria-hidden="true"><span data-cursor-label></span></div>
+<div class="cursor cursor__dot" data-cursor-dot aria-hidden="true"></div>
+
+<script>
+    const fine = window.matchMedia("(pointer: fine)");
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const box = document.querySelector<HTMLElement>("[data-cursor-box]");
+    const dot = document.querySelector<HTMLElement>("[data-cursor-dot]");
+    const label = document.querySelector<HTMLElement>("[data-cursor-label]");
+
+    if (fine.matches && box && dot && label) {
+        const root = document.documentElement;
+        // hidden until the mouse first moves, so it never waits in a corner
+        root.classList.add("has-cursor", "cursor-away");
+
+        let x = -100;
+        let y = -100;
+        let bx = -100;
+        let by = -100;
+        let raf = 0;
+
+        const follow = () => {
+            bx += (x - bx) * 0.22;
+            by += (y - by) * 0.22;
+            box.style.transform = `translate(${bx}px, ${by}px)`;
+            raf = Math.abs(x - bx) + Math.abs(y - by) > 0.1 ? requestAnimationFrame(follow) : 0;
+        };
+
+        window.addEventListener("pointermove", (e) => {
+            if (e.pointerType !== "mouse") return;
+            x = e.clientX;
+            y = e.clientY;
+            dot.style.transform = `translate(${x}px, ${y}px)`;
+            root.classList.remove("cursor-away");
+            if (still) {
+                bx = x;
+                by = y;
+                box.style.transform = `translate(${x}px, ${y}px)`;
+            } else if (!raf) {
+                raf = requestAnimationFrame(follow);
+            }
+        });
+
+        window.addEventListener("pointerover", (e) => {
+            const target = e.target as Element;
+            // inside a frame (an embedded game) its own cursor takes over
+            if (target.closest("iframe")) {
+                root.classList.add("cursor-away");
+                return;
+            }
+            const labelled = target.closest<HTMLElement>("[data-cursor]");
+            box.classList.toggle("is-label", !!labelled);
+            box.classList.toggle("is-link", !labelled && !!target.closest("a, button, [role='button'], label, summary, select"));
+            box.classList.toggle("is-text", !!target.closest("input, textarea, [contenteditable='true']"));
+            if (labelled) label.textContent = labelled.dataset.cursor ?? "";
+        });
+
+        document.documentElement.addEventListener("pointerleave", () => root.classList.add("cursor-away"));
+        window.addEventListener("pointerdown", () => {
+            if (!still) box.animate([{ scale: 1 }, { scale: 0.8 }, { scale: 1 }], { duration: 180, easing: "steps(3)" });
+        });
+    }
+</script>
+
+<style>
+    .cursor {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 4000;
+        pointer-events: none;
+    }
+
+    :global(html.has-cursor) .cursor {
+        display: grid;
+    }
+
+    :global(html.has-cursor.cursor-away) .cursor {
+        opacity: 0;
+    }
+
+    /* the native pointer goes, except where you type */
+    :global(html.has-cursor),
+    :global(html.has-cursor *) {
+        cursor: none !important;
+    }
+
+    :global(html.has-cursor :is(input, textarea, [contenteditable="true"])) {
+        cursor: text !important;
+    }
+
+    .cursor__dot {
+        width: 8px;
+        height: 8px;
+        margin: -4px 0 0 -4px;
+        background: #fff;
+        mix-blend-mode: difference;
+    }
+
+    .cursor__box {
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        margin: -17px 0 0 -17px;
+        border: 1.5px solid #fff;
+        mix-blend-mode: difference;
+        transition:
+            width 0.18s var(--step),
+            height 0.18s var(--step),
+            margin 0.18s var(--step);
+    }
+
+    .cursor__box span {
+        font: 400 11px / 1 var(--mono);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #e9e7e2;
+        opacity: 0;
+        white-space: nowrap;
+    }
+
+    /* over a link or button: tighter */
+    .cursor__box.is-link {
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+    }
+
+    /* over something labelled: a blue square that says what happens */
+    .cursor__box.is-label {
+        width: 84px;
+        height: 84px;
+        margin: -42px 0 0 -42px;
+        border-color: var(--blue);
+        background: var(--blue);
+        mix-blend-mode: normal;
+    }
+
+    .cursor__box.is-label span {
+        opacity: 1;
+    }
+
+    .cursor__box.is-label + .cursor__dot,
+    .cursor__box.is-text,
+    .cursor__box.is-text + .cursor__dot {
+        opacity: 0;
+    }
+</style>

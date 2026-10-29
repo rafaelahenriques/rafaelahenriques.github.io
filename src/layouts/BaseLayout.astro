@@ -9,6 +9,8 @@ import Footer from "../components/footer.astro";
 import Loader from "../components/Loader.astro";
 import CommandMenu from "../components/CommandMenu.astro";
 import PixelEdge from "../components/PixelEdge.astro";
+import Cursor from "../components/Cursor.astro";
+import PageWipe from "../components/PageWipe.astro";
 import portrait from "../assets/me/rafaela.jpg";
 import { NAME, personSchema, type Schema } from "../lib/seo";
 
@@ -46,8 +48,8 @@ const jsonLd = [personSchema(personImage), ...schema];
         {!noindex && <link rel="canonical" href={canonical} />}
         <meta name="robots" content={noindex ? "noindex, follow" : "index, follow, max-image-preview:large"} />
         <meta name="color-scheme" content="light dark" />
-        <meta name="theme-color" content="#f3f1ec" media="(prefers-color-scheme: light)" />
-        <meta name="theme-color" content="#0e0e0d" media="(prefers-color-scheme: dark)" />
+        <meta name="theme-color" content="#e9e7e2" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#0e0e0e" media="(prefers-color-scheme: dark)" />
 
         <!-- icons: Google uses favicon.ico / the 96 px PNG (multiples of 48 px) -->
         <link rel="icon" href="/favicon.ico" sizes="48x48" />
@@ -77,7 +79,7 @@ const jsonLd = [personSchema(personImage), ...schema];
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
             rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=Inter:wght@500;800&family=Silkscreen:wght@400;700&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@800&family=Inter:wght@400;500;700&family=JetBrains+Mono:wght@400;500&family=Silkscreen:wght@400;700&display=swap"
         />
         <!-- page-specific extras, e.g. a case study's own fonts -->
         <slot name="head" />
@@ -102,10 +104,23 @@ const jsonLd = [personSchema(personImage), ...schema];
                 try {
                     seen = sessionStorage.getItem("loader-seen") === "1";
                 } catch {}
-                if (!seen && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+                const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+                if (!seen && !still) {
                     root.classList.add("is-loading");
                     // safety net: never leave the page locked if the loader script fails
                     setTimeout(() => root.classList.remove("is-loading"), 6000);
+                }
+
+                // Arriving from another page of the site: start covered in
+                // pixels, PageWipe.astro clears them
+                let wiped = false;
+                try {
+                    wiped = sessionStorage.getItem("wipe") === "1";
+                    sessionStorage.removeItem("wipe");
+                } catch {}
+                if (wiped && !still && !root.classList.contains("is-loading")) {
+                    root.classList.add("is-wiping");
+                    setTimeout(() => root.classList.remove("is-wiping"), 3000);
                 }
             })();
         </script>
@@ -118,9 +133,11 @@ const jsonLd = [personSchema(personImage), ...schema];
             <slot />
         </main>
         <!-- the page dissolves into the footer, unless it already ends in a dark block -->
-        <PixelEdge class="footer-edge" seed={7} rows={6} />
+        <PixelEdge class="footer-edge" seed={7} rows={9} />
         <Footer />
         <CommandMenu />
+        <PageWipe />
+        <Cursor />
 
         <script>
             import { initAnimations } from "../scripts/animations";
