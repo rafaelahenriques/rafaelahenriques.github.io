@@ -2,8 +2,10 @@
 /**
  * The cursor: a pixel, and a square that trails it. Over anything marked
  * data-cursor="Label" (a project, a photo, the pet…) the square fills blue
- * and says what happens; over other links and buttons it tightens. Only for
- * a mouse or trackpad; touch screens keep their own.
+ * and says what happens; over other links and buttons, and over the 3D
+ * Game Boy's and arcade's buttons, it tightens (the scenes flag those with
+ * cursor: pointer on their canvas). Only for a mouse or trackpad; touch
+ * screens keep their own.
  */
 ---
 
@@ -40,6 +42,8 @@
             x = e.clientX;
             y = e.clientY;
             dot.style.transform = `translate(${x}px, ${y}px)`;
+            // a 3D scene says when the pointer is on one of its buttons
+            if (e.target instanceof HTMLCanvasElement) box.classList.toggle("is-link", e.target.style.cursor === "pointer");
             root.classList.remove("cursor-away");
             if (still) {
                 bx = x;
