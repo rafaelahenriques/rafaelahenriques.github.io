@@ -15,9 +15,8 @@ const featured = await getFeatured();
     description="Rafaela Henriques is a web developer in Kortrijk, Belgium: full-stack, mobile and interactive projects, and a Digital Design & Development student at Howest."
     schema={[websiteSchema()]}
 >
-    <!-- HELLO: a poster. My name huge, me in 2006 over it, a small note in the corner -->
+    <!-- HELLO: a poster. My name huge, me in 2006 over it -->
     <section class="hero wrap" aria-labelledby="intro">
-        <p class="hero__fig mono" data-decode>Fig. 01<br />Rafaela, 2006</p>
 
         <figure class="hero__photo photo" data-cursor="2006">
             <div class="hero__frame" data-reveal-img>
@@ -58,27 +57,22 @@ const featured = await getFeatured();
 </Base>
 
 <style>
-    /* first thing on the page: fills the screen under the header */
+    /* first thing on the page: most of the screen under the header, with
+       the next block just showing at the bottom */
     .hero {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
-        grid-template-rows: auto 1fr auto;
+        grid-template-rows: 1fr auto;
         column-gap: var(--gutter);
-        min-height: calc(100svh - var(--header-h));
+        min-height: calc(86svh - var(--header-h));
         padding-block: 24px 32px;
         overflow: hidden;
-    }
-
-    .hero__fig {
-        grid-column: 1 / span 3;
-        grid-row: 1;
-        margin: 0;
     }
 
     /* my name, as big as it fits */
     .hero__name {
         grid-column: 1 / -1;
-        grid-row: 2;
+        grid-row: 1;
         align-self: end;
         position: relative;
         z-index: 1;
@@ -104,7 +98,7 @@ const featured = await getFeatured();
     /* the photo sits over the name, like a poster */
     .hero__photo {
         grid-column: 8 / span 2;
-        grid-row: 2;
+        grid-row: 1;
         align-self: end;
         position: relative;
         z-index: 2;
@@ -126,7 +120,7 @@ const featured = await getFeatured();
 
     .hero__note,
     .hero__tech {
-        grid-row: 3;
+        grid-row: 2;
         margin: 28px 0 0;
     }
 
@@ -179,18 +173,14 @@ const featured = await getFeatured();
             min-height: 0;
         }
 
-        .hero__fig {
-            grid-column: 1 / span 3;
-        }
-
         .hero__photo {
             grid-column: 3 / span 3;
-            grid-row: 2;
-            margin: 28px 0 -4vw;
+            grid-row: 1;
+            margin: 0 0 -4vw;
         }
 
         .hero__name {
-            grid-row: 3;
+            grid-row: 2;
             font-size: 19vw;
         }
 
@@ -200,18 +190,18 @@ const featured = await getFeatured();
 
         .hero__note {
             grid-column: 1 / span 5;
-            grid-row: 4;
+            grid-row: 3;
         }
 
         .hero__tech {
             grid-column: 1 / -1;
-            grid-row: 5;
+            grid-row: 4;
             text-align: left;
         }
 
         .hero__note--right {
             grid-column: 2 / span 5;
-            grid-row: 6;
+            grid-row: 5;
         }
     }
 </style>
