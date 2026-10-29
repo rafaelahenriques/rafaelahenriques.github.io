@@ -3,152 +3,161 @@ import { Draggable } from "gsap/Draggable";
 
 gsap.registerPlugin(Draggable);
 
-const group = document.querySelector(".footer-creature__group");
-const body = group?.querySelector(".footer-creature__body");
-const shadow = group?.querySelector(".footer-creature__shadow");
-const z = group?.querySelector(".footer-creature__z");
+/*
+ * The footer pet, in pixels: one canvas pixel per square, drawn in the
+ * footer's text colour. It breathes and blinks, its eyes follow the cursor,
+ * it squeezes its eyes shut (><) while dragged, and in dark mode it sleeps.
+ */
 
-if (group && body && shadow && z) {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const isDark = () =>
-        document.documentElement.classList.contains("dark");
+const pet = document.querySelector("[data-pet]");
+const canvas = pet?.querySelector("canvas");
+const g = canvas?.getContext("2d");
 
-    const startBreathing = () => {
-        gsap.to(body, {
-            y: -3,
-            scaleX: 1.04,
-            scaleY: 0.98,
-            duration: 2,
-            ease: "sine.inOut",
-            repeat: -1,
-            yoyo: true,
+// the body, 18 × 13 (X = filled)
+const BODY = [
+    "......XXXXXX......",
+    "...XXXXXXXXXXXX...",
+    "..XXXXXXXXXXXXXX..",
+    ".XXXXXXXXXXXXXXXX.",
+    ".XXXXXXXXXXXXXXXX.",
+    "XXXXXXXXXXXXXXXXXX",
+    "XXXXXXXXXXXXXXXXXX",
+    "XXXXXXXXXXXXXXXXXX",
+    "XXXXXXXXXXXXXXXXXX",
+    "XXXXXXXXXXXXXXXXXX",
+    "XXXXXXXXXXXXXXXXXX",
+    ".XXXXXXXXXXXXXXXX.",
+    "..XXXXXXXXXXXXXX..",
+];
+const LEFT = 1; // body starts one pixel in
+const TOP = 4; // room above for the z
+
+if (pet && canvas && g) {
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const isDark = () => document.documentElement.classList.contains("dark");
+
+    const state = { look: 0, blink: false, breath: 0, excited: false, z: 0 };
+
+    const draw = () => {
+        const css = getComputedStyle(pet);
+        const fg = css.color;
+        const bg = getComputedStyle(pet.closest(".site-footer") ?? document.body).backgroundColor;
+        const asleep = isDark();
+        g.clearRect(0, 0, canvas.width, canvas.height);
+
+        // breathing in: the body loses a row in the middle and sits a pixel lower
+        const top = TOP + state.breath;
+        g.fillStyle = fg;
+        BODY.forEach((row, y) => {
+            if (state.breath && y === 7) return;
+            const yy = top + y - (state.breath && y > 7 ? 1 : 0);
+            [...row].forEach((c, x) => c === "X" && g.fillRect(LEFT + x, yy, 1, 1));
         });
-        gsap.to(shadow, {
-            scaleX: 1.12,
-            opacity: 0.55,
-            duration: 2,
-            ease: "sine.inOut",
-            repeat: -1,
-            yoyo: true,
-        });
-    };
 
-    const stopBreathing = () => {
-        gsap.killTweensOf([body, shadow]);
-        gsap.set(body, { y: 0, scaleX: 1, scaleY: 1 });
-        gsap.set(shadow, { scaleX: 1, opacity: 0.55 });
-    };
-
-    // Z loop (dark only)
-    let zTimeline = null;
-
-    const startZLoop = () => {
-        if (zTimeline) return;
-        zTimeline = gsap
-            .timeline({ repeat: -1, repeatDelay: 0.2 })
-            .fromTo(
-                z,
-                { opacity: 0, y: 0, scale: 0.7 },
-                {
-                    opacity: 1,
-                    y: -20,
-                    scale: 1,
-                    duration: 1.1,
-                    ease: "power1.out",
-                }
-            )
-            .to(z, {
-                opacity: 0,
-                y: -32,
-                duration: 0.7,
-                ease: "power1.in",
-            });
-    };
-
-    const stopZLoop = () => {
-        if (!zTimeline) return;
-        zTimeline.kill();
-        zTimeline = null;
-        gsap.set(z, { opacity: 0, y: 0, scale: 0.7 });
-    };
-
-    const syncTheme = () => {
-        if (isDark()) {
-            group.classList.remove("footer-creature--excited");
-            startZLoop();
+        // eyes, cut out of the body
+        g.fillStyle = bg;
+        const ey = top + 6;
+        if (state.excited && !asleep) {
+            // > <
+            for (const [ex, dir] of [[4, 1], [13, -1]]) {
+                const x0 = LEFT + ex;
+                const tip = dir === 1 ? x0 + 1 : x0 - 1;
+                g.fillRect(x0, ey - 1, 1, 1);
+                g.fillRect(tip, ey, 1, 1);
+                g.fillRect(x0, ey + 1, 1, 1);
+            }
         } else {
-            stopZLoop();
+            for (const ex of [5, 11]) {
+                const x = LEFT + ex + state.look;
+                if (asleep || state.blink) g.fillRect(x, ey + 1, 2, 1);
+                else g.fillRect(x, ey, 2, 2);
+            }
+        }
+
+        // shadow: a dotted row under it
+        g.fillStyle = fg;
+        for (let x = 3; x < 17; x += 2) g.fillRect(LEFT + x - 1 + state.breath, 18, 1, 1);
+
+        // asleep: a little z drifting up
+        if (asleep && state.z < 3) {
+            const zx = 16;
+            const zy = 2 - state.z;
+            g.fillRect(zx, zy, 3, 1);
+            g.fillRect(zx + 1, zy + 1, 1, 1);
+            g.fillRect(zx, zy + 2, 3, 1);
         }
     };
 
-    // Initial state: respect reduced motion
-    if (prefersReducedMotion.matches) {
-        stopBreathing();
-    } else {
-        startBreathing();
-    }
-    // Initial sync + watch theme
-    syncTheme();
-    const observer = new MutationObserver(syncTheme);
-    observer.observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ["class"],
-    });
+    // breathing and the z: two frames, in steps
+    let loop = 0;
+    const startLoop = () => {
+        if (loop || still.matches) return;
+        loop = window.setInterval(() => {
+            state.breath = state.breath ? 0 : 1;
+            state.z = (state.z + 1) % 4;
+            draw();
+        }, 700);
+    };
+    const stopLoop = () => {
+        window.clearInterval(loop);
+        loop = 0;
+        state.breath = 0;
+        state.z = 0;
+        draw();
+    };
 
-    // Watch for reduced-motion changes
-    prefersReducedMotion.addEventListener('change', (e) => {
-        if (e.matches) {
-            stopBreathing();
-        } else {
-            startBreathing();
+    // blinking now and then
+    const blink = () => {
+        window.setTimeout(() => {
+            if (!still.matches && !isDark()) {
+                state.blink = true;
+                draw();
+                window.setTimeout(() => {
+                    state.blink = false;
+                    draw();
+                }, 140);
+            }
+            blink();
+        }, 2200 + Math.random() * 2600);
+    };
+
+    // the eyes follow the cursor left and right
+    window.addEventListener("pointermove", (e) => {
+        const r = pet.getBoundingClientRect();
+        const look = e.clientX < r.left + r.width * 0.3 ? -1 : e.clientX > r.right - r.width * 0.3 ? 1 : 0;
+        if (look !== state.look) {
+            state.look = look;
+            draw();
         }
     });
 
-    const horizontalRange = () =>
-        Math.max(40, window.innerWidth / 2 - 80);
+    // draw on screen only while the footer is in view
+    const io = new IntersectionObserver((entries) => (entries[0].isIntersecting ? startLoop() : stopLoop()));
+    io.observe(pet);
+    still.addEventListener("change", (e) => (e.matches ? stopLoop() : startLoop()));
+    new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    draw();
+    blink();
 
-    Draggable.create(group, {
+    const range = () => Math.max(40, window.innerWidth / 2 - 140);
+    Draggable.create(pet, {
         type: "x",
-        bounds: {
-            minX: -horizontalRange(),
-            maxX: horizontalRange(),
-        },
-        inertia: false,
+        bounds: { minX: -range(), maxX: range() },
         dragResistance: 0.2,
         onPress() {
-            // only show >< in light mode
-            if (!isDark()) {
-                group.classList.add("footer-creature--excited");
-            }
-
-            gsap.to(body, {
-                scaleY: 0.9,
-                scaleX: 1.08,
-                duration: 0.2,
-            });
+            state.excited = true;
+            draw();
         },
         onRelease() {
-            if (!isDark()) {
-                group.classList.remove("footer-creature--excited");
-            }
-
-            gsap.to(body, {
-                scaleX: 1,
-                scaleY: 1,
-                duration: 0.4,
-                ease: "elastic.out(1, 0.5)",
-            });
+            state.excited = false;
+            draw();
+            // a little hop where it lands, in steps
+            if (!still.matches) gsap.fromTo(pet, { y: 0 }, { y: -12, duration: 0.24, ease: "steps(3)", yoyo: true, repeat: 1 });
         },
     });
 
     window.addEventListener("resize", () => {
-        const draggable = Draggable.get(group);
-        if (draggable) {
-            const range = horizontalRange();
-            draggable.applyBounds({
-                minX: -range,
-                maxX: range,
-            });
-        }
+        const r = range();
+        Draggable.get(pet)?.applyBounds({ minX: -r, maxX: r });
     });
 }

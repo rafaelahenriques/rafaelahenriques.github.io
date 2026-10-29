@@ -113,19 +113,21 @@ const posterSrc = (await getImage({ src: poster, width: Math.min(poster.width, 1
     /* under the phone, so it never covers the app's own controls */
     .phone-video__toggle {
         padding: 4px 10px;
-        border: 1px solid rgba(17, 17, 16, 0.16);
-        border-radius: 999px;
-        background: #fff;
-        color: #75736e;
+        border: 1px solid var(--line);
+        background: none;
+        color: var(--muted);
         cursor: pointer;
         transition:
-            color 0.3s var(--ease),
-            border-color 0.3s var(--ease);
+            color 0.15s var(--step),
+            border-color 0.15s var(--step),
+            background-color 0.15s var(--step);
     }
 
     .phone-video__toggle:hover,
     .phone-video__toggle:focus-visible {
-        color: #111110;
-        border-color: #111110;
+        border-color: var(--blue);
+        background: var(--blue);
+        color: #e9e7e2;
+        outline: none;
     }
 </style>

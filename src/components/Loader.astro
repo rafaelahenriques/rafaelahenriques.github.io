@@ -1,7 +1,7 @@
 ---
 /**
- * First-visit loading screen: a counter runs to 100 while the page loads,
- * then the panel wipes up. BaseLayout's <head> script adds html.is-loading
+ * First-visit loading screen: a big count runs to 100% while the page loads,
+ * a few status lines tick on, then it clears away in pixels (scripts/wipe.ts). BaseLayout's <head> script adds html.is-loading
  * (once per session, never for reduced motion); without it this renders
  * nothing. When it finishes it fires "loader:done" on window so page
  * animations can start on a visible page.
@@ -11,18 +11,24 @@ const year = new Date().getFullYear();
 
 <div class="loader" data-loader aria-hidden="true">
     <div class="loader__row mono">
-        <span>Rafaela Henriques</span>
-        <span>Portfolio ©{year}</span>
+        <span class="loader__lines">
+            <span>Rafaela Henriques — Portfolio ©{year}</span>
+            <span data-loader-line>01 / Type ........ ok</span>
+            <span data-loader-line>02 / Pictures .... ok</span>
+            <span data-loader-line>03 / Pixels ...... ok</span>
+            <span data-loader-line>04 / Pet ......... awake</span>
+        </span>
+        <span>Web developer — Kortrijk, BE</span>
     </div>
     <div class="loader__row loader__row--bottom">
-        <span class="loader__count"><span data-loader-count>000</span></span>
-        <span class="mono loader__meta">Web developer — Kortrijk, BE</span>
+        <span class="loader__count"><span data-loader-count>00</span>%</span>
     </div>
     <div class="loader__bar"><span data-loader-bar></span></div>
 </div>
 
 <script>
     import { gsap } from "gsap";
+    import { uncover } from "../scripts/wipe";
 
     const root = document.documentElement;
     const loader = document.querySelector<HTMLElement>("[data-loader]");
@@ -38,10 +44,13 @@ const year = new Date().getFullYear();
     if (loader && root.classList.contains("is-loading")) {
         const count = loader.querySelector<HTMLElement>("[data-loader-count]")!;
         const bar = loader.querySelector<HTMLElement>("[data-loader-bar]")!;
+        const lines = [...loader.querySelectorAll<HTMLElement>("[data-loader-line]")];
         const progress = { value: 0 };
         const render = () => {
-            count.textContent = String(Math.round(progress.value)).padStart(3, "0");
+            const v = Math.round(progress.value);
+            count.textContent = String(v).padStart(2, "0");
             bar.style.transform = `scaleX(${progress.value / 100})`;
+            lines.forEach((line, i) => line.classList.toggle("is-on", v >= (i + 1) * 22));
         };
 
         // run towards 90 while the page loads…
@@ -56,13 +65,14 @@ const year = new Date().getFullYear();
 
         Promise.race([Promise.all([loaded, minimum]), cap]).then(() => {
             toNinety.kill();
-            // …then finish the count and lift the panel away
-            gsap.timeline({ onComplete: () => gsap.set(loader, { display: "none" }) })
+            // …then finish the count, and the panel clears away in pixels
+            gsap.timeline()
                 .to(progress, { value: 100, duration: 0.45, ease: "power1.inOut", onUpdate: render })
-                .to(".loader__count > span", { yPercent: -110, duration: 0.6, ease: "expo.in" }, "+=0.1")
-                .to(".loader__row .mono, .loader__meta", { autoAlpha: 0, duration: 0.3 }, "<")
-                .to(loader, { yPercent: -100, duration: 1, ease: "expo.inOut" }, "-=0.15")
-                .add(done, "-=0.45");
+                .add(() => {
+                    uncover(700);
+                    gsap.set(loader, { display: "none" });
+                }, "+=0.2")
+                .add(done, "+=0.25");
         });
     } else if (loader) {
         loader.remove();
@@ -86,7 +96,7 @@ const year = new Date().getFullYear();
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        padding: var(--gutter);
+        padding: 18px var(--gutter) var(--gutter);
         padding-bottom: max(var(--gutter), env(safe-area-inset-bottom));
         background: var(--text);
         color: var(--bg);
@@ -107,8 +117,21 @@ const year = new Date().getFullYear();
     .loader__row {
         display: flex;
         justify-content: space-between;
-        align-items: flex-end;
+        align-items: flex-start;
         gap: var(--gutter);
+    }
+
+    .loader__lines {
+        display: grid;
+        gap: 2px;
+    }
+
+    [data-loader-line] {
+        visibility: hidden;
+    }
+
+    [data-loader-line].is-on {
+        visibility: visible;
     }
 
     .loader__row--bottom {
@@ -117,37 +140,20 @@ const year = new Date().getFullYear();
 
     .loader__count {
         display: block;
-        /* never squeezed by the text beside it (it used to clip to one digit on phones) */
+        /* never squeezed by the text beside it */
         flex: none;
-        overflow: hidden;
-        font-size: clamp(5rem, 2rem + 18vw, 22rem);
-        font-weight: 500;
-        line-height: 0.82;
-        letter-spacing: -0.06em;
+        font-family: var(--display);
+        font-size: clamp(6rem, 2rem + 24vw, 30rem);
+        font-weight: 800;
+        line-height: 0.74;
+        letter-spacing: -0.07em;
         font-variant-numeric: tabular-nums;
     }
 
-    .loader__count > span {
-        display: inline-block;
-    }
-
-    .loader__meta {
-        min-width: 0;
-        padding-bottom: 0.8em;
-        text-align: right;
-    }
-
-    /* phones: the line of text goes above the counter instead of beside it */
+    /* phones: the place line goes under the status lines */
     @media (max-width: 599px) {
-        .loader__row--bottom {
-            flex-direction: column-reverse;
-            align-items: flex-start;
-            gap: 12px;
-        }
-
-        .loader__meta {
-            padding-bottom: 0;
-            text-align: left;
+        .loader__row:first-child {
+            flex-direction: column;
         }
     }
 

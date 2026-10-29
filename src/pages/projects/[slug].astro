@@ -48,7 +48,7 @@ const facts = [
     <header class="page-head wrap">
         <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
         <p class="project-kicker mono muted" data-reveal>{kicker}</p>
-        <h1 class="display project-title" data-split>{title}</h1>
+        <h1 class="display project-title" data-split>{title}<span class="stop" aria-hidden="true"></span></h1>
         {
             inProgress && (
                 <p class="project-wip" data-reveal>
@@ -309,7 +309,6 @@ const facts = [
     .scope li {
         padding: 6px 10px;
         border: 1px solid var(--line);
-        border-radius: 999px;
     }
 
     .gallery {
@@ -347,7 +346,7 @@ const facts = [
     }
 
     .pager__link .h2 {
-        transition: transform 0.6s var(--ease);
+        transition: transform 0.24s steps(4, end);
     }
 
     .pager__link:hover .h2 {

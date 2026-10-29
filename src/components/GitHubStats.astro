@@ -18,7 +18,7 @@ const exact = languages.map((l) => (l.percent / total) * CELLS);
 const cells = exact.map(Math.floor);
 const byRemainder = exact.map((x, i) => [x - Math.floor(x), i]).sort((a, b) => b[0] - a[0]);
 for (let k = 0; k < CELLS - cells.reduce((a, b) => a + b, 0); k++) cells[byRemainder[k][1]]++;
-// each language a shade of the screen's blue, strongest first; everything else faint
+// each language a shade of the site's blue, strongest first; everything else faint
 const tone = (i: number) => (languages[i].name === "Other" ? "other" : String(i));
 const squares = cells.flatMap((n, i) => Array.from({ length: n }, () => tone(i)));
 ---
@@ -57,10 +57,9 @@ const squares = cells.flatMap((n, i) => Array.from({ length: n }, () => tone(i))
 </section>
 
 <style>
-    /* the screen: dark glass, the text light, the numbers in neon pixel letters */
+    /* the screen: ink glass, paper text, the numbers in pixel letters */
     .gh__screen {
         padding: clamp(24px, 3.5vw, 52px);
-        color: #f1f6f9;
     }
 
     .gh__summary {
@@ -69,10 +68,8 @@ const squares = cells.flatMap((n, i) => Array.from({ length: n }, () => tone(i))
     }
 
     .gh__summary strong {
-        color: var(--neon);
         font-family: var(--pixel);
         font-weight: 700;
-        text-shadow: 0 0 16px rgba(var(--neon-rgb), 0.5);
     }
 
     .gh__langs {
@@ -83,7 +80,7 @@ const squares = cells.flatMap((n, i) => Array.from({ length: n }, () => tone(i))
     .gh__label,
     .gh__pct,
     .gh__foot {
-        color: var(--neon-pale);
+        color: #bdbbb6;
     }
 
     .gh__label {
@@ -106,30 +103,29 @@ const squares = cells.flatMap((n, i) => Array.from({ length: n }, () => tone(i))
         aspect-ratio: 1;
     }
 
-    /* shades of the screen's neon blue, strongest first */
+    /* shades of the one blue, strongest first */
     .gh__tone--0 {
-        background: var(--neon);
-        box-shadow: 0 0 10px rgba(var(--neon-rgb), 0.45);
+        background: var(--blue);
     }
 
     .gh__tone--1 {
-        background: color-mix(in oklab, var(--neon) 74%, var(--screen-bg));
+        background: color-mix(in oklab, var(--blue) 74%, var(--screen-bg));
     }
 
     .gh__tone--2 {
-        background: color-mix(in oklab, var(--neon) 54%, var(--screen-bg));
+        background: color-mix(in oklab, var(--blue) 54%, var(--screen-bg));
     }
 
     .gh__tone--3 {
-        background: color-mix(in oklab, var(--neon) 38%, var(--screen-bg));
+        background: color-mix(in oklab, var(--blue) 38%, var(--screen-bg));
     }
 
     .gh__tone--4 {
-        background: color-mix(in oklab, var(--neon) 26%, var(--screen-bg));
+        background: color-mix(in oklab, var(--blue) 26%, var(--screen-bg));
     }
 
     .gh__tone--other {
-        background: rgba(var(--neon-rgb), 0.1);
+        background: rgba(233, 231, 226, 0.12);
     }
 
     .gh__legend {

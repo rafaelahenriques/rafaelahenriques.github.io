@@ -1,7 +1,8 @@
 /**
  * The home page Game Boy: a voxel Game Boy ("GAME BOY in voxel" by Dani, CC BY
  * 4.0) in three.js, with each selected project's clip on its screen. The
- * screen is a small LCD shader: a fine pixel grid and a green cast. Changing
+ * screen is a small LCD shader with a fine pixel grid, in the site's screen
+ * colours: ink glass, paper pixels, one blue. Changing
  * project blanks the screen and drops the project's number and name in, like
  * the start-up logo. The buttons work: A and → next, B and ← back, Start (or
  * the screen) opens the project, Select pauses. A project without a clip gets
@@ -39,8 +40,10 @@ const SCREEN_ASPECT = 1.1176; // the LCD, width / height (from the model)
 const PICTURE_ASPECT = 640 / 572; // the clips and posters: made 10:9 for this screen, so nothing is cut off
 const BASE_YAW = -0.38; // turned a little, so the side shows
 const CARD_SECONDS = 7; // the in-progress screen, before moving on
-const INK = "#2e3a22"; // dark LCD green
-const LCD = "#b5caa0"; // the unlit screen, as in the model
+const INK = "#e9e7e2"; // the pixels: paper
+const LCD = "#0e0e0e"; // the unlit screen: ink
+const BLUE = "#2f3dff";
+const PIXEL = "Silkscreen, 'JetBrains Mono', monospace";
 
 const vertexShader = /* glsl */ `
     varying vec2 vUv;
@@ -69,12 +72,11 @@ const fragmentShader = /* glsl */ `
         float k = uMapAspect / uScreenAspect;
         if (k > 1.0) st.x = (st.x - 0.5) / k + 0.5; else st.y = (st.y - 0.5) * k + 0.5;
         vec3 col = texture2D(uMap, st).rgb;
-        // an LCD: a fine pixel grid and a little of the screen's green
+        // an LCD: a fine pixel grid
         vec2 cell = fract(uv * vec2(128.0, 128.0 / uScreenAspect));
         float grid = smoothstep(0.0, 0.14, cell.x) * smoothstep(1.0, 0.86, cell.x)
                    * smoothstep(0.0, 0.14, cell.y) * smoothstep(1.0, 0.86, cell.y);
         col *= mix(0.86, 1.0, grid);
-        col = mix(col, col * vec3(0.9, 1.0, 0.8), 0.45);
         // blank screen, and the project's number and name dropping in
         col = mix(col, uLcd * mix(0.9, 1.0, grid), uBlank);
         vec4 card = texture2D(uCard, vec2(uv.x, uv.y + uCardOffset));
@@ -89,7 +91,7 @@ const fragmentShader = /* glsl */ `
     }
 `;
 
-/** an LCD-green canvas texture, 10:9 like the screen */
+/** a screen-coloured canvas texture, 10:9 like the screen */
 function lcdCanvas(draw: (g: CanvasRenderingContext2D, w: number, h: number) => void, transparent = false) {
     const w = 640;
     const h = Math.round(w / SCREEN_ASPECT);
@@ -110,23 +112,29 @@ function lcdCanvas(draw: (g: CanvasRenderingContext2D, w: number, h: number) => 
 /** a project that has no clip yet */
 function inProgressScreen(title: string) {
     return lcdCanvas((g, w, h) => {
-        g.font = "500 30px 'IBM Plex Mono', ui-monospace, monospace";
+        g.font = `400 28px ${PIXEL}`;
         g.fillText(title.toUpperCase(), w / 2, h * 0.3, w * 0.86);
-        g.font = "800 64px Inter, system-ui, sans-serif";
+        g.font = `700 56px ${PIXEL}`;
         g.fillText("IN PROGRESS", w / 2, h * 0.5);
-        g.fillRect(w * 0.2, h * 0.58, w * 0.6, 6);
+        g.fillRect(w * 0.2, h * 0.58, w * 0.6, 4);
+        g.fillStyle = BLUE;
         g.fillRect(w * 0.2, h * 0.58, w * 0.6 * 0.62, 22);
-        g.font = "500 28px 'IBM Plex Mono', ui-monospace, monospace";
+        g.fillStyle = INK;
+        g.font = `400 26px ${PIXEL}`;
         g.fillText("PRESS START", w / 2, h * 0.82);
     });
 }
 
-/** the start-up card: number and name, on a transparent background */
+/** the start-up card: number and name, and a blue pixel, on a transparent background */
 function titleCard(num: string, title: string) {
     return lcdCanvas((g, w, h) => {
-        g.font = "800 150px Inter, system-ui, sans-serif";
+        g.font = `700 150px ${PIXEL}`;
         g.fillText(num, w / 2, h * 0.52);
-        g.font = "500 30px 'IBM Plex Mono', ui-monospace, monospace";
+        const n = g.measureText(num).width;
+        g.fillStyle = BLUE;
+        g.fillRect(w / 2 + n / 2 + 8, h * 0.52 - 26, 26, 26);
+        g.fillStyle = INK;
+        g.font = `400 28px ${PIXEL}`;
         g.fillText(title.toUpperCase(), w / 2, h * 0.68, w * 0.86);
     }, true);
 }
@@ -145,6 +153,8 @@ function shadowTexture(): THREE.CanvasTexture {
 }
 
 export async function createGameBoy(o: GameBoyOptions) {
+    // the screen's letters are drawn into canvases: have them first
+    await Promise.all([document.fonts.load(`400 28px ${PIXEL}`), document.fonts.load(`700 56px ${PIXEL}`)]).catch(() => {});
     const renderer = new THREE.WebGLRenderer({ canvas: o.canvas, antialias: true, alpha: true, powerPreference: "low-power" });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;

@@ -43,6 +43,20 @@ function splitReveals() {
     });
 }
 
+/** [data-rise]: big words whose [data-rise-line] lines rise out of their own masks. */
+function riseReveals() {
+    document.querySelectorAll<HTMLElement>("[data-rise]").forEach((el) => {
+        el.classList.add("is-risen");
+        gsap.from(el.querySelectorAll("[data-rise-line]"), {
+            yPercent: 110,
+            duration: 1.1,
+            ease: "expo.out",
+            stagger: 0.08,
+            scrollTrigger: { trigger: el, start: "top 95%", once: true },
+        });
+    });
+}
+
 /** [data-reveal]: fade up in batches as they scroll into view. */
 function fadeReveals() {
     // (some pages have none)
@@ -62,34 +76,66 @@ function fadeReveals() {
     });
 }
 
-/** [data-reveal-img]: wipe the frame open and settle the image inside it. */
+/**
+ * [data-reveal-img]: the picture breaks in out of pixels, squares in the page
+ * colour clearing in a ragged sweep from the top, in steps.
+ */
 function imageReveals() {
     document.querySelectorAll<HTMLElement>("[data-reveal-img]").forEach((el) => {
-        const img = el.querySelector("img");
-        // plays once without killing its trigger: a timeline trigger that kills
-        // itself during another trigger's first refresh (page loaded mid-scroll)
-        // breaks ScrollTrigger's refresh loop
-        const tl = gsap.timeline({
+        const w = el.offsetWidth;
+        const h = el.offsetHeight;
+        if (!w || !h) return;
+        // squares of roughly the same size whatever the picture
+        const cols = Math.max(6, Math.round(w / 56));
+        const rows = Math.max(4, Math.round((h / w) * cols));
+        const grid = document.createElement("span");
+        grid.className = "px-cells";
+        grid.setAttribute("aria-hidden", "true");
+        grid.style.gridTemplate = `repeat(${rows}, 1fr) / repeat(${cols}, 1fr)`;
+        const cells: HTMLElement[] = [];
+        const order: number[] = [];
+        for (let i = 0; i < cols * rows; i++) {
+            cells.push(grid.appendChild(document.createElement("i")));
+            order.push((Math.floor(i / cols) / rows) * 0.6 + Math.random() * 0.4);
+        }
+        if (getComputedStyle(el).position === "static") el.style.position = "relative";
+        el.appendChild(grid);
+
+        const sweep = { p: 0 };
+        gsap.to(sweep, {
+            p: 1,
+            duration: 0.9,
+            ease: "steps(12)",
+            onUpdate: () => cells.forEach((c, i) => (c.style.visibility = order[i] < sweep.p ? "hidden" : "visible")),
+            onComplete: () => grid.remove(),
             scrollTrigger: { trigger: el, start: "top 88%", toggleActions: "play none none none" },
         });
-        tl.fromTo(
-            el,
-            { clipPath: "inset(100% 0% 0% 0%)" },
-            {
-                clipPath: "inset(0% 0% 0% 0%)",
-                duration: 1.3,
-                ease: "expo.inOut",
-                clearProps: "clipPath",
+    });
+}
+
+/** [data-decode]: small mono text types itself in out of noise. */
+function decodeReveals() {
+    const glyphs = "█▓▒░/\\_-=+*#01";
+    document.querySelectorAll<HTMLElement>("[data-decode]").forEach((el) => {
+        const texts: [Text, string][] = [];
+        const walk = (n: Node) => (n.nodeType === Node.TEXT_NODE ? texts.push([n as Text, n.textContent ?? ""]) : n.childNodes.forEach(walk));
+        walk(el);
+        const progress = { k: 0 };
+        gsap.to(progress, {
+            k: 1,
+            duration: 0.7,
+            ease: "none",
+            onUpdate: () => {
+                for (const [node, text] of texts) {
+                    const upto = Math.floor(text.length * progress.k);
+                    node.textContent =
+                        text.slice(0, upto) +
+                        [...text.slice(upto)].map((ch) => (/\s/.test(ch) ? ch : glyphs[(Math.random() * glyphs.length) | 0])).join("");
+                }
             },
-        );
-        if (img) {
-            // clearProps hands the transform back to CSS hover styles afterwards
-            tl.from(
-                img,
-                { scale: 1.25, duration: 1.6, ease: "expo.out", clearProps: "transform" },
-                0.2,
-            );
-        }
+            onComplete: () => texts.forEach(([node, text]) => (node.textContent = text)),
+            scrollTrigger: { trigger: el, start: "top 92%", once: true },
+        });
     });
 }
 
@@ -107,16 +153,21 @@ function codeReveals() {
 }
 
 export function initAnimations() {
-    // While the loading screen is up, wait for it so the intro plays on a visible page
+    // While the loading screen or the page change is up, wait for it so the
+    // intro plays on a visible page
     let started = false;
     const go = () => {
         if (started) return;
         started = true;
         start();
     };
-    if (document.documentElement.classList.contains("is-loading")) {
+    const root = document.documentElement;
+    if (root.classList.contains("is-loading")) {
         window.addEventListener("loader:done", go, { once: true });
         setTimeout(go, 5500); // in case the loader never reports back
+    } else if (root.classList.contains("is-wiping")) {
+        window.addEventListener("wipe:done", go, { once: true });
+        setTimeout(go, 3000);
     } else {
         go();
     }
@@ -127,8 +178,10 @@ function start() {
 
     mm.add(MOTION, (ctx) => {
         introHeader();
+        riseReveals();
         fadeReveals();
         imageReveals();
+        decodeReveals();
         codeReveals();
         // Split after webfonts load so line breaks are measured correctly;
         // ctx.add keeps it inside this matchMedia context for cleanup.

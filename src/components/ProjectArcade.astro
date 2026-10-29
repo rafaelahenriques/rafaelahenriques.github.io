@@ -1,7 +1,7 @@
 ---
 /**
- * The projects page: an arcade. By default a close-up of a black cabinet lit
- * in neon whose screen flips through the projects (src/scripts/arcade.ts),
+ * The projects page: an arcade. By default a close-up of a black cabinet
+ * whose screen flips through the projects (src/scripts/arcade.ts),
  * with the project on screen, back / next and a link beside it (under it on
  * smaller screens). The cabinet's own controls work too: left stick and
  * buttons go back, right ones forward, the screen opens the project. Until the
@@ -60,7 +60,7 @@ const filterKeys = filters.map((f) => f.key);
     document.documentElement.dataset.projectsView = linked ? "list" : "arcade";
 </script>
 
-<div class="arcade" data-arcade>
+<div class="arcade" data-arcade data-joins-footer>
     <section class="arcade__block night" aria-labelledby="projects-title">
         <div class="arcade__top wrap mono">
             <h1 id="projects-title" class="arcade__label">Projects <span class="arcade__count">({pad(games.length)})</span></h1>
@@ -70,7 +70,7 @@ const filterKeys = filters.map((f) => f.key);
             </button>
         </div>
 
-        <div class="arcade__stage">
+        <div class="arcade__stage" data-cursor="Play">
             <canvas class="arcade__canvas" data-arcade-canvas aria-hidden="true"></canvas>
             <p class="arcade__loading mono" data-arcade-loading>Insert coin…</p>
         </div>
@@ -143,7 +143,9 @@ const filterKeys = filters.map((f) => f.key);
             <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>, restyled
         </p>
     </section>
-    <PixelEdge seed={12} rows={6} tone="night" direction="up" />
+    <!-- straight on into the footer: on the light theme both are ink, so the
+         pixels don't show; on the dark one the footer is paper and they do -->
+    <PixelEdge class="arcade__edge" seed={12} rows={9} tone="inverse" />
 
     <script type="application/json" data-arcade-games set:html={JSON.stringify(games)} />
 </div>
@@ -151,6 +153,7 @@ const filterKeys = filters.map((f) => f.key);
 <script>
     import { gsap } from "gsap";
     import type { Arcade, ArcadeGame } from "../scripts/arcade";
+    import { go } from "../scripts/wipe";
 
     type Game = ArcadeGame & { types: string[] };
     type View = "arcade" | "list";
@@ -336,7 +339,7 @@ const filterKeys = filters.map((f) => f.key);
                     reduceMotion,
                     onPrev: () => step(-1, true),
                     onNext: () => step(1, true),
-                    onOpen: () => (window.location.href = games[current].href),
+                    onOpen: () => go(games[current].href),
                     screenBox: () => (wide.matches ? screenEl.getBoundingClientRect() : null),
                 });
                 await arcade.setList(shown(), labelFor(filter));
@@ -368,8 +371,8 @@ const filterKeys = filters.map((f) => f.key);
 </script>
 
 <style>
-    .arcade {
-        --neon-ink: var(--screen-bg);
+    .arcade :global(.arcade__edge) {
+        background: var(--night-bg);
     }
 
     .arcade__block {
@@ -400,27 +403,31 @@ const filterKeys = filters.map((f) => f.key);
         display: inline-flex;
         align-items: center;
         gap: 10px;
-        padding: 0 0 2px;
-        border: 0;
-        border-bottom: 1px solid currentColor;
+        padding: 8px 12px;
+        border: 1px solid currentColor;
         background: none;
         color: var(--text);
         font: inherit;
         text-transform: inherit;
         letter-spacing: inherit;
         cursor: pointer;
-        transition: color 0.3s var(--ease);
+        transition:
+            background-color 0.15s var(--step),
+            border-color 0.15s var(--step),
+            color 0.15s var(--step);
     }
 
-    .arcade__view:hover {
-        color: var(--neon);
+    .arcade__view:hover,
+    .arcade__view:focus-visible {
+        border-color: var(--blue);
+        background: var(--blue);
+        color: #e9e7e2;
+        outline: none;
     }
 
-    /* the screen's glow on the dark behind the cabinet */
     .arcade__stage {
         position: relative;
         height: var(--stage-h);
-        background: radial-gradient(60% 55% at 50% 42%, rgba(var(--neon-rgb), 0.13), transparent 70%);
     }
 
     /* the close-up cuts off softly at the bottom; moved in on the screen, it doesn't */
@@ -488,19 +495,19 @@ const filterKeys = filters.map((f) => f.key);
     }
 
     .arcade__title {
-        font-size: clamp(1.6rem, 0.9rem + 3vw, 3.5rem);
+        font-family: var(--display);
+        font-size: clamp(2.25rem, 1rem + 3.6vw, 4.5rem);
         font-weight: 800;
-        line-height: 0.95;
-        letter-spacing: -0.03em;
-        text-transform: uppercase;
+        line-height: 0.9;
+        letter-spacing: -0.055em;
         text-decoration: none;
         color: var(--text);
         overflow-wrap: anywhere;
-        transition: color 0.3s var(--ease);
+        transition: color 0.15s var(--step);
     }
 
     .arcade__title:hover {
-        color: var(--neon);
+        color: var(--blue);
     }
 
     .arcade__controls {
@@ -522,21 +529,24 @@ const filterKeys = filters.map((f) => f.key);
         font-size: 1.1rem;
         cursor: pointer;
         transition:
-            border-color 0.3s var(--ease),
-            background-color 0.3s var(--ease),
-            color 0.3s var(--ease);
+            border-color 0.15s var(--step),
+            background-color 0.15s var(--step),
+            color 0.15s var(--step);
     }
 
-    .arcade__btn:hover {
-        border-color: var(--text);
+    .arcade__btn:hover,
+    .arcade__btn:focus-visible {
+        border-color: var(--blue);
+        outline: none;
     }
 
     .arcade__btn:active {
-        background: var(--text);
-        color: var(--bg);
+        background: var(--blue);
+        border-color: var(--blue);
+        color: #e9e7e2;
     }
 
-    /* the one lit-up button: square and neon, like the cabinet's trim */
+    /* the one filled button: blue, like the cabinet's buttons */
     .arcade__open {
         display: inline-flex;
         align-items: center;
@@ -544,16 +554,20 @@ const filterKeys = filters.map((f) => f.key);
         height: 48px;
         margin-left: auto;
         padding: 0 18px;
-        background: var(--neon);
-        color: var(--neon-ink);
+        background: var(--blue);
+        color: #e9e7e2;
         text-decoration: none;
         text-transform: uppercase;
-        transition: box-shadow 0.3s var(--ease);
+        transition:
+            background-color 0.15s var(--step),
+            color 0.15s var(--step);
     }
 
     .arcade__open:hover,
     .arcade__open:focus-visible {
-        box-shadow: 0 0 24px rgba(var(--neon-rgb), 0.6);
+        background: #e9e7e2;
+        color: #0e0e0e;
+        outline: none;
     }
 
     .arcade__hint {
@@ -599,10 +613,9 @@ const filterKeys = filters.map((f) => f.key);
         letter-spacing: 0.02em;
         cursor: pointer;
         transition:
-            border-color 0.3s var(--ease),
-            background-color 0.3s var(--ease),
-            color 0.3s var(--ease),
-            box-shadow 0.3s var(--ease);
+            border-color 0.15s var(--step),
+            background-color 0.15s var(--step),
+            color 0.15s var(--step);
     }
 
     .arcade__back {
@@ -611,9 +624,10 @@ const filterKeys = filters.map((f) => f.key);
 
     .arcade__back:hover,
     .arcade__back:focus-visible,
-    .arcade__filter:hover {
-        border-color: var(--neon);
-        color: var(--neon);
+    .arcade__filter:hover,
+    .arcade__filter:focus-visible {
+        border-color: var(--blue);
+        outline: none;
     }
 
     .arcade__filters {
@@ -629,12 +643,11 @@ const filterKeys = filters.map((f) => f.key);
         opacity: 0.6;
     }
 
-    /* the chosen filter lights up like the cabinet's one neon button */
+    /* the chosen filter fills blue, like the cabinet's buttons */
     .arcade__filter[aria-pressed="true"] {
-        border-color: var(--neon);
-        background: var(--neon);
-        color: var(--neon-ink);
-        box-shadow: 0 0 20px rgba(var(--neon-rgb), 0.35);
+        border-color: var(--blue);
+        background: var(--blue);
+        color: #e9e7e2;
     }
 
     /* --- the screen with the list ---
@@ -654,8 +667,13 @@ const filterKeys = filters.map((f) => f.key);
         height: 100%;
         padding: 0 calc(64 * var(--u)) calc(110 * var(--u));
         font-family: var(--mono);
+        font-weight: 400;
         line-height: 1;
         text-transform: uppercase;
+        /* the screen's own colours, the same as the picture of it (arcade.ts) */
+        --paper: #e9e7e2;
+        --pale: #bdbbb6;
+        --screen-blue: #2f3dff;
     }
 
     .screen__head {
@@ -666,8 +684,8 @@ const filterKeys = filters.map((f) => f.key);
         height: calc(97 * var(--u));
         margin: 0;
         padding-bottom: calc(14 * var(--u));
-        border-bottom: calc(3 * var(--u)) solid var(--neon);
-        color: var(--neon-pale);
+        border-bottom: calc(3 * var(--u)) solid var(--paper);
+        color: var(--pale);
         font-size: calc(26 * var(--u));
     }
 
@@ -692,8 +710,8 @@ const filterKeys = filters.map((f) => f.key);
         align-items: center;
         column-gap: calc(20 * var(--u));
         height: calc(62 * var(--u));
-        border-bottom: 1px solid rgba(var(--neon-rgb), 0.15);
-        color: var(--neon-pale);
+        border-bottom: 1px solid rgba(233, 231, 226, 0.15);
+        color: var(--pale);
         text-decoration: none;
         outline: none;
     }
@@ -703,14 +721,16 @@ const filterKeys = filters.map((f) => f.key);
         content: "▶";
         position: absolute;
         left: calc(-44 * var(--u));
-        color: var(--neon);
+        color: var(--screen-blue);
         font-size: calc(22 * var(--u));
         opacity: 0;
     }
 
+    /* the chosen row: a blue bar, as in a game's menu */
     .screen__row:hover,
     .screen__row:focus-visible {
-        background: rgba(var(--neon-rgb), 0.12);
+        background: var(--screen-blue);
+        color: var(--paper);
     }
 
     .screen__row:hover::before,
@@ -725,14 +745,15 @@ const filterKeys = filters.map((f) => f.key);
         }
     }
 
-    /* the thumbnail: tiny and blown up into big pixels, in the screen's blue */
+    /* the thumbnail: tiny and blown up into big pixels, black and white */
     .screen__thumb {
         display: block;
         width: calc(72 * var(--u));
         height: calc(48 * var(--u));
         overflow: hidden;
-        background: var(--neon);
-        box-shadow: inset 0 0 0 calc(2 * var(--u)) rgba(var(--neon-rgb), 0.6);
+        background: #0e0e0e;
+        outline: calc(2 * var(--u)) solid rgba(233, 231, 226, 0.5);
+        outline-offset: calc(-2 * var(--u));
     }
 
     .screen__thumb img {
@@ -742,7 +763,6 @@ const filterKeys = filters.map((f) => f.key);
         object-fit: cover;
         image-rendering: pixelated;
         filter: grayscale(1) contrast(1.25);
-        mix-blend-mode: multiply;
     }
 
     .screen__num,
@@ -758,17 +778,12 @@ const filterKeys = filters.map((f) => f.key);
 
     .screen__title {
         overflow: hidden;
-        color: var(--neon);
+        color: var(--paper);
         font-family: var(--pixel);
         font-size: calc(28 * var(--u));
         font-weight: 700;
         white-space: nowrap;
         text-overflow: ellipsis;
-    }
-
-    .screen__row:hover .screen__title,
-    .screen__row:focus-visible .screen__title {
-        color: #f1f6f9;
     }
 
     .screen__cat {
@@ -783,12 +798,12 @@ const filterKeys = filters.map((f) => f.key);
         display: flex;
         justify-content: space-between;
         margin: 0;
-        color: var(--neon-pale);
+        color: var(--pale);
         font-size: calc(22 * var(--u));
     }
 
     .screen__hint span:first-child {
-        color: #f1f6f9;
+        color: var(--paper);
     }
 
     /* --- which parts show: the arcade's or the list's (the list without JS) --- */
@@ -866,7 +881,7 @@ const filterKeys = filters.map((f) => f.key);
     @media (min-width: 1100px) {
         .arcade__block {
             /* the screen's height under the fixed header */
-            --stage-h: clamp(560px, calc(100svh - 56px), 1000px);
+            --stage-h: clamp(560px, calc(100svh - var(--header-h)), 1000px);
             --screen-w: min(58cqw, (var(--stage-h) - 104px) * 1024 / 723);
             grid-template-rows: auto auto;
         }
@@ -938,9 +953,9 @@ const filterKeys = filters.map((f) => f.key);
             width: var(--screen-w);
             aspect-ratio: 1024 / 723;
             margin: 0;
+            outline: none;
             box-shadow:
-                0 0 0 1px rgba(var(--neon-rgb), 0.22),
-                0 0 48px rgba(var(--neon-rgb), 0.1),
+                0 0 0 1px rgba(233, 231, 226, 0.16),
                 0 0 0 100vmax rgba(4, 4, 7, 0.8);
         }
 

@@ -144,11 +144,13 @@ const fold = canFold && Boolean(leadHtml) && restLength > 280;
 
     .chapter__title {
         margin: 0;
-        max-width: 22ch;
-        font-size: var(--fs-h2);
-        font-weight: 500;
-        line-height: 1;
-        letter-spacing: -0.04em;
+        max-width: 16ch;
+        font-family: var(--display);
+        font-size: clamp(2.5rem, 1rem + 4.6vw, 6rem);
+        font-weight: 800;
+        line-height: 0.88;
+        letter-spacing: -0.06em;
+        text-transform: lowercase;
     }
 
     .chapter__grid {
@@ -195,7 +197,7 @@ const fold = canFold && Boolean(leadHtml) && restLength > 280;
         align-items: center;
         gap: 10px;
         padding-bottom: 6px;
-        border-bottom: 1px solid currentColor;
+        border-bottom: 1px solid var(--blue);
         cursor: pointer;
         list-style: none;
     }

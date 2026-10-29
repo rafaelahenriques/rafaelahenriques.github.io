@@ -20,20 +20,21 @@ const isCurrent = (href: string) => path.startsWith(href);
     </a>
 
     <p class="site-header__role muted">
-        Web Developer · {site.location}
+        Web Developer — {site.location} —
         <time class="site-header__clock" data-clock data-time-zone={site.timeZone}></time>
     </p>
 
     <nav aria-label="Primary" class="site-header__nav">
         <ul>
             {
-                links.map((link) => (
+                links.map((link, i) => (
                     <li>
                         <a
                             href={link.href}
-                            class="link"
+                            class="site-header__link"
                             aria-current={isCurrent(link.href) ? "page" : undefined}
                         >
+                            <span class="site-header__num">{String(i + 1).padStart(2, "0")}</span>
                             {link.label}
                         </a>
                     </li>
@@ -65,10 +66,9 @@ const isCurrent = (href: string) => path.startsWith(href);
         align-items: center;
         gap: var(--gutter);
         padding-inline: var(--gutter);
+        border-bottom: 1px solid var(--line);
+        background: var(--bg);
         color: var(--text);
-        background: color-mix(in oklab, var(--bg) 88%, transparent);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
     }
 
     .site-header__brand {
@@ -85,14 +85,46 @@ const isCurrent = (href: string) => path.startsWith(href);
 
     .site-header__nav ul {
         display: flex;
-        gap: clamp(12px, 2vw, 28px);
+        gap: 2px;
         list-style: none;
         margin: 0;
         padding: 0;
     }
 
-    .site-header__nav a[aria-current="page"] {
-        background-size: 100% 1px;
+    /* numbered, filling blue under the pointer */
+    .site-header__link {
+        display: inline-flex;
+        gap: 8px;
+        padding: 6px 8px;
+        transition:
+            background-color 0.15s var(--step),
+            color 0.15s var(--step);
+    }
+
+    .site-header__num {
+        color: var(--muted);
+    }
+
+    .site-header__link:hover,
+    .site-header__link:focus-visible {
+        background: var(--blue);
+        color: #e9e7e2;
+        outline: none;
+    }
+
+    .site-header__link:hover .site-header__num,
+    .site-header__link:focus-visible .site-header__num {
+        color: inherit;
+    }
+
+    /* the page you're on: its number turns into a blue pixel */
+    .site-header__link[aria-current="page"] .site-header__num {
+        color: transparent;
+        background: linear-gradient(var(--blue), var(--blue)) 50% 50% / 8px 8px no-repeat;
+    }
+
+    .site-header__link[aria-current="page"]:hover .site-header__num {
+        background-image: linear-gradient(#e9e7e2, #e9e7e2);
     }
 
     .site-header__clock {
@@ -116,7 +148,6 @@ const isCurrent = (href: string) => path.startsWith(href);
     .site-header__kbd {
         padding: 1px 5px;
         border: 1px solid var(--line);
-        border-radius: 4px;
         font-size: 0.7rem;
         color: var(--muted);
     }
@@ -125,6 +156,16 @@ const isCurrent = (href: string) => path.startsWith(href);
     @media (max-width: 719px) {
         .site-header__search-label,
         .site-header__kbd {
+            display: none;
+        }
+
+        .site-header__link {
+            padding-inline: 5px;
+        }
+    }
+
+    @media (max-width: 400px) {
+        .site-header__num {
             display: none;
         }
     }

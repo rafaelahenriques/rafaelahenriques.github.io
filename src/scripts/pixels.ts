@@ -1,10 +1,11 @@
 /**
- * Pixel edges: a band of big square pixels where the page dissolves into the
+ * Pixel edges: a band of square pixels where the page dissolves into the
  * block next to it (the footer, the next project, the arcade). The shape comes
  * from seeded noise, so it's the same on every visit: solid at the side that
  * meets the block, breaking up into clusters and stray pixels towards the
- * page, with small tick marks where the two meet. The pixel under the cursor
- * lights up, and pixels flip as the cursor passes and settle back.
+ * page, with small tick marks where the two meet. It builds up row by row the
+ * first time it's seen. The pixel under the cursor turns blue, and pixels flip
+ * as the cursor passes and settle back.
  */
 
 /** a repeatable 0–1 value for a cell */
@@ -56,15 +57,17 @@ function mount(el: HTMLElement) {
     let base = new Uint8Array(0);
     let flippedAt = new Float64Array(0);
     let hover = -1;
-    let colors = { fill: "#111", tick: "#888", accent: "#36f" };
+    let colors = { fill: "#111", tick: "#888", accent: "#2f3dff" };
     let raf = 0;
+    // how far the build-up has got, 0–1 (1 = the full edge)
+    let built = reduceMotion ? 1 : 0;
 
     const readColors = () => {
         const css = getComputedStyle(el);
         colors = {
             fill: css.getPropertyValue(tone).trim() || "#111",
             tick: css.getPropertyValue("--muted").trim() || "#888",
-            accent: css.getPropertyValue("--pixel-accent").trim() || "#36f",
+            accent: css.getPropertyValue("--blue").trim() || "#2f3dff",
         };
     };
 
@@ -85,7 +88,7 @@ function mount(el: HTMLElement) {
             const t = down ? (r + 0.5) / rows : 1 - (r + 0.5) / rows;
             for (let c = 0; c < cols; c++) {
                 // clusters from the noise, broken up cell by cell
-                const v = t + (noise(c * 0.32, r * 0.5, seed) - 0.5) * 0.9 + (hash(c, r, seed + 5) - 0.5) * 0.3;
+                const v = t + (noise(c * 0.16, r * 0.3, seed) - 0.5) * 0.95 + (hash(c, r, seed + 5) - 0.5) * 0.3;
                 let on = v > 0.55;
                 // and a few stray pixels further out on the page
                 if (!on && hash(c, r, seed + 7) < 0.04) on = true;
@@ -97,7 +100,14 @@ function mount(el: HTMLElement) {
         draw(performance.now());
     };
 
-    const isOn = (i: number, now: number) => (base[i] === 1) !== now - flippedAt[i] < FLIP_MS;
+    // while building, rows appear from the block's side outwards
+    const visible = (i: number) => {
+        if (built >= 1) return true;
+        const r = Math.floor(i / cols);
+        const fromBlock = down ? rows - 1 - r : r;
+        return fromBlock < Math.ceil(built * rows);
+    };
+    const isOn = (i: number, now: number) => visible(i) && (base[i] === 1) !== now - flippedAt[i] < FLIP_MS;
 
     const draw = (now: number) => {
         const w = el.clientWidth;
@@ -131,15 +141,8 @@ function mount(el: HTMLElement) {
             }
         }
         if (hover >= 0) {
-            const x = (hover % cols) * cell;
-            const y = Math.floor(hover / cols) * cell;
-            g.save();
-            g.shadowColor = colors.accent;
-            g.shadowBlur = cell * 0.8;
             g.fillStyle = colors.accent;
-            g.globalAlpha = 0.9;
-            g.fillRect(x, y, cell, cell);
-            g.restore();
+            g.fillRect(Math.floor((hover % cols) * cell), Math.floor(Math.floor(hover / cols) * cell), Math.ceil(cell), Math.ceil(cell));
         }
     };
 
@@ -177,6 +180,21 @@ function mount(el: HTMLElement) {
     readColors();
     build();
     new ResizeObserver(build).observe(el);
+    // build up, a row at a time, the first time it's on screen
+    if (built < 1) {
+        const io = new IntersectionObserver((entries) => {
+            if (!entries[0].isIntersecting) return;
+            io.disconnect();
+            const start = performance.now();
+            const step = (now: number) => {
+                built = Math.min(1, (now - start) / 700);
+                draw(now);
+                if (built < 1) requestAnimationFrame(step);
+            };
+            requestAnimationFrame(step);
+        }, { threshold: 0.1 });
+        io.observe(el);
+    }
     // the theme changes the colours
     new MutationObserver(() => {
         readColors();

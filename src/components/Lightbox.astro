@@ -90,7 +90,7 @@
         margin: 0;
         padding: clamp(56px, 7vw, 88px) clamp(16px, 6vw, 96px);
         border: 0;
-        background: rgba(14, 14, 13, 0.94);
+        background: rgba(14, 14, 14, 0.96);
         color: #ecebe6;
     }
 
@@ -126,16 +126,18 @@
     .lightbox__btn {
         position: fixed;
         padding: 10px 14px;
-        border: 1px solid rgba(236, 235, 230, 0.3);
-        border-radius: 999px;
-        background: rgba(14, 14, 13, 0.6);
+        border: 1px solid rgba(233, 231, 226, 0.3);
+        background: #0e0e0e;
         color: inherit;
         cursor: pointer;
     }
 
-    .lightbox__btn:hover {
-        background: #ecebe6;
-        color: #0e0e0d;
+    .lightbox__btn:hover,
+    .lightbox__btn:focus-visible {
+        border-color: var(--blue);
+        background: var(--blue);
+        color: #e9e7e2;
+        outline: none;
     }
 
     .lightbox__close {
