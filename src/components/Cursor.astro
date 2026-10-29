@@ -2,7 +2,8 @@
 /**
  * The cursor: a pixel, and a square that trails it. Over anything marked
  * data-cursor="Label" (a project, a photo, the pet…) the square fills blue
- * and says what happens; over other links and buttons, and over the 3D
+ * and says what happens; over other links and buttons, the pet
+ * (data-cursor-link, a label would hide its face), and over the 3D
  * Game Boy's and arcade's buttons, it tightens (the scenes flag those with
  * cursor: pointer on their canvas). Only for a mouse or trackpad; touch
  * screens keep their own.
@@ -63,7 +64,7 @@
             }
             const labelled = target.closest<HTMLElement>("[data-cursor]");
             box.classList.toggle("is-label", !!labelled);
-            box.classList.toggle("is-link", !labelled && !!target.closest("a, button, [role='button'], label, summary, select"));
+            box.classList.toggle("is-link", !labelled && !!target.closest("a, button, [role='button'], label, summary, select, [data-cursor-link]"));
             box.classList.toggle("is-text", !!target.closest("input, textarea, [contenteditable='true']"));
             if (labelled) label.textContent = labelled.dataset.cursor ?? "";
         });

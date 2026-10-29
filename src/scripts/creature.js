@@ -6,7 +6,8 @@ gsap.registerPlugin(Draggable);
 /*
  * The footer pet, in pixels: one canvas pixel per square, drawn in the
  * footer's text colour. It breathes and blinks, its eyes follow the cursor,
- * it squeezes its eyes shut (><) while dragged, and in dark mode it sleeps.
+ * it squeezes its eyes shut (><) while dragged, and in dark mode it sleeps:
+ * touch it and it wakes up, looks around, gets drowsy and nods off again.
  */
 
 const pet = document.querySelector("[data-pet]");
@@ -38,13 +39,15 @@ if (pet && canvas && g) {
     const still = window.matchMedia("(prefers-reduced-motion: reduce)");
     const isDark = () => document.documentElement.classList.contains("dark");
 
-    const state = { look: 0, blink: false, breath: 0, excited: false, z: 0 };
+    // awake: woken up in the dark; drowsy: about to nod off again
+    const state = { look: 0, blink: false, breath: 0, excited: false, z: 0, awake: false, drowsy: false };
+    const sleeping = () => isDark() && !state.awake;
 
     const draw = () => {
         const css = getComputedStyle(pet);
         const fg = css.color;
         const bg = getComputedStyle(pet.closest(".site-footer") ?? document.body).backgroundColor;
-        const asleep = isDark();
+        const asleep = sleeping();
         g.clearRect(0, 0, canvas.width, canvas.height);
 
         // breathing in: the body loses a row in the middle and sits a pixel lower
@@ -71,7 +74,7 @@ if (pet && canvas && g) {
         } else {
             for (const ex of [5, 11]) {
                 const x = LEFT + ex + state.look;
-                if (asleep || state.blink) g.fillRect(x, ey + 1, 2, 1);
+                if (asleep || state.drowsy || state.blink) g.fillRect(x, ey + 1, 2, 1);
                 else g.fillRect(x, ey, 2, 2);
             }
         }
@@ -109,7 +112,7 @@ if (pet && canvas && g) {
     // blinking now and then
     const blink = () => {
         window.setTimeout(() => {
-            if (!still.matches && !isDark()) {
+            if (!still.matches && !sleeping() && !state.drowsy) {
                 state.blink = true;
                 draw();
                 window.setTimeout(() => {
@@ -131,11 +134,39 @@ if (pet && canvas && g) {
         }
     });
 
+    // woken in the dark: awake for a bit, then drowsy, then back to sleep
+    let napTimer = 0;
+    const wake = () => {
+        window.clearTimeout(napTimer);
+        state.awake = isDark();
+        state.drowsy = false;
+    };
+    const nodOff = () => {
+        window.clearTimeout(napTimer);
+        if (!state.awake) return;
+        napTimer = window.setTimeout(() => {
+            state.drowsy = true;
+            draw();
+            napTimer = window.setTimeout(() => {
+                state.awake = false;
+                state.drowsy = false;
+                state.z = 0;
+                draw();
+            }, 1200);
+        }, 2600);
+    };
+
     // draw on screen only while the footer is in view
     const io = new IntersectionObserver((entries) => (entries[0].isIntersecting ? startLoop() : stopLoop()));
     io.observe(pet);
     still.addEventListener("change", (e) => (e.matches ? stopLoop() : startLoop()));
-    new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    // a change of theme: a fresh start (asleep in the dark, awake in the light)
+    new MutationObserver(() => {
+        window.clearTimeout(napTimer);
+        state.awake = false;
+        state.drowsy = false;
+        draw();
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     draw();
     blink();
 
@@ -145,12 +176,14 @@ if (pet && canvas && g) {
         bounds: { minX: -range(), maxX: range() },
         dragResistance: 0.2,
         onPress() {
+            wake();
             state.excited = true;
             draw();
         },
         onRelease() {
             state.excited = false;
             draw();
+            nodOff();
             // a little hop where it lands, in steps
             if (!still.matches) gsap.fromTo(pet, { y: 0 }, { y: -12, duration: 0.24, ease: "steps(3)", yoyo: true, repeat: 1 });
         },
