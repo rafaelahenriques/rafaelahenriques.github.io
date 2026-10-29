@@ -4,14 +4,10 @@ import ProjectGameBoy from "../components/ProjectGameBoy.astro";
 import PixelEdge from "../components/PixelEdge.astro";
 import { Image } from "astro:assets";
 import babyPhoto from "../assets/me/rafaela-2006.jpg";
-import { getFeatured, getProjects, pad } from "../lib/content";
+import { getFeatured } from "../lib/content";
 import { websiteSchema } from "../lib/seo";
 
 const featured = await getFeatured();
-const count = (await getProjects()).length;
-const now = new Date();
-// the poster's small print: initials, month.year, and how many projects
-const stamp = `${pad(now.getMonth() + 1)}.${now.getFullYear()}`;
 ---
 
 <Base
@@ -19,10 +15,9 @@ const stamp = `${pad(now.getMonth() + 1)}.${now.getFullYear()}`;
     description="Rafaela Henriques is a web developer in Kortrijk, Belgium: full-stack, mobile and interactive projects, and a Digital Design & Development student at Howest."
     schema={[websiteSchema()]}
 >
-    <!-- HELLO: a poster. My name huge, me in 2006 over it, small notes in the corners -->
+    <!-- HELLO: a poster. My name huge, me in 2006 over it, a small note in the corner -->
     <section class="hero wrap" aria-labelledby="intro">
         <p class="hero__fig mono" data-decode>Fig. 01<br />Rafaela, 2006</p>
-        <p class="hero__stamp mono muted" data-decode>R.H<br />{stamp}<br />No. {pad(count)}</p>
 
         <figure class="hero__photo photo" data-cursor="2006">
             <div class="hero__frame" data-reveal-img>
@@ -74,19 +69,10 @@ const stamp = `${pad(now.getMonth() + 1)}.${now.getFullYear()}`;
         overflow: hidden;
     }
 
-    .hero__fig,
-    .hero__stamp {
-        grid-row: 1;
-        margin: 0;
-    }
-
     .hero__fig {
         grid-column: 1 / span 3;
-    }
-
-    .hero__stamp {
-        grid-column: 10 / span 3;
-        text-align: right;
+        grid-row: 1;
+        margin: 0;
     }
 
     /* my name, as big as it fits */
@@ -195,10 +181,6 @@ const stamp = `${pad(now.getMonth() + 1)}.${now.getFullYear()}`;
 
         .hero__fig {
             grid-column: 1 / span 3;
-        }
-
-        .hero__stamp {
-            grid-column: 4 / span 3;
         }
 
         .hero__photo {
