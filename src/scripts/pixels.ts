@@ -195,8 +195,11 @@ function mount(el: HTMLElement) {
         }, { threshold: 0.1 });
         io.observe(el);
     }
-    // the theme changes the colours
+    // the theme changes the colours (only the theme: other classes come and go on <html>)
+    let dark = document.documentElement.classList.contains("dark");
     new MutationObserver(() => {
+        if (document.documentElement.classList.contains("dark") === dark) return;
+        dark = !dark;
         readColors();
         draw(performance.now());
     }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });

@@ -160,8 +160,12 @@ if (pet && canvas && g) {
     const io = new IntersectionObserver((entries) => (entries[0].isIntersecting ? startLoop() : stopLoop()));
     io.observe(pet);
     still.addEventListener("change", (e) => (e.matches ? stopLoop() : startLoop()));
-    // a change of theme: a fresh start (asleep in the dark, awake in the light)
+    // a change of theme: a fresh start (asleep in the dark, awake in the light).
+    // Other classes come and go on <html> too; only the theme counts
+    let dark = isDark();
     new MutationObserver(() => {
+        if (isDark() === dark) return;
+        dark = isDark();
         window.clearTimeout(napTimer);
         state.awake = false;
         state.drowsy = false;

@@ -22,8 +22,19 @@
 
     if (fine.matches && box && dot && label) {
         const root = document.documentElement;
-        // hidden until the mouse first moves, so it never waits in a corner
-        root.classList.add("has-cursor", "cursor-away");
+        root.classList.add("has-cursor");
+        // hidden until the mouse first moves, so it never waits in a corner.
+        // (kept on the cursor itself: the page's own classes are the theme's,
+        // and other scripts watch them)
+        let away = true;
+        const setAway = (on: boolean) => {
+            if (on === away) return;
+            away = on;
+            box.classList.toggle("is-away", on);
+            dot.classList.toggle("is-away", on);
+        };
+        box.classList.add("is-away");
+        dot.classList.add("is-away");
 
         let x = -100;
         let y = -100;
@@ -45,7 +56,7 @@
             dot.style.transform = `translate(${x}px, ${y}px)`;
             // a 3D scene says when the pointer is on one of its buttons
             if (e.target instanceof HTMLCanvasElement) box.classList.toggle("is-link", e.target.style.cursor === "pointer");
-            root.classList.remove("cursor-away");
+            setAway(false);
             if (still) {
                 bx = x;
                 by = y;
@@ -59,7 +70,7 @@
             const target = e.target as Element;
             // inside a frame (an embedded game) its own cursor takes over
             if (target.closest("iframe")) {
-                root.classList.add("cursor-away");
+                setAway(true);
                 return;
             }
             const labelled = target.closest<HTMLElement>("[data-cursor]");
@@ -69,7 +80,7 @@
             if (labelled) label.textContent = labelled.dataset.cursor ?? "";
         });
 
-        document.documentElement.addEventListener("pointerleave", () => root.classList.add("cursor-away"));
+        root.addEventListener("pointerleave", () => setAway(true));
         window.addEventListener("pointerdown", () => {
             if (!still) box.animate([{ scale: 1 }, { scale: 0.8 }, { scale: 1 }], { duration: 180, easing: "steps(3)" });
         });
@@ -90,7 +101,7 @@
         display: grid;
     }
 
-    :global(html.has-cursor.cursor-away) .cursor {
+    .cursor.is-away {
         opacity: 0;
     }
 
