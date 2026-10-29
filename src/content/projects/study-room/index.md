@@ -19,7 +19,7 @@ media:
     - "./media/room-snow.jpg"
 tags: ["WebGPU", "Three.js", "Shaders"]
 customPage: true
-tagline: "An isometric study room that follows your local time and weather. Drag on the window to change the rain."
+tagline: "An isometric study room that follows your local time and weather, with a custom 3D environment, real-time shaders, physics and interactive objects."
 clip: "/media/clips/study-room.mp4"
 ---
 

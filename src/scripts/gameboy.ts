@@ -156,7 +156,8 @@ export async function createGameBoy(o: GameBoyOptions) {
     // the screen's letters are drawn into canvases: have them first
     await Promise.all([document.fonts.load(`400 28px ${PIXEL}`), document.fonts.load(`700 56px ${PIXEL}`)]).catch(() => {});
     const renderer = new THREE.WebGLRenderer({ canvas: o.canvas, antialias: true, alpha: true, powerPreference: "low-power" });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // 1.5 at most: full retina would be 1.8× the pixels for little visible gain
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.NeutralToneMapping;
 
@@ -226,7 +227,13 @@ export async function createGameBoy(o: GameBoyOptions) {
         palette.needsUpdate = true;
     };
     paint();
-    new MutationObserver(paint).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    // repaint when the theme changes (only then: other classes come and go on <html>)
+    let dark = document.documentElement.classList.contains("dark");
+    new MutationObserver(() => {
+        if (document.documentElement.classList.contains("dark") === dark) return;
+        dark = !dark;
+        paint();
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     const rest = new Map(Object.values(buttons).map((btn) => [btn, btn.position.z]));
 
     // ---- the picture

@@ -4,17 +4,14 @@ import { render } from "astro:content";
 import { Picture } from "astro:assets";
 import { getProjects, pad, slugOf, type ProjectEntry } from "../../lib/content";
 import { projectSeo } from "../../lib/seo";
+import NextProject from "../../components/NextProject.astro";
 
 export async function getStaticPaths() {
     const projects = await getProjects();
     return projects
-        .map((project, i) => ({
+        .map((project) => ({
             params: { slug: slugOf(project) },
-            props: {
-                project,
-                prev: projects[i - 1] ?? null,
-                next: projects[i + 1] ?? null,
-            },
+            props: { project },
         }))
         // custom pages (e.g. case studies) render their own route
         .filter(({ props }) => !props.project.data.customPage);
@@ -22,11 +19,9 @@ export async function getStaticPaths() {
 
 interface Props {
     project: ProjectEntry;
-    prev: ProjectEntry | null;
-    next: ProjectEntry | null;
 }
 
-const { project, prev, next } = Astro.props;
+const { project } = Astro.props;
 const { Content } = await render(project);
 const { title, description, year, role, context, tech, scope, media, section, order, status, category, architecture, metrics } =
     project.data;
@@ -159,30 +154,7 @@ const facts = [
         </div>
     </section>
 
-    <nav class="section wrap pager" aria-label="Project navigation">
-        {
-            prev && (
-                <a href={`/projects/${slugOf(prev)}/`} class="pager__link row">
-                    <span class="row__label mono muted">← Previous</span>
-                    <span class="row__body pager__title">
-                        <span class="h2">{prev.data.title}</span>
-                        {prev.data.status === "in-progress" && <span class="wip">In progress</span>}
-                    </span>
-                </a>
-            )
-        }
-        {
-            next && (
-                <a href={`/projects/${slugOf(next)}/`} class="pager__link row">
-                    <span class="row__label mono muted">Next →</span>
-                    <span class="row__body pager__title">
-                        <span class="h2">{next.data.title}</span>
-                        {next.data.status === "in-progress" && <span class="wip">In progress</span>}
-                    </span>
-                </a>
-            )
-        }
-    </nav>
+    <NextProject current={slugOf(project)} />
 </Base>
 
 <style>
@@ -206,14 +178,6 @@ const facts = [
         gap: 8px 14px;
         margin: clamp(20px, 3vw, 32px) 0 0;
         font-size: var(--fs-small);
-    }
-
-    .pager__title {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 8px 16px;
-        padding-bottom: 14px;
     }
 
     /* --- ARCHITECTURE: a vertical flow, each stage feeding the next --- */
@@ -341,19 +305,4 @@ const facts = [
         }
     }
 
-    .pager {
-        display: grid;
-    }
-
-    .pager__link .h2 {
-        transition: transform 0.24s steps(4, end);
-    }
-
-    .pager__link:hover .h2 {
-        transform: translateX(12px);
-    }
-
-    .pager__link:last-child {
-        border-bottom: 1px solid var(--line);
-    }
 </style>

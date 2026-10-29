@@ -32,9 +32,9 @@ function splitReveals() {
                 gsap.set(el, { visibility: "visible" });
                 return gsap.from(self.lines, {
                     yPercent: 110,
-                    duration: 1.2,
+                    duration: 0.8,
                     ease: "expo.out",
-                    stagger: 0.08,
+                    stagger: 0.06,
                     delay: Number(el.dataset.splitDelay ?? 0),
                     scrollTrigger: { trigger: el, start: "top 90%", once: true },
                 });
@@ -49,9 +49,9 @@ function riseReveals() {
         el.classList.add("is-risen");
         gsap.from(el.querySelectorAll("[data-rise-line]"), {
             yPercent: 110,
-            duration: 1.1,
+            duration: 0.8,
             ease: "expo.out",
-            stagger: 0.08,
+            stagger: 0.06,
             scrollTrigger: { trigger: el, start: "top 95%", once: true },
         });
     });
@@ -61,7 +61,7 @@ function riseReveals() {
 function fadeReveals() {
     // (some pages have none)
     if (!document.querySelector("[data-reveal]")) return;
-    gsap.set("[data-reveal]", { autoAlpha: 0, y: 32 });
+    gsap.set("[data-reveal]", { autoAlpha: 0, y: 24 });
     ScrollTrigger.batch("[data-reveal]", {
         start: "top 92%",
         once: true,
@@ -69,9 +69,9 @@ function fadeReveals() {
             gsap.to(els, {
                 autoAlpha: 1,
                 y: 0,
-                duration: 1.1,
+                duration: 0.7,
                 ease: "expo.out",
-                stagger: 0.08,
+                stagger: 0.05,
             }),
     });
 }
@@ -104,8 +104,8 @@ function imageReveals() {
         const sweep = { p: 0 };
         gsap.to(sweep, {
             p: 1,
-            duration: 0.9,
-            ease: "steps(12)",
+            duration: 0.6,
+            ease: "steps(10)",
             onUpdate: () => cells.forEach((c, i) => (c.style.visibility = order[i] < sweep.p ? "hidden" : "visible")),
             onComplete: () => grid.remove(),
             scrollTrigger: { trigger: el, start: "top 88%", toggleActions: "play none none none" },

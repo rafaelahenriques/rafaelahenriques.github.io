@@ -56,7 +56,7 @@ const sweep = (covering: boolean, duration: number) =>
         const frame = (now: number) => {
             const t = Math.min(1, (now - start) / duration);
             // in steps, like a screen redrawing
-            paint((Math.round(t * 14) / 14) * 1.07, covering);
+            paint((Math.round(t * 10) / 10) * 1.07, covering);
             if (t < 1) requestAnimationFrame(frame);
             else done();
         };
@@ -64,14 +64,14 @@ const sweep = (covering: boolean, duration: number) =>
     });
 
 /** fill the screen with pixels */
-export async function cover(duration = 420) {
+export async function cover(duration = 260) {
     if (still || !setUp()) return;
     canvas!.hidden = false;
     await sweep(true, duration);
 }
 
 /** start fully covered, then clear the pixels away */
-export async function uncover(duration = 620) {
+export async function uncover(duration = 400) {
     if (!setUp()) {
         root.classList.remove("is-wiping");
         return;

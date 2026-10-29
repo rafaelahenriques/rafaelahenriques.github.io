@@ -60,7 +60,7 @@ const year = new Date().getFullYear();
             if (document.readyState === "complete") resolve();
             else window.addEventListener("load", () => resolve(), { once: true });
         });
-        const minimum = new Promise((resolve) => setTimeout(resolve, 1200));
+        const minimum = new Promise((resolve) => setTimeout(resolve, 800));
         const cap = new Promise((resolve) => setTimeout(resolve, 4000)); // never hold anyone longer
 
         Promise.race([Promise.all([loaded, minimum]), cap]).then(() => {
@@ -69,10 +69,10 @@ const year = new Date().getFullYear();
             gsap.timeline()
                 .to(progress, { value: 100, duration: 0.45, ease: "power1.inOut", onUpdate: render })
                 .add(() => {
-                    uncover(700);
+                    uncover(480);
                     gsap.set(loader, { display: "none" });
                 }, "+=0.2")
-                .add(done, "+=0.25");
+                .add(done, "+=0.15");
         });
     } else if (loader) {
         loader.remove();
