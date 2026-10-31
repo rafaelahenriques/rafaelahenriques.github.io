@@ -1,0 +1,402 @@
+---
+/**
+ * Belfry Projection Mapping (customPage in the content entry). The render
+ * and the projection filmed on the belfry play side by side, in step: the
+ * render leads (it carries the soundtrack, off until asked for) and the
+ * recording follows it. The recording starts three seconds into the piece,
+ * so render.mp4 is cut to match and both run 66 s. Then the story in eight
+ * frames from the render, and the ## sections of index.md.
+ */
+import Base from "../../layouts/BaseLayout.astro";
+import { getImage } from "astro:assets";
+import { getEntry } from "astro:content";
+import { projectSeo } from "../../lib/seo";
+import PixelEdge from "../../components/PixelEdge.astro";
+import Shot from "../../components/Shot.astro";
+import Lightbox from "../../components/Lightbox.astro";
+import NextProject from "../../components/NextProject.astro";
+
+import renderPoster from "../../content/projects/projection-mapping/media/render-poster.jpg";
+import belfryPoster from "../../content/projects/projection-mapping/media/belfry-poster.jpg";
+import scene1 from "../../content/projects/projection-mapping/media/scene-1.jpg";
+import scene2 from "../../content/projects/projection-mapping/media/scene-2.jpg";
+import scene3 from "../../content/projects/projection-mapping/media/scene-3.jpg";
+import scene4 from "../../content/projects/projection-mapping/media/scene-4.jpg";
+import scene5 from "../../content/projects/projection-mapping/media/scene-5.jpg";
+import scene6 from "../../content/projects/projection-mapping/media/scene-6.jpg";
+import scene7 from "../../content/projects/projection-mapping/media/scene-7.jpg";
+import scene8 from "../../content/projects/projection-mapping/media/scene-8.jpg";
+
+const project = (await getEntry("projects", "projection-mapping"))!;
+const { title, description, role, year, category, context } = project.data;
+
+const facts = [
+    { label: "Year", value: year },
+    { label: "Made in", value: "One week, 12–16 October" },
+    { label: "On show", value: "Every evening, 27 October – 8 November 2026" },
+    { label: "Where", value: "Belfort, Grote Markt, Kortrijk" },
+    { label: "Role", value: role },
+    { label: "Team", value: "Gabriela Diaconu, Maria Josu, Idris Belabed, Nabilah Zulkifly" },
+    { label: "Context", value: context },
+].filter((f) => f.value);
+
+// index.md split at its ## headings; each part is one section's text
+const parts = new Map(
+    (project.rendered?.html ?? "").split(/(?=<h2[\s>])/).flatMap((chunk) => {
+        const heading = chunk.match(/^<h2[^>]*>([\s\S]*?)<\/h2>/);
+        return heading ? [[heading[1].trim(), chunk.slice(heading[0].length)] as [string, string]] : [];
+    }),
+);
+const before = ["The brief", "The story"];
+const after = [...parts.keys()].filter((heading) => !before.includes(heading));
+
+// the story, a frame at a time, from the render
+const scenes = [
+    { img: scene1, name: "Winter", alt: "The belfry frozen over, icicles along its ledges, a bear in a nightcap holding a hot drink at the window" },
+    { img: scene2, name: "Thaw", alt: "Cracks running through the ice on the belfry, green showing underneath" },
+    { img: scene3, name: "Spring", alt: "The belfry turned green, the bear still at its window" },
+    { img: scene4, name: "Bloom", alt: "Red and blue flowers growing over the green walls of the belfry" },
+    { img: scene5, name: "Spire", alt: "The belfry as a blue tower with a red spire, rows of red windows and steps" },
+    { img: scene6, name: "Dome", alt: "The belfry as a mint green building under a blue dome, with an arched blue door" },
+    { img: scene7, name: "Arch", alt: "The belfry as an orange building crowned with a blue arch, with tall windows" },
+    { img: scene8, name: "Harbour", alt: "Blue waves over the belfry carrying a ship with a Helsinki flag, the team's names written in the waves" },
+];
+
+const poster = async (img: ImageMetadata) => (await getImage({ src: img, width: img.width, format: "webp", quality: 80 })).src;
+const posters = { render: await poster(renderPoster), belfry: await poster(belfryPoster) };
+---
+
+<Base title={title} description={description} {...projectSeo(project)}>
+    <article class="pm">
+        <!-- INTRO -->
+        <header class="page-head wrap">
+            <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
+            <p class="pm-kicker mono muted" data-reveal>Other work — {category}</p>
+            <h1 class="display pm-title" data-split>{title}<span class="stop" aria-hidden="true"></span></h1>
+
+            <div class="row pm-intro">
+                <dl class="row__label pm-facts mono" data-reveal>
+                    {
+                        facts.map((f) => (
+                            <div>
+                                <dt class="muted">{f.label}</dt>
+                                <dd>{f.value}</dd>
+                            </div>
+                        ))
+                    }
+                </dl>
+                <p class="row__body lead" data-split>{description}</p>
+            </div>
+        </header>
+
+        <!-- THE SHOW: the render and the belfry, side by side, at night -->
+        <PixelEdge seed={21} rows={8} tone="night" />
+        <section class="pm-show night" aria-labelledby="pm-show-title" data-pm-show>
+            <div class="pm-player wrap">
+                <h2 id="pm-show-title" class="pm-show__title mono">The render and the belfry, in step</h2>
+
+                <div class="pm-pair">
+                    <figure class="pm-view">
+                        <video
+                            muted
+                            loop
+                            playsinline
+                            preload="none"
+                            poster={posters.render}
+                            width={renderPoster.width}
+                            height={renderPoster.height}
+                            aria-label="The render: the belfry's outline freezes, thaws, blooms, turns into Helsinki's buildings and sinks into the sea"
+                        >
+                            <source src="/media/projection-mapping/render.mp4" type="video/mp4" />
+                        </video>
+                        <figcaption class="mono">
+                            <span>01 Render</span>
+                            <span class="muted">1182 × 3500</span>
+                        </figcaption>
+                    </figure>
+                    <figure class="pm-view">
+                        <video
+                            muted
+                            loop
+                            playsinline
+                            preload="none"
+                            poster={posters.belfry}
+                            width={belfryPoster.width}
+                            height={belfryPoster.height}
+                            aria-label="The same piece projected on the belfry at night, filmed from the Grote Markt"
+                        >
+                            <source src="/media/projection-mapping/belfry.mp4" type="video/mp4" />
+                        </video>
+                        <figcaption class="mono">
+                            <span>02 On the belfry</span>
+                            <span class="muted">Grote Markt</span>
+                        </figcaption>
+                    </figure>
+                </div>
+
+                <div class="pm-controls">
+                    <div class="pm-bar" aria-hidden="true"><span data-pm-bar></span></div>
+                    <button type="button" class="btn pm-btn" data-pm-play>Play</button>
+                    <button type="button" class="btn pm-btn" data-pm-sound aria-pressed="false">Sound off</button>
+                    <span class="pm-time mono muted" data-pm-time aria-hidden="true">00:00 / 01:06</span>
+                </div>
+            </div>
+        </section>
+        <PixelEdge seed={22} rows={8} tone="night" direction="up" />
+
+        <!-- THE BRIEF, THE STORY -->
+        {
+            before.map((heading) => (
+                <section class="section wrap">
+                    <div class="row">
+                        <h2 class="row__label mono muted">{heading}</h2>
+                        <div class="row__body prose" data-reveal set:html={parts.get(heading)} />
+                    </div>
+                </section>
+            ))
+        }
+
+        <section class="wrap pm-scenes" aria-label="The story in eight frames">
+            <ol class="pm-scenes__list">
+                {
+                    scenes.map((s, i) => (
+                        <li>
+                            <Shot img={s.img} alt={s.alt} caption={`0${i + 1} ${s.name}`} sizes="(min-width: 900px) 12vw, 25vw" />
+                        </li>
+                    ))
+                }
+            </ol>
+        </section>
+
+        <!-- ONE WEEK, ON THE BELFRY, CREDITS (and any section added later) -->
+        {
+            after.map((heading) => (
+                <section class="section wrap">
+                    <div class="row">
+                        <h2 class="row__label mono muted">{heading}</h2>
+                        <div class="row__body prose" data-reveal set:html={parts.get(heading)} />
+                    </div>
+                </section>
+            ))
+        }
+    </article>
+
+    <NextProject current="projection-mapping" />
+    <Lightbox />
+</Base>
+
+<script>
+    const show = document.querySelector<HTMLElement>("[data-pm-show]");
+    if (show) {
+        const [render, belfry] = [...show.querySelectorAll("video")];
+        const playButton = show.querySelector<HTMLButtonElement>("[data-pm-play]")!;
+        const soundButton = show.querySelector<HTMLButtonElement>("[data-pm-sound]")!;
+        const bar = show.querySelector<HTMLElement>("[data-pm-bar]")!;
+        const time = show.querySelector<HTMLElement>("[data-pm-time]")!;
+        const both = [render, belfry];
+
+        // the visitor's own choice wins over autoplay; with reduced motion it waits to be played
+        let userPaused = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        let onScreen = false;
+
+        const play = () => both.forEach((v) => v.play().catch(() => {}));
+        const pause = () => both.forEach((v) => v.pause());
+        const clock = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+
+        const sync = () => {
+            const playing = !render.paused;
+            playButton.textContent = playing ? "Pause" : "Play";
+            playButton.setAttribute("aria-label", `${playing ? "Pause" : "Play"} both videos`);
+        };
+        render.addEventListener("play", sync);
+        render.addEventListener("pause", sync);
+
+        // the render leads; the recording catches up when it drifts (after a loop, or a stall)
+        render.addEventListener("timeupdate", () => {
+            if (Math.abs(belfry.currentTime - render.currentTime) > 0.3) belfry.currentTime = render.currentTime;
+            if (render.duration) {
+                bar.style.transform = `scaleX(${render.currentTime / render.duration})`;
+                time.textContent = `${clock(render.currentTime)} / ${clock(render.duration)}`;
+            }
+        });
+
+        const toggle = () => {
+            if (render.paused) {
+                userPaused = false;
+                play();
+            } else {
+                userPaused = true;
+                pause();
+            }
+        };
+        playButton.addEventListener("click", toggle);
+        both.forEach((v) => v.addEventListener("click", toggle));
+
+        // the soundtrack is the render's; turning it on also starts the show
+        soundButton.addEventListener("click", () => {
+            render.muted = !render.muted;
+            soundButton.textContent = render.muted ? "Sound off" : "Sound on";
+            soundButton.setAttribute("aria-pressed", String(!render.muted));
+            if (!render.muted && render.paused) {
+                userPaused = false;
+                play();
+            }
+        });
+
+        // start downloading a little before it scrolls in, play while it's visible
+        new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) both.forEach((v) => v.preload === "none" && (v.preload = "auto"));
+            },
+            { rootMargin: "50% 0px" },
+        ).observe(show);
+        new IntersectionObserver(
+            ([entry]) => {
+                onScreen = entry.isIntersecting;
+                if (onScreen && !userPaused) play();
+                else if (!onScreen) pause();
+            },
+            { threshold: 0.35 },
+        ).observe(show);
+
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) pause();
+            else if (onScreen && !userPaused) play();
+        });
+    }
+</script>
+
+<style>
+    /* room before the next project's pixels start */
+    .pm {
+        padding-bottom: var(--section);
+    }
+
+    .pm-title {
+        max-width: 12ch;
+        font-size: clamp(2.75rem, 1rem + 7vw, 8.5rem);
+    }
+
+    .pm-kicker {
+        margin-top: 24px;
+    }
+
+    .pm-intro {
+        margin-top: clamp(40px, 6vw, 80px);
+    }
+
+    .pm-facts {
+        display: grid;
+        gap: 14px;
+        align-content: start;
+        margin: 0;
+    }
+
+    .pm-facts dd {
+        margin: 2px 0 0;
+    }
+
+    /* --- THE SHOW: two tall videos at the same height, controls under both --- */
+
+    .pm-show {
+        padding-block: clamp(40px, 6vw, 88px);
+    }
+
+    /* as tall as the screen allows, and narrow enough for both to fit side by
+       side on a phone (together they're 0.9 × their height wide) */
+    .pm-player {
+        --h: min(76svh, 820px, calc((100vw - 2 * var(--gutter) - 16px) / 0.91));
+        display: grid;
+        grid-template-columns: max-content;
+        justify-content: center;
+        gap: 18px;
+    }
+
+    .pm-show__title {
+        margin: 0;
+        font-weight: 400;
+        color: var(--muted);
+    }
+
+    .pm-pair {
+        display: flex;
+        align-items: flex-end;
+        gap: clamp(16px, 3vw, 40px);
+    }
+
+    .pm-view {
+        display: grid;
+        gap: 10px;
+        margin: 0;
+    }
+
+    .pm-view video {
+        display: block;
+        width: auto;
+        height: var(--h);
+        background: #000;
+        cursor: pointer;
+    }
+
+    /* as wide as its video, never wider (it wraps instead) */
+    .pm-view figcaption {
+        width: 0;
+        min-width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 4px 12px;
+    }
+
+    .pm-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* how far into the piece, one hairline across both */
+    .pm-bar {
+        flex: 1 0 100%;
+        height: 2px;
+        margin-bottom: 6px;
+        background: var(--line);
+    }
+
+    .pm-bar span {
+        display: block;
+        height: 100%;
+        background: var(--blue);
+        transform: scaleX(0);
+        transform-origin: left;
+    }
+
+    .pm-btn {
+        padding: 10px 14px;
+    }
+
+    .pm-time {
+        margin-left: auto;
+    }
+
+    /* --- the story, a frame at a time --- */
+
+    .pm-scenes {
+        margin-top: clamp(32px, 4vw, 56px);
+    }
+
+    .pm-scenes__list {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 24px 12px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    @media (min-width: 900px) {
+        .pm-scenes__list {
+            grid-template-columns: repeat(8, minmax(0, 1fr));
+        }
+    }
+</style>
