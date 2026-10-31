@@ -48,7 +48,7 @@ const projects = defineCollection({
       tagline: z.string().optional(),
       clip: z.string().optional(),
       // Projects page filters this project appears under (labels in lib/content.ts)
-      types: z.array(z.enum(["web", "mobile", "fullstack", "data", "interactive", "branding", "ui"])).default([]),
+      types: z.array(z.enum(["web", "mobile", "fullstack", "data", "interactive", "motion", "branding", "ui"])).default([]),
     }),
 });
 

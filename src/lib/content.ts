@@ -33,6 +33,7 @@ export const PROJECT_TYPES = [
     { key: "fullstack", label: "Full-stack & real-time" },
     { key: "data", label: "Backend & data" },
     { key: "interactive", label: "Games & interactive" },
+    { key: "motion", label: "Motion & projection" },
     { key: "branding", label: "Branding" },
     { key: "ui", label: "UI & design" },
 ] as const;
