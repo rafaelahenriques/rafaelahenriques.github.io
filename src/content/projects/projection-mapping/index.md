@@ -5,7 +5,7 @@ order: 1
 category: "Projection mapping"
 types: ["motion"]
 year: "2026"
-role: "Team project, five students"
+role: "Animation"
 context: "Devine (Howest) — WONDER festival, Kortrijk"
 description: "A projection mapping for the belfry on Kortrijk’s Grote Markt, made in one week for the WONDER festival. The medieval tower freezes, thaws and blooms, then turns into Helsinki, one of Kortrijk’s partner cities of design."
 media:
@@ -31,7 +31,7 @@ Then the belfry changes shape: a blue tower with a red spire, a dome, an arch, e
 
 ## One week
 
-We had five days, from Monday 12 to Friday 16 October, to go from the brief to the final render.
+We had five days, from Monday 12 to Friday 16 October, to go from the brief to the final render. Maria, Gabriela and Nabilah drew the illustrations; Idris, Maria and I animated them.
 
 The render is 1182 × 3500 pixels and follows the outline of the belfry, so the colour lands on the stone and the sky around the tower stays dark. Flat colour and clear silhouettes still read on the rough brick from across the square.
 
@@ -41,4 +41,8 @@ Urban Mapping provided the technical support. The piece plays continuously every
 
 ## Credits
 
-Made with Gabriela Diaconu, Maria Josu, Idris Belabed and Nabilah Zulkifly. Technical support by Urban Mapping, for WONDER in Kortrijk.
+Animation: Rafaela Henriques, Idris Belabed and Maria Josu.
+
+Illustration: Maria Josu, Gabriela Diaconu and Nabilah Zulkifly.
+
+Technical support by Urban Mapping, for WONDER in Kortrijk.
