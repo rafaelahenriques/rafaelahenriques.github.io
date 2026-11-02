@@ -38,7 +38,7 @@ import boot2 from "../../content/projects/generative-ecosystem/media/boot-2.jpg"
 import boot3 from "../../content/projects/generative-ecosystem/media/boot-3.jpg";
 
 const project = (await getEntry("projects", "generative-ecosystem"))!;
-const { title, description, role, year, category, tech, media } = project.data;
+const { title, description, role, year, category, context, tech, media } = project.data;
 
 const links = [
     { href: media?.live, title: "Grow a plant", note: "Live · hand tracking needs a webcam" },
@@ -115,6 +115,7 @@ const roadmap = [
                 <dl class="row__label ge-facts mono" data-reveal>
                     <div><dt class="muted">Year</dt><dd>{year}</dd></div>
                     <div><dt class="muted">Role</dt><dd>{role}</dd></div>
+                    <div><dt class="muted">Context</dt><dd>{context}</dd></div>
                     <div><dt class="muted">Stack</dt><dd>{tech?.join(", ")}</dd></div>
                 </dl>
                 <div class="row__body">
