@@ -10,7 +10,6 @@
 import Base from "../../layouts/BaseLayout.astro";
 import { Image, getImage } from "astro:assets";
 import { getEntry } from "astro:content";
-import { pad } from "../../lib/content";
 import { projectSeo } from "../../lib/seo";
 import Chapter from "../../components/Chapter.astro";
 import ChapterNav from "../../components/ChapterNav.astro";
@@ -36,7 +35,7 @@ import stillTurning from "../../content/projects/marina-yee-one-corner-off/media
 import stillLookCloser from "../../content/projects/marina-yee-one-corner-off/media/still-lookcloser.jpg";
 
 const project = (await getEntry("projects", "marina-yee-one-corner-off"))!;
-const { title, description, role, year, category, context, order, tech, media, status } = project.data;
+const { title, description, role, year, category, context, tech, media, status } = project.data;
 
 // index.md split at its ## headings; each part is one chapter's text
 const parts = new Map(
@@ -116,7 +115,7 @@ const sizes = [
         <header class="page-head wrap">
             <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
             <p class="my-kicker mono muted" data-reveal>
-                {pad(order ?? 4)} — {category}
+                Other work — {category}
                 {status === "in-progress" && <span class="wip">In progress</span>}
             </p>
             <h1 class="display my-title" data-split>{title}<span class="stop" aria-hidden="true"></span></h1>

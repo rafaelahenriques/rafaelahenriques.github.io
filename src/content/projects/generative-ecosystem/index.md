@@ -1,7 +1,7 @@
 ---
 title: "Generative Ecosystem"
-section: other
-order: 1
+section: featured
+order: 4
 status: in-progress
 category: "Real-time 3D"
 types: ["web", "interactive"]
@@ -17,6 +17,7 @@ media:
   thumbnail: "./media/thumb.jpg"
 tags: ["Three.js", "GLSL", "Hand tracking"]
 customPage: true
+clip: "/media/clips/generative-ecosystem.mp4"
 tagline: "A 3D plant you grow with your hands: set a climate or choose a real place, and a climate model picks which of eight real species could live there."
 ---
 
