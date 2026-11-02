@@ -1,7 +1,7 @@
 ---
 title: "Belfry Projection Mapping"
 section: other
-order: 1
+order: 2
 category: "Projection mapping"
 types: ["motion"]
 year: "2026"
@@ -10,6 +10,7 @@ context: "Devine (Howest) — WONDER festival, Kortrijk"
 description: "A projection mapping for the belfry on Kortrijk’s Grote Markt, made in one week for the WONDER festival. The medieval tower freezes, thaws and blooms, then turns into Helsinki, one of Kortrijk’s partner cities of design."
 media:
   screenshot: "./media/cover.jpg"
+  thumbnail: "./media/thumb.jpg"
 tags: ["Projection mapping", "Motion design", "Illustration"]
 customPage: true
 tagline: "A projection mapping on Kortrijk’s medieval belfry for the WONDER festival, inspired by Helsinki and made in one week by a team of five."
