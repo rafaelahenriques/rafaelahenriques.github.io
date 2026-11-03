@@ -1,0 +1,322 @@
+---
+/**
+ * Ben & Jerry's: A Farm in the Pint (customPage in the content entry). The
+ * film opens the page, straight under the title. Then the story in seven
+ * frames from the film, and the ## sections of index.md, each with what it
+ * describes: the diorama it began as, the ice cream, the three versions of
+ * the farm, the cows, and the film on the page it was designed for.
+ */
+import Base from "../../layouts/BaseLayout.astro";
+import { getEntry } from "astro:content";
+import { projectSeo } from "../../lib/seo";
+import LoopVideo from "../../components/LoopVideo.astro";
+import Shot from "../../components/Shot.astro";
+import Lightbox from "../../components/Lightbox.astro";
+import NextProject from "../../components/NextProject.astro";
+
+import filmPoster from "../../content/projects/a-farm-in-the-pint/media/film-poster.jpg";
+import pagePoster from "../../content/projects/a-farm-in-the-pint/media/page-poster.jpg";
+import dioramaPoster from "../../content/projects/a-farm-in-the-pint/media/diorama-poster.jpg";
+import story1 from "../../content/projects/a-farm-in-the-pint/media/story-1.jpg";
+import story2 from "../../content/projects/a-farm-in-the-pint/media/story-2.jpg";
+import story3 from "../../content/projects/a-farm-in-the-pint/media/story-3.jpg";
+import story4 from "../../content/projects/a-farm-in-the-pint/media/story-4.jpg";
+import story5 from "../../content/projects/a-farm-in-the-pint/media/story-5.jpg";
+import story6 from "../../content/projects/a-farm-in-the-pint/media/story-6.jpg";
+import story7 from "../../content/projects/a-farm-in-the-pint/media/story-7.jpg";
+import icecream1 from "../../content/projects/a-farm-in-the-pint/media/icecream-1.jpg";
+import icecream2 from "../../content/projects/a-farm-in-the-pint/media/icecream-2.jpg";
+import icecream3 from "../../content/projects/a-farm-in-the-pint/media/icecream-3.jpg";
+import version1 from "../../content/projects/a-farm-in-the-pint/media/version-1.jpg";
+import version2 from "../../content/projects/a-farm-in-the-pint/media/version-2.jpg";
+import version3 from "../../content/projects/a-farm-in-the-pint/media/version-3.jpg";
+import cows from "../../content/projects/a-farm-in-the-pint/media/cows.jpg";
+
+const project = (await getEntry("projects", "a-farm-in-the-pint"))!;
+const { title, description, role, year, category, context, tagline } = project.data;
+
+const facts = [
+    { label: "Year", value: year },
+    { label: "Role", value: role },
+    { label: "Tools", value: "Maya and Blender (EEVEE). The scene and animation were built with Python scripts written with Claude Code." },
+    { label: "Specs", value: "1920×1080, 24 fps, 685 frames, seamless loop" },
+    { label: "Context", value: context },
+];
+
+// index.md split at its ## headings; each part is one section's text
+const parts = new Map(
+    (project.rendered?.html ?? "").split(/(?=<h2[\s>])/).flatMap((chunk) => {
+        const heading = chunk.match(/^<h2[^>]*>([\s\S]*?)<\/h2>/);
+        return heading ? [[heading[1].trim(), chunk.slice(heading[0].length)] as [string, string]] : [];
+    }),
+);
+const placed = ["The idea", "How it was made", "Making it read as ice cream", "Simplifying the farm", "Believable animals", "Designed for the page", "Note"];
+// a new ## section added to index.md later still shows up, before the note
+const extra = [...parts.keys()].filter((heading) => !placed.includes(heading));
+
+// the story, a frame at a time, from the film
+const story = [
+    { img: story1, text: "A closed pint rises into frame and its lid twists off.", alt: "The pint in its blue and white cloud packaging, its lid lifting off" },
+    { img: story2, text: "A giant milk can pours in cream, then chocolate and cookie dough drop in.", alt: "A large white milk can tilted over the open pint, pouring in a stream of cream" },
+    { img: story3, text: "The cream freezes and swells into a mound of ice cream.", alt: "A mound of pale ice cream rising above the rim of the pint, a dark line of chocolate running down it" },
+    { img: story4, text: "A farm pops up piece by piece: a barn, trees, a tractor, hay, sunflowers and a fenced pen with cows.", alt: "A small barn, two trees and a red tractor on top of the ice cream, a fence starting to appear" },
+    { img: story5, text: "The camera moves in as the tractor drives and the cows graze.", alt: "A closer view of the finished farm: the barn, trees, tractor, sunflowers and cows in a fenced pen" },
+    { img: story6, text: "The camera pulls back as a large scoop carves out a round ball.", alt: "A large metal scoop holding a round ball of ice cream beside the farm, a channel carved out of the mound" },
+    { img: story7, text: "The farm folds away, the ice cream melts flat, the lid closes and the pint sinks out of frame, ready to loop.", alt: "The pint full of flat, melted cream, its lid coming back down from above" },
+];
+
+const prose = (heading: string) => parts.get(heading);
+---
+
+<Base title={title} description={description} {...projectSeo(project)}>
+    <article class="fp">
+        <!-- TITLE -->
+        <header class="page-head wrap fp-head">
+            <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
+            <p class="fp-kicker mono muted" data-reveal>Other work — {category}</p>
+            <h1 class="display fp-title" data-split>{title}<span class="stop" aria-hidden="true"></span></h1>
+            <p class="fp-sub mono muted" data-reveal>{tagline}</p>
+        </header>
+
+        <!-- THE FILM: the first thing the page shows -->
+        <section class="wrap fp-film" aria-label="The film">
+            <div class="fp-film__video" data-reveal>
+                <LoopVideo src="/media/a-farm-in-the-pint/film.mp4" poster={filmPoster} label="The film: a closed pint rises and opens, cream pours in and swells into ice cream, a small farm grows on top, then a scoop carves out a ball, the ice cream melts flat, and the pint closes and sinks out of frame" />
+            </div>
+        </section>
+
+        <!-- OVERVIEW -->
+        <div class="wrap fp-about">
+            <div class="row">
+                <dl class="row__label fp-facts mono" data-reveal>
+                    {
+                        facts.map((f) => (
+                            <div>
+                                <dt class="muted">{f.label}</dt>
+                                <dd>{f.value}</dd>
+                            </div>
+                        ))
+                    }
+                </dl>
+                <p class="row__body lead" data-split>{description}</p>
+            </div>
+        </div>
+
+        <!-- THE IDEA -->
+        <section class="section wrap">
+            <div class="row">
+                <h2 class="row__label mono muted">The idea</h2>
+                <div class="row__body prose" data-reveal set:html={prose("The idea")} />
+            </div>
+        </section>
+
+        <!-- THE STORY -->
+        <section class="section wrap">
+            <div class="row">
+                <h2 class="row__label mono muted">The story</h2>
+            </div>
+            <ol class="fp-story">
+                {
+                    story.map((s, i) => (
+                        <li>
+                            <Shot img={s.img} alt={s.alt} sizes="(min-width: 900px) 24vw, (min-width: 600px) 48vw, 100vw" />
+                            <p>
+                                <span class="mono muted">{i + 1}</span>
+                                <span>{s.text}</span>
+                            </p>
+                        </li>
+                    ))
+                }
+            </ol>
+        </section>
+
+        <!-- HOW IT WAS MADE: the diorama it began as -->
+        <section class="section wrap">
+            <div class="row">
+                <h2 class="row__label mono muted">How it was made</h2>
+                <div class="row__body fp-stack">
+                    <div class="prose" data-reveal set:html={prose("How it was made")} />
+                    <figure class="fp-figure" data-reveal>
+                        <LoopVideo src="/media/a-farm-in-the-pint/diorama.mp4" poster={dioramaPoster} label="The original farm diorama, seen whole and then up close: a windmill, a table on the porch, a tree stump, chickens and vegetables" />
+                        <figcaption class="mono muted">The farm diorama it started from</figcaption>
+                    </figure>
+                </div>
+            </div>
+        </section>
+
+        <!-- MAKING IT READ AS ICE CREAM -->
+        <section class="section wrap">
+            <div class="row">
+                <h2 class="row__label mono muted">Making it read as ice cream</h2>
+                <div class="row__body prose" data-reveal set:html={prose("Making it read as ice cream")} />
+            </div>
+            <div class="fp-three">
+                <Shot img={icecream1} alt="The pint filled with glossy liquid cream, flecked with chocolate at the edge" caption="Glossy liquid" sizes="(min-width: 700px) 32vw, 100vw" />
+                <Shot img={icecream2} alt="The cream risen above the rim as a matte, frozen mound" caption="Frozen and swelling" sizes="(min-width: 700px) 32vw, 100vw" />
+                <Shot img={icecream3} alt="Close up of the ice cream's surface: scraped layers running down the mound, chocolate pieces and sunflowers" caption="Scraped layers and a torn texture" sizes="(min-width: 700px) 32vw, 100vw" />
+            </div>
+        </section>
+
+        <!-- SIMPLIFYING THE FARM -->
+        <section class="section wrap">
+            <div class="row">
+                <h2 class="row__label mono muted">Simplifying the farm</h2>
+                <div class="row__body prose" data-reveal set:html={prose("Simplifying the farm")} />
+            </div>
+            <div class="fp-three">
+                <Shot img={version1} alt="An early version on the web page: a barn, a tall windmill, cows, a pig, chickens and a tractor scattered over the ice cream" caption="Version 1" sizes="(min-width: 700px) 32vw, 100vw" />
+                <Shot img={version2} alt="A second version on the web page: a large grey house with a windmill beside it, a fenced pen, sunflowers, pumpkins and a tractor" caption="Version 2" sizes="(min-width: 700px) 32vw, 100vw" />
+                <Shot img={version3} alt="The final version on the web page: a brown barn between two trees, a fenced pen with cows, sunflowers and a tractor" caption="Final" sizes="(min-width: 700px) 32vw, 100vw" />
+            </div>
+        </section>
+
+        <!-- BELIEVABLE ANIMALS -->
+        <section class="section wrap">
+            <div class="row">
+                <h2 class="row__label mono muted">Believable animals</h2>
+                <div class="row__body fp-stack">
+                    <div class="prose" data-reveal set:html={prose("Believable animals")} />
+                    <div class="fp-cows">
+                        <Shot img={cows} alt="Two low-poly cows in a wooden pen on the ice cream, one with its head lowered to graze just above the surface" sizes="(min-width: 900px) 40vw, 100vw" />
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DESIGNED FOR THE PAGE: the film behind a headline and copy -->
+        <section class="section wrap">
+            <div class="row">
+                <h2 class="row__label mono muted">Designed for the page</h2>
+                <div class="row__body prose" data-reveal set:html={prose("Designed for the page")} />
+            </div>
+            <div class="fp-page" data-reveal>
+                <LoopVideo src="/media/a-farm-in-the-pint/page.mp4" poster={pagePoster} label="The film on a concept of the Ben & Jerry's flavours page: the headline and copy on the left stay clear while the pint and the farm play out on the right" />
+            </div>
+        </section>
+
+        <!-- ANY SECTION ADDED LATER, THEN THE NOTE -->
+        {
+            [...extra, "Note"].map((heading) => (
+                <section class="section wrap">
+                    <div class="row">
+                        <h2 class="row__label mono muted">{heading}</h2>
+                        <div class="row__body prose" data-reveal set:html={prose(heading)} />
+                    </div>
+                </section>
+            ))
+        }
+    </article>
+
+    <NextProject current="a-farm-in-the-pint" />
+    <Lightbox />
+</Base>
+
+<style>
+    /* room before the next project's pixels start */
+    .fp {
+        padding-bottom: var(--section);
+    }
+
+    /* closer than other pages, so the film is on screen as soon as the page opens */
+    .fp-head {
+        padding-top: clamp(24px, 3vw, 48px);
+        padding-bottom: clamp(20px, 2.5vw, 36px);
+    }
+
+    .fp-kicker {
+        margin: 24px 0 0;
+    }
+
+    .fp-title {
+        font-size: clamp(2.5rem, 1rem + 5.5vw, 6.75rem);
+    }
+
+    .fp-sub {
+        margin: clamp(12px, 1.5vw, 20px) 0 0;
+    }
+
+    /* as wide as the page, lined up with the title; on a very wide window, no taller than the screen */
+    .fp-film__video {
+        width: min(100%, calc((100svh - var(--header-h) - 40px) * 16 / 9));
+    }
+
+    .fp-about {
+        margin-top: clamp(32px, 5vw, 64px);
+    }
+
+    .fp-facts {
+        display: grid;
+        gap: 14px;
+        align-content: start;
+        margin: 0;
+    }
+
+    .fp-facts dd {
+        margin: 2px 0 0;
+    }
+
+    /* --- the story, a frame at a time --- */
+
+    .fp-story {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 32px 12px;
+        margin: clamp(20px, 3vw, 32px) 0 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .fp-story p {
+        display: grid;
+        grid-template-columns: 1.5rem minmax(0, 1fr);
+        align-items: baseline;
+        margin: 12px 0 0;
+        font-size: var(--fs-small);
+    }
+
+    @media (min-width: 600px) {
+        .fp-story {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (min-width: 900px) {
+        .fp-story {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+    }
+
+    /* --- what each section describes --- */
+
+    .fp-stack {
+        display: grid;
+        gap: clamp(20px, 3vw, 32px);
+    }
+
+    .fp-figure {
+        display: grid;
+        gap: 10px;
+        margin: 0;
+    }
+
+    .fp-three {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px 12px;
+        margin-top: clamp(20px, 3vw, 32px);
+    }
+
+    @media (min-width: 700px) {
+        .fp-three {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    .fp-cows {
+        max-width: 600px;
+    }
+
+    .fp-page {
+        margin-top: clamp(20px, 3vw, 32px);
+    }
+</style>

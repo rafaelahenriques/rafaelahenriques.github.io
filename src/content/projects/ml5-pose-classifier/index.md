@@ -1,7 +1,7 @@
 ---
 title: "ML5.js Pose Classifier"
 section: other
-order: 4
+order: 5
 status: in-progress
 category: "Machine Learning"
 types: ["web", "interactive"]
