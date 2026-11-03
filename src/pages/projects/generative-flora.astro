@@ -1,6 +1,6 @@
 ---
 /**
- * Generative Ecosystem case study. Same shape as Study Room: numbered
+ * Generative Flora case study. Same shape as Study Room: numbered
  * chapters, each ## section of index.md beside what it explains. The videos
  * are recordings of the real app driven by its own controls (growth, climate,
  * the scan window); the plates are its eight species at full bloom. The
@@ -17,28 +17,28 @@ import Shot from "../../components/Shot.astro";
 import Lightbox from "../../components/Lightbox.astro";
 import NextProject from "../../components/NextProject.astro";
 
-import heroPoster from "../../content/projects/generative-ecosystem/media/hero-poster.jpg";
-import climatePoster from "../../content/projects/generative-ecosystem/media/climate-poster.jpg";
-import scanPoster from "../../content/projects/generative-ecosystem/media/scan-poster.jpg";
-import noMatch from "../../content/projects/generative-ecosystem/media/no-match.jpg";
-import plantHedgehog from "../../content/projects/generative-ecosystem/media/plant-hedgehog.jpg";
-import plantLavender from "../../content/projects/generative-ecosystem/media/plant-lavender.jpg";
-import plantSunflower from "../../content/projects/generative-ecosystem/media/plant-sunflower.jpg";
-import plantPeony from "../../content/projects/generative-ecosystem/media/plant-peony.jpg";
-import plantTrillium from "../../content/projects/generative-ecosystem/media/plant-trillium.jpg";
-import plantOrchid from "../../content/projects/generative-ecosystem/media/plant-orchid.jpg";
-import plantLotus from "../../content/projects/generative-ecosystem/media/plant-lotus.jpg";
-import plantPoppy from "../../content/projects/generative-ecosystem/media/plant-poppy.jpg";
-import growth1 from "../../content/projects/generative-ecosystem/media/growth-1.jpg";
-import growth2 from "../../content/projects/generative-ecosystem/media/growth-2.jpg";
-import growth3 from "../../content/projects/generative-ecosystem/media/growth-3.jpg";
-import growth4 from "../../content/projects/generative-ecosystem/media/growth-4.jpg";
-import growth5 from "../../content/projects/generative-ecosystem/media/growth-5.jpg";
-import boot1 from "../../content/projects/generative-ecosystem/media/boot-1.jpg";
-import boot2 from "../../content/projects/generative-ecosystem/media/boot-2.jpg";
-import boot3 from "../../content/projects/generative-ecosystem/media/boot-3.jpg";
+import reelPoster from "../../content/projects/generative-flora/media/reel-poster.jpg";
+import climatePoster from "../../content/projects/generative-flora/media/climate-poster.jpg";
+import scanPoster from "../../content/projects/generative-flora/media/scan-poster.jpg";
+import noMatch from "../../content/projects/generative-flora/media/no-match.jpg";
+import plantHedgehog from "../../content/projects/generative-flora/media/plant-hedgehog.jpg";
+import plantLavender from "../../content/projects/generative-flora/media/plant-lavender.jpg";
+import plantSunflower from "../../content/projects/generative-flora/media/plant-sunflower.jpg";
+import plantPeony from "../../content/projects/generative-flora/media/plant-peony.jpg";
+import plantTrillium from "../../content/projects/generative-flora/media/plant-trillium.jpg";
+import plantOrchid from "../../content/projects/generative-flora/media/plant-orchid.jpg";
+import plantLotus from "../../content/projects/generative-flora/media/plant-lotus.jpg";
+import plantPoppy from "../../content/projects/generative-flora/media/plant-poppy.jpg";
+import growth1 from "../../content/projects/generative-flora/media/growth-1.jpg";
+import growth2 from "../../content/projects/generative-flora/media/growth-2.jpg";
+import growth3 from "../../content/projects/generative-flora/media/growth-3.jpg";
+import growth4 from "../../content/projects/generative-flora/media/growth-4.jpg";
+import growth5 from "../../content/projects/generative-flora/media/growth-5.jpg";
+import boot1 from "../../content/projects/generative-flora/media/boot-1.jpg";
+import boot2 from "../../content/projects/generative-flora/media/boot-2.jpg";
+import boot3 from "../../content/projects/generative-flora/media/boot-3.jpg";
 
-const project = (await getEntry("projects", "generative-ecosystem"))!;
+const project = (await getEntry("projects", "generative-flora"))!;
 const { title, description, role, year, category, context, order, tech, media } = project.data;
 
 const links = [
@@ -103,10 +103,20 @@ const roadmap = [
 <Base title={title} description={description} {...projectSeo(project)}>
     <article class="ge">
         <!-- INTRO -->
-        <header class="page-head wrap">
+        <header class="page-head wrap ge-head">
             <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
             <p class="ge-kicker mono muted" data-reveal>{pad(order ?? 4)} — {category}</p>
             <h1 class="display ge-title" data-split>{title}<span class="stop" aria-hidden="true"></span></h1>
+        </header>
+
+        <!-- THE REEL: the first thing the page shows -->
+        <section class="wrap ge-hero" aria-label="A short reel of the project">
+            <div class="ge-hero__video" data-reveal>
+                <LoopVideo src="/media/generative-flora/reel.mp4" poster={reelPoster} label="A short reel: a hand on camera grows a peony and a cactus and moves the colour window over an orchid, the climate sliders change the plant, five real places show five plants, and the title closes on a sunflower" />
+            </div>
+        </section>
+
+        <div class="wrap ge-about">
             <p class="ge-wip" data-reveal>
                 <span class="wip">In progress</span>
                 <span class="muted">Still being built. This page will be updated as the project develops.</span>
@@ -136,20 +146,12 @@ const roadmap = [
                     </ul>
                 </div>
             </div>
-        </header>
-
-        <!-- HERO: from a seedling to full bloom and back -->
-        <section class="wrap ge-hero" aria-label="The plant growing">
-            <div class="ge-hero__video" data-reveal>
-                <LoopVideo src="/media/generative-ecosystem/hero.mp4" poster={heroPoster} label="A Chinese peony grows from a seedling to full bloom and back, while the colour scan window moves over its x-ray" />
-            </div>
-            <p class="ge-caption mono muted" data-reveal>Recorded with the on-screen controls. With the camera on, your fingers do this.</p>
-        </section>
+        </div>
 
         <Chapter id="ge-climate" num={1} title="Climate decides the plant" html={t("Climate decides the plant")}>
             <div class="ge-stack" slot="media">
                 <figure class="ge-figure">
-                    <LoopVideo src="/media/generative-ecosystem/climate.mp4" poster={climatePoster} label="The climate sliders move from one climate to the next, and the plant dissolves into the species that fits: peony, hedgehog cactus, arctic poppy, sacred lotus" />
+                    <LoopVideo src="/media/generative-flora/climate.mp4" poster={climatePoster} label="The climate sliders move from one climate to the next, and the plant dissolves into the species that fits: peony, hedgehog cactus, arctic poppy, sacred lotus" />
                     <figcaption class="mono muted">Each slider draws the plant’s limits and best range on its track</figcaption>
                 </figure>
                 <Shot img={noMatch} alt="A hot, dry climate where nothing survives: the hedgehog cactus stays on show with the message: Closest match, but it would not survive here" caption="Nothing survives here: the closest plant stays on show, and says so" />
@@ -225,7 +227,7 @@ const roadmap = [
 
         <Chapter id="ge-scan" num={4} title="Scan window" html={t("Scan window")}>
             <figure class="ge-figure" slot="media">
-                <LoopVideo src="/media/generative-ecosystem/scan.mp4" poster={scanPoster} label="The scan window sweeps over an x-ray hedgehog cactus, showing the same plant in solid colour inside it" />
+                <LoopVideo src="/media/generative-flora/scan.mp4" poster={scanPoster} label="The scan window sweeps over an x-ray hedgehog cactus, showing the same plant in solid colour inside it" />
                 <figcaption class="mono muted">Hide interface leaves only the plant and its window</figcaption>
             </figure>
         </Chapter>
@@ -285,7 +287,7 @@ const roadmap = [
     </article>
 
     <ChapterNav />
-    <NextProject current="generative-ecosystem" />
+    <NextProject current="generative-flora" />
     <Lightbox />
 </Base>
 
@@ -371,21 +373,19 @@ const roadmap = [
 
     /* --- HERO --- */
 
-    .ge-hero {
-        display: grid;
-        justify-items: center;
-        gap: 12px;
-        margin-top: clamp(40px, 6vw, 88px);
+    /* closer than other pages, so the reel is on screen as soon as the page opens */
+    .ge-head {
+        padding-top: clamp(24px, 3vw, 48px);
+        padding-bottom: clamp(20px, 2.5vw, 36px);
     }
 
+    /* as wide as the page, lined up with the title; on a very wide window, no taller than the screen */
     .ge-hero__video {
-        /* the whole interface stays on screen */
-        width: min(100%, calc((100svh - var(--header-h) - 120px) * 1.6));
+        width: min(100%, calc((100svh - var(--header-h) - 40px) * 16 / 9));
     }
 
-    .ge-caption {
-        margin: 0;
-        text-align: center;
+    .ge-about {
+        margin-top: clamp(32px, 5vw, 64px);
     }
 
     /* --- what sits beside the chapters --- */
