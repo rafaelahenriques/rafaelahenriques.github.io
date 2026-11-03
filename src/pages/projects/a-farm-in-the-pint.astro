@@ -30,7 +30,8 @@ import icecream3 from "../../content/projects/a-farm-in-the-pint/media/icecream-
 import version1 from "../../content/projects/a-farm-in-the-pint/media/version-1.jpg";
 import version2 from "../../content/projects/a-farm-in-the-pint/media/version-2.jpg";
 import version3 from "../../content/projects/a-farm-in-the-pint/media/version-3.jpg";
-import cows from "../../content/projects/a-farm-in-the-pint/media/cows.jpg";
+import cows1 from "../../content/projects/a-farm-in-the-pint/media/cows-1.jpg";
+import cows2 from "../../content/projects/a-farm-in-the-pint/media/cows-2.jpg";
 
 const project = (await getEntry("projects", "a-farm-in-the-pint"))!;
 const { title, description, role, year, category, context, tagline } = project.data;
@@ -80,7 +81,7 @@ const prose = (heading: string) => parts.get(heading);
 
         <!-- THE FILM: the first thing the page shows -->
         <section class="wrap fp-film" aria-label="The film">
-            <div class="fp-film__video" data-reveal>
+            <div data-reveal>
                 <LoopVideo src="/media/a-farm-in-the-pint/film.mp4" poster={filmPoster} label="The film: a closed pint rises and opens, cream pours in and swells into ice cream, a small farm grows on top, then a scoop carves out a ball, the ice cream melts flat, and the pint closes and sinks out of frame" />
             </div>
         </section>
@@ -134,14 +135,12 @@ const prose = (heading: string) => parts.get(heading);
         <section class="section wrap">
             <div class="row">
                 <h2 class="row__label mono muted">How it was made</h2>
-                <div class="row__body fp-stack">
-                    <div class="prose" data-reveal set:html={prose("How it was made")} />
-                    <figure class="fp-figure" data-reveal>
-                        <LoopVideo src="/media/a-farm-in-the-pint/diorama.mp4" poster={dioramaPoster} label="The original farm diorama, seen whole and then up close: a windmill, a table on the porch, a tree stump, chickens and vegetables" />
-                        <figcaption class="mono muted">The farm diorama it started from</figcaption>
-                    </figure>
-                </div>
+                <div class="row__body prose" data-reveal set:html={prose("How it was made")} />
             </div>
+            <figure class="fp-solo" data-reveal>
+                <LoopVideo src="/media/a-farm-in-the-pint/diorama.mp4" poster={dioramaPoster} sound label="The original farm diorama, seen whole and then up close: a windmill, a table on the porch, a tree stump, chickens and vegetables" />
+                <figcaption class="mono muted">The farm diorama it started from</figcaption>
+            </figure>
         </section>
 
         <!-- MAKING IT READ AS ICE CREAM -->
@@ -174,12 +173,11 @@ const prose = (heading: string) => parts.get(heading);
         <section class="section wrap">
             <div class="row">
                 <h2 class="row__label mono muted">Believable animals</h2>
-                <div class="row__body fp-stack">
-                    <div class="prose" data-reveal set:html={prose("Believable animals")} />
-                    <div class="fp-cows">
-                        <Shot img={cows} alt="Two low-poly cows in a wooden pen on the ice cream, one with its head lowered to graze just above the surface" sizes="(min-width: 900px) 40vw, 100vw" />
-                    </div>
-                </div>
+                <div class="row__body prose" data-reveal set:html={prose("Believable animals")} />
+            </div>
+            <div class="fp-two">
+                <Shot img={cows1} alt="Two low-poly cows in a wooden pen on the ice cream, both with their heads lowered to graze just above the surface" caption="Heads down" sizes="(min-width: 700px) 48vw, 100vw" />
+                <Shot img={cows2} alt="The same two cows a moment later, their heads raised on separate neck and head joints" caption="Heads coming up" sizes="(min-width: 700px) 48vw, 100vw" />
             </div>
         </section>
 
@@ -235,11 +233,6 @@ const prose = (heading: string) => parts.get(heading);
         margin: clamp(12px, 1.5vw, 20px) 0 0;
     }
 
-    /* as wide as the page, lined up with the title; on a very wide window, no taller than the screen */
-    .fp-film__video {
-        width: min(100%, calc((100svh - var(--header-h) - 40px) * 16 / 9));
-    }
-
     .fp-about {
         margin-top: clamp(32px, 5vw, 64px);
     }
@@ -288,18 +281,15 @@ const prose = (heading: string) => parts.get(heading);
 
     /* --- what each section describes --- */
 
-    .fp-stack {
-        display: grid;
-        gap: clamp(20px, 3vw, 32px);
-    }
-
-    .fp-figure {
+    .fp-solo {
         display: grid;
         gap: 10px;
-        margin: 0;
+        margin: clamp(20px, 3vw, 32px) 0 0;
+        text-align: center;
     }
 
-    .fp-three {
+    .fp-three,
+    .fp-two {
         display: grid;
         grid-template-columns: minmax(0, 1fr);
         gap: 24px 12px;
@@ -310,10 +300,10 @@ const prose = (heading: string) => parts.get(heading);
         .fp-three {
             grid-template-columns: repeat(3, minmax(0, 1fr));
         }
-    }
 
-    .fp-cows {
-        max-width: 600px;
+        .fp-two {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
     }
 
     .fp-page {
