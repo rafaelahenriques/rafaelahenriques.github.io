@@ -34,7 +34,7 @@ import cows1 from "../../content/projects/a-farm-in-the-pint/media/cows-1.jpg";
 import cows2 from "../../content/projects/a-farm-in-the-pint/media/cows-2.jpg";
 
 const project = (await getEntry("projects", "a-farm-in-the-pint"))!;
-const { title, description, role, year, category, context, tagline } = project.data;
+const { title, description, role, year, category, context } = project.data;
 
 const facts = [
     { label: "Year", value: year },
@@ -79,7 +79,7 @@ const prose = (heading: string) => parts.get(heading);
                 <div class="fp-first__text">
                     <div>
                         <h1 class="display fp-title" data-split>{title}<span class="stop" aria-hidden="true"></span></h1>
-                        <p class="fp-sub mono muted" data-reveal>{tagline}</p>
+                        <p class="fp-sub mono muted" data-reveal>Personal project, not affiliated with Ben &amp; Jerry’s</p>
                     </div>
                     <p class="lead fp-lead" data-split>{description}</p>
                 </div>

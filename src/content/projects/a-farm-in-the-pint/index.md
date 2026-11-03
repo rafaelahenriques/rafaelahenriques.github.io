@@ -7,14 +7,14 @@ types: ["motion"]
 year: "2026"
 tech: ["Maya", "Blender", "Python"]
 role: "Concept, art direction, farm modelling and layout"
-context: "Personal project"
+context: "Personal project, not commissioned by Ben & Jerry’s"
 description: "This is a 28.5-second looping 3D animation designed for the Ben & Jerry’s website. The pint sits on the right, leaving the left side open for a headline and copy. Cream pours into an empty pint and swells into ice cream, a small farm grows on top, and then it’s all scooped, melted down and sealed back up."
 media:
   screenshot: "./media/cover.jpg"
   thumbnail: "./media/thumb.jpg"
 tags: ["3D animation", "Blender", "Maya"]
 customPage: true
-tagline: "Self-initiated concept for a website hero animation"
+tagline: "Personal project: a concept for a website hero animation, not affiliated with Ben & Jerry’s"
 ---
 
 ## The idea
@@ -43,4 +43,4 @@ The background matches the site’s blue, the brand colours render without a fil
 
 ## Note
 
-This is a self-initiated concept, not commissioned by or affiliated with Ben & Jerry’s. The Ben & Jerry’s name and packaging belong to their owners, and the logo and lettering shown are placeholders recreated for this concept.
+This is a personal project: a self-initiated concept, not commissioned by, affiliated with or endorsed by Ben & Jerry’s. The Ben & Jerry’s name, packaging and website belong to their owners, and the logo and lettering shown are placeholders recreated for this concept.
