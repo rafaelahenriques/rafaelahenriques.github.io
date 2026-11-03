@@ -1,6 +1,6 @@
 ---
 section: other
-order: 6
+order: 5
 category: "Game & Visual"
 types: ["ui", "interactive"]
 title: "UI Game Assets"
