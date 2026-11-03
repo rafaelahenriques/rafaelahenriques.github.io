@@ -96,15 +96,16 @@ const pipeline = [
         <header class="page-head wrap ge-head">
             <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
             <p class="ge-kicker mono muted" data-reveal>{pad(order ?? 4)} — {category}</p>
-            <h1 class="display ge-title" data-split>{title}<span class="stop" aria-hidden="true"></span></h1>
-        </header>
-
-        <!-- THE REEL: the first thing the page shows -->
-        <section class="wrap ge-hero" aria-label="A short reel of the project">
-            <div class="ge-hero__video" data-reveal>
-                <LoopVideo src="/media/generative-flora/reel.mp4" poster={reelPoster} label="A short reel: a hand on camera grows a peony and a cactus and moves the colour window over an orchid, the climate sliders change the plant, five real places show five plants, and the title closes on a sunflower" />
+            <div class="ge-first">
+                <div class="ge-first__text">
+                    <h1 class="display ge-title" data-split>{title}<span class="stop" aria-hidden="true"></span></h1>
+                    <p class="lead ge-lead" data-split>{description}</p>
+                </div>
+                <div class="ge-first__video" data-reveal>
+                    <LoopVideo src="/media/generative-flora/reel.mp4" poster={reelPoster} label="A short reel: a hand on camera grows a peony and a cactus and moves the colour window over an orchid, the climate sliders change the plant, five real places show five plants, and the title closes on a sunflower" />
+                </div>
             </div>
-        </section>
+        </header>
 
         <div class="wrap ge-about">
             <div class="row ge-intro">
@@ -115,7 +116,6 @@ const pipeline = [
                     <div><dt class="muted">Stack</dt><dd>{tech?.join(", ")}</dd></div>
                 </dl>
                 <div class="row__body">
-                    <p class="lead ge-lead" data-split>{description}</p>
                     <ul class="ge-links" data-reveal>
                         {
                             links.map((l) => (
@@ -134,13 +134,13 @@ const pipeline = [
         </div>
 
         <Chapter id="ge-climate" num={1} title="Climate decides the plant" html={t("Climate decides the plant")}>
-            <div class="ge-stack" slot="media">
-                <figure class="ge-figure">
-                    <LoopVideo src="/media/generative-flora/climate.mp4" poster={climatePoster} label="The climate sliders move from one climate to the next, and the plant dissolves into the species that fits: peony, hedgehog cactus, arctic poppy, sacred lotus" />
-                    <figcaption class="mono muted">Each slider draws the plant’s limits and best range on its track</figcaption>
-                </figure>
-                <Shot img={noMatch} alt="A hot, dry climate where nothing survives: the hedgehog cactus stays on show with the message: Closest match, but it would not survive here" caption="Nothing survives here: the closest plant stays on show, and says so" />
+            <div class="ge-under">
+                <Shot img={noMatch} alt="A hot, dry climate where nothing survives: the hedgehog cactus stays on show with the message: Closest match, but it would not survive here" caption="Nothing survives here: the closest plant stays on show, and says so" sizes="(min-width: 900px) 40vw, 100vw" />
             </div>
+            <figure class="ge-figure" slot="media">
+                <LoopVideo src="/media/generative-flora/climate.mp4" poster={climatePoster} label="The climate sliders move from one climate to the next, and the plant dissolves into the species that fits: peony, hedgehog cactus, arctic poppy, sacred lotus" />
+                <figcaption class="mono muted">Each slider draws the plant’s limits and best range on its track</figcaption>
+            </figure>
         </Chapter>
 
         <!-- the optimal range of every factor, for every species -->
@@ -210,7 +210,7 @@ const pipeline = [
             </figure>
         </Chapter>
 
-        <Chapter id="ge-scan" num={4} title="Scan window" html={t("Scan window")}>
+        <Chapter id="ge-scan" num={4} title="Scan window" html={t("Scan window")} fold={false}>
             <figure class="ge-figure" slot="media">
                 <LoopVideo src="/media/generative-flora/scan.mp4" poster={scanPoster} label="The scan window sweeps over an x-ray hedgehog cactus, showing the same plant in solid colour inside it" />
                 <figcaption class="mono muted">Hide interface leaves only the plant and its window</figcaption>
@@ -231,13 +231,11 @@ const pipeline = [
             </ol>
         </Chapter>
 
-        <Chapter id="ge-loading" num={6} title="Loading" html={t("Loading")}>
-            <div class="ge-stack" slot="media">
-                <Shot img={boot2} alt="The loading screen at 66 percent: a stippled flower sharpening from coarse blocks to fine dots, beside a log of measured steps" caption="66%: the flower sharpens as the real work finishes" />
-                <div class="ge-pair">
-                    <Shot img={boot1} alt="The loading screen at 26 percent, the flower still in coarse blocks" caption="26%" sizes="(min-width: 900px) 25vw, 50vw" />
-                    <Shot img={boot3} alt="The loading screen at 100 percent, the flower in fine dots and a scan line starting to sweep down" caption="100%: the sweep begins" sizes="(min-width: 900px) 25vw, 50vw" />
-                </div>
+        <Chapter id="ge-loading" num={6} title="Loading" html={t("Loading")} wide>
+            <div class="ge-row ge-row--three">
+                <Shot img={boot1} alt="The loading screen at 26 percent, the flower still in coarse blocks" caption="26%" sizes="(min-width: 700px) 32vw, 100vw" />
+                <Shot img={boot2} alt="The loading screen at 66 percent: a stippled flower sharpening from coarse blocks to fine dots, beside a log of measured steps" caption="66%: the flower sharpens as the real work finishes" sizes="(min-width: 700px) 32vw, 100vw" />
+                <Shot img={boot3} alt="The loading screen at 100 percent, the flower in fine dots and a scan line starting to sweep down" caption="100%: the sweep begins" sizes="(min-width: 700px) 32vw, 100vw" />
             </div>
         </Chapter>
 
@@ -274,8 +272,52 @@ const pipeline = [
         margin: 24px 0 0;
     }
 
-    .ge-title {
-        font-size: clamp(3rem, 1rem + 8vw, 9.5rem);
+    .ge-first {
+        margin-top: 18px;
+    }
+
+    .ge-first .ge-title {
+        margin-top: 0;
+        font-size: clamp(3rem, 1rem + 5vw, 6.5rem);
+    }
+
+    .ge-lead {
+        margin-top: clamp(20px, 2.5vw, 32px);
+    }
+
+    .ge-first__video {
+        margin-top: 24px;
+    }
+
+    /* the title's top meets the video's top, and the text ends level with its bottom
+       (the 36px is the button under the video; the text scales with the window so
+       that it stays about as tall as the video) */
+    @media (min-width: 900px) {
+        .ge-first {
+            --video-align: end;
+            display: grid;
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+            column-gap: var(--gutter);
+        }
+
+        .ge-first__text {
+            grid-column: 1 / span 5;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 20px;
+            padding-bottom: 36px;
+        }
+
+        .ge-lead {
+            margin-top: 0;
+            font-size: clamp(1.1rem, 2.05vw, 2.75rem);
+        }
+
+        .ge-first__video {
+            grid-column: 6 / -1;
+            margin-top: 0;
+        }
     }
 
     .ge-facts {
@@ -287,10 +329,6 @@ const pipeline = [
 
     .ge-facts dd {
         margin: 2px 0 0;
-    }
-
-    .ge-lead {
-        max-width: 34ch;
     }
 
     /* links: what each one is, spelled out */
@@ -337,32 +375,39 @@ const pipeline = [
         padding-bottom: clamp(20px, 2.5vw, 36px);
     }
 
-    /* as wide as the page, lined up with the title; on a very wide window, no taller than the screen */
-    .ge-hero__video {
-        width: min(100%, calc((100svh - var(--header-h) - 40px) * 16 / 9));
-    }
-
     .ge-about {
         margin-top: clamp(32px, 5vw, 64px);
     }
 
     /* --- what sits beside the chapters --- */
 
-    .ge-stack {
+    /* below the chapter's text, across the page */
+    .ge-row {
         display: grid;
-        gap: clamp(24px, 3vw, 40px);
+        align-items: start;
+        gap: clamp(24px, 3vw, 40px) clamp(12px, 1.6vw, 20px);
+        margin-top: clamp(32px, 4vw, 56px);
+    }
+
+    @media (min-width: 700px) {
+        .ge-row {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .ge-row--three {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    .ge-under {
+        margin-top: clamp(24px, 3vw, 40px);
     }
 
     .ge-figure {
+        --video-align: start;
         display: grid;
         gap: 12px;
         margin: 0;
-    }
-
-    .ge-pair {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: clamp(12px, 1.6vw, 20px);
     }
 
     /* --- the optimal ranges --- */

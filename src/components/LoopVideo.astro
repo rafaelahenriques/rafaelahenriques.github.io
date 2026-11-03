@@ -3,7 +3,9 @@
  * A short screen recording that loops: an app on a phone, a website clip.
  * Muted and looping, it plays only while on screen and loads nothing until
  * it gets close; a Pause / Play button sits under it, and with reduced
- * motion it waits to be played. The poster is the first frame.
+ * motion it waits to be played. The poster is the first frame. It's never
+ * taller than the window, so all of it can be seen at once. `sound` adds a
+ * button for a recording worth hearing; it still starts muted.
  */
 import { getImage } from "astro:assets";
 import type { ImageMetadata } from "astro";
@@ -14,13 +16,14 @@ interface Props {
     poster: ImageMetadata;
     /** what the recording shows, for screen readers and the button */
     label: string;
+    sound?: boolean;
 }
 
-const { src, poster, label } = Astro.props;
+const { src, poster, label, sound = false } = Astro.props;
 const posterSrc = (await getImage({ src: poster, width: Math.min(poster.width, 1200), format: "webp", quality: 80 })).src;
 ---
 
-<figure class="phone-video" data-phone-video>
+<figure class="phone-video" data-phone-video style={`--ratio: ${poster.width / poster.height}`}>
     <video
         class="phone-video__video"
         muted
@@ -34,9 +37,18 @@ const posterSrc = (await getImage({ src: poster, width: Math.min(poster.width, 1
     >
         <source src={src} type="video/mp4" />
     </video>
-    <button type="button" class="phone-video__toggle mono" aria-label={`Play: ${label}`} data-phone-video-toggle>
-        Play
-    </button>
+    <div class="phone-video__controls">
+        <button type="button" class="phone-video__toggle mono" aria-label={`Play: ${label}`} data-phone-video-toggle>
+            Play
+        </button>
+        {
+            sound && (
+                <button type="button" class="phone-video__toggle mono" aria-pressed="false" data-phone-video-sound>
+                    Sound off
+                </button>
+            )
+        }
+    </div>
 </figure>
 
 <script>
@@ -72,6 +84,18 @@ const posterSrc = (await getImage({ src: poster, width: Math.min(poster.width, 1
         button.addEventListener("click", toggle);
         video.addEventListener("click", toggle);
 
+        // turning the sound on also starts it
+        const soundButton = figure.querySelector<HTMLButtonElement>("[data-phone-video-sound]");
+        soundButton?.addEventListener("click", () => {
+            video.muted = !video.muted;
+            soundButton.textContent = video.muted ? "Sound off" : "Sound on";
+            soundButton.setAttribute("aria-pressed", String(!video.muted));
+            if (!video.muted && video.paused) {
+                userPaused = false;
+                play();
+            }
+        });
+
         // start downloading a little before it scrolls in, play while it's visible
         new IntersectionObserver(
             ([entry]) => {
@@ -96,18 +120,25 @@ const posterSrc = (await getImage({ src: poster, width: Math.min(poster.width, 1
 </script>
 
 <style>
+    /* centred unless the page lines it up with something (--video-align) */
     .phone-video {
         display: grid;
-        justify-items: center;
+        justify-items: var(--video-align, center);
         gap: 8px;
         margin: 0;
     }
 
+    /* the 96px leaves room for the header's gap and the buttons under it */
     .phone-video__video {
         display: block;
-        width: 100%;
+        width: min(100%, calc((100svh - var(--header-h) - 96px) * var(--ratio)));
         height: auto;
         cursor: pointer;
+    }
+
+    .phone-video__controls {
+        display: flex;
+        gap: 8px;
     }
 
     /* under the phone, so it never covers the app's own controls */

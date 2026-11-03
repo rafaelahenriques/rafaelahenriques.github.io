@@ -1,10 +1,10 @@
 ---
 /**
  * Ben & Jerry's: A Farm in the Pint (customPage in the content entry). The
- * film opens the page, straight under the title. Then the story in seven
- * frames from the film, and the ## sections of index.md, each with what it
- * describes: the diorama it began as, the ice cream, the three versions of
- * the farm, the cows, and the film on the page it was designed for.
+ * film on the web page it was designed for opens the page, beside the title.
+ * Then the story in seven frames, and the ## sections of index.md, each with
+ * what it describes: the diorama it began as, the ice cream, the three versions
+ * of the farm, the cows, and the film on its own.
  */
 import Base from "../../layouts/BaseLayout.astro";
 import { getEntry } from "astro:content";
@@ -30,10 +30,11 @@ import icecream3 from "../../content/projects/a-farm-in-the-pint/media/icecream-
 import version1 from "../../content/projects/a-farm-in-the-pint/media/version-1.jpg";
 import version2 from "../../content/projects/a-farm-in-the-pint/media/version-2.jpg";
 import version3 from "../../content/projects/a-farm-in-the-pint/media/version-3.jpg";
-import cows from "../../content/projects/a-farm-in-the-pint/media/cows.jpg";
+import cows1 from "../../content/projects/a-farm-in-the-pint/media/cows-1.jpg";
+import cows2 from "../../content/projects/a-farm-in-the-pint/media/cows-2.jpg";
 
 const project = (await getEntry("projects", "a-farm-in-the-pint"))!;
-const { title, description, role, year, category, context, tagline } = project.data;
+const { title, description, role, year, category, context } = project.data;
 
 const facts = [
     { label: "Year", value: year },
@@ -70,36 +71,36 @@ const prose = (heading: string) => parts.get(heading);
 
 <Base title={title} description={description} {...projectSeo(project)}>
     <article class="fp">
-        <!-- TITLE -->
+        <!-- TITLE, AND THE FILM ON ITS PAGE -->
         <header class="page-head wrap fp-head">
             <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
             <p class="fp-kicker mono muted" data-reveal>Other work — {category}</p>
-            <h1 class="display fp-title" data-split>{title}<span class="stop" aria-hidden="true"></span></h1>
-            <p class="fp-sub mono muted" data-reveal>{tagline}</p>
+            <div class="fp-first">
+                <div class="fp-first__text">
+                    <div>
+                        <h1 class="display fp-title" data-split>{title}<span class="stop" aria-hidden="true"></span></h1>
+                        <p class="fp-sub mono muted" data-reveal>Personal project, not affiliated with Ben &amp; Jerry’s</p>
+                    </div>
+                    <p class="lead fp-lead" data-split>{description}</p>
+                </div>
+                <div class="fp-first__video" data-reveal>
+                    <LoopVideo src="/media/a-farm-in-the-pint/page.mp4" poster={pagePoster} label="The film on a concept of the Ben & Jerry's flavours page: the headline and copy on the left stay clear while the pint and the farm play out on the right" />
+                </div>
+            </div>
         </header>
 
-        <!-- THE FILM: the first thing the page shows -->
-        <section class="wrap fp-film" aria-label="The film">
-            <div class="fp-film__video" data-reveal>
-                <LoopVideo src="/media/a-farm-in-the-pint/film.mp4" poster={filmPoster} label="The film: a closed pint rises and opens, cream pours in and swells into ice cream, a small farm grows on top, then a scoop carves out a ball, the ice cream melts flat, and the pint closes and sinks out of frame" />
-            </div>
-        </section>
-
-        <!-- OVERVIEW -->
-        <div class="wrap fp-about">
-            <div class="row">
-                <dl class="row__label fp-facts mono" data-reveal>
-                    {
-                        facts.map((f) => (
-                            <div>
-                                <dt class="muted">{f.label}</dt>
-                                <dd>{f.value}</dd>
-                            </div>
-                        ))
-                    }
-                </dl>
-                <p class="row__body lead" data-split>{description}</p>
-            </div>
+        <!-- THE FACTS -->
+        <div class="wrap">
+            <dl class="row fp-facts mono" data-reveal>
+                {
+                    facts.map((f) => (
+                        <div>
+                            <dt class="muted">{f.label}</dt>
+                            <dd>{f.value}</dd>
+                        </div>
+                    ))
+                }
+            </dl>
         </div>
 
         <!-- THE IDEA -->
@@ -132,15 +133,15 @@ const prose = (heading: string) => parts.get(heading);
 
         <!-- HOW IT WAS MADE: the diorama it began as -->
         <section class="section wrap">
-            <div class="row">
-                <h2 class="row__label mono muted">How it was made</h2>
-                <div class="row__body fp-stack">
+            <div class="row fp-side">
+                <div class="fp-side__text">
+                    <h2 class="mono muted">How it was made</h2>
                     <div class="prose" data-reveal set:html={prose("How it was made")} />
-                    <figure class="fp-figure" data-reveal>
-                        <LoopVideo src="/media/a-farm-in-the-pint/diorama.mp4" poster={dioramaPoster} label="The original farm diorama, seen whole and then up close: a windmill, a table on the porch, a tree stump, chickens and vegetables" />
-                        <figcaption class="mono muted">The farm diorama it started from</figcaption>
-                    </figure>
                 </div>
+                <figure class="fp-side__media" data-reveal>
+                    <LoopVideo src="/media/a-farm-in-the-pint/diorama.mp4" poster={dioramaPoster} sound label="The original farm diorama, seen whole and then up close: a windmill, a table on the porch, a tree stump, chickens and vegetables" />
+                    <figcaption class="mono muted">The farm diorama it started from</figcaption>
+                </figure>
             </div>
         </section>
 
@@ -174,23 +175,25 @@ const prose = (heading: string) => parts.get(heading);
         <section class="section wrap">
             <div class="row">
                 <h2 class="row__label mono muted">Believable animals</h2>
-                <div class="row__body fp-stack">
-                    <div class="prose" data-reveal set:html={prose("Believable animals")} />
-                    <div class="fp-cows">
-                        <Shot img={cows} alt="Two low-poly cows in a wooden pen on the ice cream, one with its head lowered to graze just above the surface" sizes="(min-width: 900px) 40vw, 100vw" />
-                    </div>
-                </div>
+                <div class="row__body prose" data-reveal set:html={prose("Believable animals")} />
+            </div>
+            <div class="fp-two">
+                <Shot img={cows1} alt="Two low-poly cows in a wooden pen on the ice cream, both with their heads lowered to graze just above the surface" caption="Heads down" sizes="(min-width: 700px) 48vw, 100vw" />
+                <Shot img={cows2} alt="The same two cows a moment later, their heads raised on separate neck and head joints" caption="Heads coming up" sizes="(min-width: 700px) 48vw, 100vw" />
             </div>
         </section>
 
-        <!-- DESIGNED FOR THE PAGE: the film behind a headline and copy -->
+        <!-- DESIGNED FOR THE PAGE: the film on its own -->
         <section class="section wrap">
-            <div class="row">
-                <h2 class="row__label mono muted">Designed for the page</h2>
-                <div class="row__body prose" data-reveal set:html={prose("Designed for the page")} />
-            </div>
-            <div class="fp-page" data-reveal>
-                <LoopVideo src="/media/a-farm-in-the-pint/page.mp4" poster={pagePoster} label="The film on a concept of the Ben & Jerry's flavours page: the headline and copy on the left stay clear while the pint and the farm play out on the right" />
+            <div class="row fp-side">
+                <div class="fp-side__text">
+                    <h2 class="mono muted">Designed for the page</h2>
+                    <div class="prose" data-reveal set:html={prose("Designed for the page")} />
+                </div>
+                <figure class="fp-side__media" data-reveal>
+                    <LoopVideo src="/media/a-farm-in-the-pint/film.mp4" poster={filmPoster} label="The film on its own: a closed pint rises and opens, cream pours in and swells into ice cream, a small farm grows on top, then a scoop carves out a ball, the ice cream melts flat, and the pint closes and sinks out of frame" />
+                    <figcaption class="mono muted">The film on its own</figcaption>
+                </figure>
             </div>
         </section>
 
@@ -217,7 +220,6 @@ const prose = (heading: string) => parts.get(heading);
         padding-bottom: var(--section);
     }
 
-    /* closer than other pages, so the film is on screen as soon as the page opens */
     .fp-head {
         padding-top: clamp(24px, 3vw, 48px);
         padding-bottom: clamp(20px, 2.5vw, 36px);
@@ -227,32 +229,85 @@ const prose = (heading: string) => parts.get(heading);
         margin: 24px 0 0;
     }
 
-    .fp-title {
-        font-size: clamp(2.5rem, 1rem + 5.5vw, 6.75rem);
+    .fp-first {
+        margin-top: 18px;
+    }
+
+    .fp-first .fp-title {
+        margin-top: 0;
+        font-size: clamp(2.5rem, 1rem + 3.6vw, 5rem);
     }
 
     .fp-sub {
         margin: clamp(12px, 1.5vw, 20px) 0 0;
     }
 
-    /* as wide as the page, lined up with the title; on a very wide window, no taller than the screen */
-    .fp-film__video {
-        width: min(100%, calc((100svh - var(--header-h) - 40px) * 16 / 9));
+    .fp-lead {
+        margin-top: clamp(20px, 2.5vw, 32px);
     }
 
-    .fp-about {
-        margin-top: clamp(32px, 5vw, 64px);
+    .fp-first__video {
+        margin-top: 24px;
+    }
+
+    /* the title's top meets the video's top, and the text ends level with its bottom
+       (the 36px is the buttons under the video; the text scales with the window so
+       that it stays about as tall as the video) */
+    @media (min-width: 900px) {
+        .fp-first {
+            --video-align: end;
+            display: grid;
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+            column-gap: var(--gutter);
+        }
+
+        .fp-first__text {
+            grid-column: 1 / span 5;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 20px;
+            padding-bottom: 36px;
+        }
+
+        .fp-lead {
+            margin-top: 0;
+            font-size: clamp(1.1rem, 2.05vw, 2.75rem);
+        }
+
+        .fp-first__video {
+            grid-column: 6 / -1;
+            margin-top: 0;
+        }
     }
 
     .fp-facts {
         display: grid;
-        gap: 14px;
-        align-content: start;
+        gap: 14px var(--gutter);
         margin: 0;
     }
 
     .fp-facts dd {
         margin: 2px 0 0;
+    }
+
+    @media (min-width: 900px) {
+        .fp-facts > :nth-child(1) {
+            grid-column: span 1;
+        }
+
+        .fp-facts > :nth-child(2),
+        .fp-facts > :nth-child(4) {
+            grid-column: span 3;
+        }
+
+        .fp-facts > :nth-child(3) {
+            grid-column: span 3;
+        }
+
+        .fp-facts > :nth-child(5) {
+            grid-column: span 2;
+        }
     }
 
     /* --- the story, a frame at a time --- */
@@ -288,18 +343,57 @@ const prose = (heading: string) => parts.get(heading);
 
     /* --- what each section describes --- */
 
-    .fp-stack {
-        display: grid;
-        gap: clamp(20px, 3vw, 32px);
+    /* text on the left, set larger so it holds its side; a video on the right */
+    .fp-side {
+        gap: 20px var(--gutter);
     }
 
-    .fp-figure {
+    .fp-side__text h2 {
+        margin: 0 0 clamp(16px, 2vw, 24px);
+        font-size: inherit;
+        font-weight: 400;
+    }
+
+    .fp-side__text .prose :global(p) {
+        margin: 0;
+        font-size: clamp(1.25rem, 1rem + 0.9vw, 1.75rem);
+        line-height: 1.25;
+        letter-spacing: -0.02em;
+    }
+
+    .fp-side__media {
         display: grid;
         gap: 10px;
         margin: 0;
     }
 
-    .fp-three {
+    /* the label level with the video's top, the text with its bottom
+       (the 62px is the buttons and the caption under the video) */
+    @media (min-width: 900px) {
+        .fp-side {
+            --video-align: end;
+        }
+
+        .fp-side__text {
+            grid-column: 1 / span 5;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding-bottom: 62px;
+        }
+
+        .fp-side__text h2 {
+            margin: 0;
+        }
+
+        .fp-side__media {
+            grid-column: 6 / -1;
+            justify-items: end;
+        }
+    }
+
+    .fp-three,
+    .fp-two {
         display: grid;
         grid-template-columns: minmax(0, 1fr);
         gap: 24px 12px;
@@ -310,13 +404,9 @@ const prose = (heading: string) => parts.get(heading);
         .fp-three {
             grid-template-columns: repeat(3, minmax(0, 1fr));
         }
-    }
 
-    .fp-cows {
-        max-width: 600px;
-    }
-
-    .fp-page {
-        margin-top: clamp(20px, 3vw, 32px);
+        .fp-two {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
     }
 </style>

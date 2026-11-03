@@ -1,8 +1,8 @@
 ---
 /**
  * One chapter of a case study: number and title, then the text beside the
- * visual it explains. The visual (slot "media") stays in view while longer
- * text scrolls past it; side="left" puts it on the left for rhythm.
+ * visual it explains. Whichever of the two is shorter stays in view while the
+ * other scrolls past it; side="left" puts the visual on the left for rhythm.
  *
  * `html` is a rendered part of the project's markdown. One paragraph of it
  * (`lead`, the first by default) is shown as the summary; when the rest is
@@ -254,6 +254,12 @@ const fold = canFold && Boolean(leadHtml) && restLength > 280;
             top: calc(var(--header-h) + 32px);
         }
 
+        /* (opened out, the text is long enough to read at its own pace) */
+        .chapter[data-media] .chapter__text:not(:has(.chapter__more[open])) {
+            position: sticky;
+            top: calc(var(--header-h) + 32px);
+        }
+
         .chapter[data-side="left"][data-media] .chapter__text {
             grid-column: 8 / -1;
         }
@@ -269,6 +275,17 @@ const fold = canFold && Boolean(leadHtml) && restLength > 280;
 
         .chapter[data-wide] .chapter__text {
             grid-column: 1 / -1;
+        }
+
+        /* (what follows the text takes the whole width: three of the twelve columns) */
+        .chapter[data-wide] .chapter__lead,
+        .chapter[data-wide] .chapter__rest,
+        .chapter[data-wide] .chapter__more {
+            margin-left: calc((100% + var(--gutter)) / 4);
+        }
+
+        .chapter[data-wide] .chapter__lead :global(p) {
+            max-width: 46ch;
         }
     }
 </style>
