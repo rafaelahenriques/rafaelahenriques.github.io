@@ -120,9 +120,10 @@ const posterSrc = (await getImage({ src: poster, width: Math.min(poster.width, 1
 </script>
 
 <style>
+    /* centred unless the page lines it up with something (--video-align) */
     .phone-video {
         display: grid;
-        justify-items: center;
+        justify-items: var(--video-align, center);
         gap: 8px;
         margin: 0;
     }

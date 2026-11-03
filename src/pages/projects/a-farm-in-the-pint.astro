@@ -73,15 +73,19 @@ const prose = (heading: string) => parts.get(heading);
     <article class="fp">
         <!-- TITLE, AND THE FILM ON ITS PAGE -->
         <header class="page-head wrap fp-head">
-            <div class="fp-head__text">
-                <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
-                <p class="fp-kicker mono muted" data-reveal>Other work — {category}</p>
-                <h1 class="display fp-title" data-split>{title}<span class="stop" aria-hidden="true"></span></h1>
-                <p class="fp-sub mono muted" data-reveal>{tagline}</p>
-                <p class="lead fp-lead" data-split>{description}</p>
-            </div>
-            <div class="fp-head__video" data-reveal>
-                <LoopVideo src="/media/a-farm-in-the-pint/page.mp4" poster={pagePoster} label="The film on a concept of the Ben & Jerry's flavours page: the headline and copy on the left stay clear while the pint and the farm play out on the right" />
+            <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
+            <p class="fp-kicker mono muted" data-reveal>Other work — {category}</p>
+            <div class="fp-first">
+                <div class="fp-first__text">
+                    <div>
+                        <h1 class="display fp-title" data-split>{title}<span class="stop" aria-hidden="true"></span></h1>
+                        <p class="fp-sub mono muted" data-reveal>{tagline}</p>
+                    </div>
+                    <p class="lead fp-lead" data-split>{description}</p>
+                </div>
+                <div class="fp-first__video" data-reveal>
+                    <LoopVideo src="/media/a-farm-in-the-pint/page.mp4" poster={pagePoster} label="The film on a concept of the Ben & Jerry's flavours page: the headline and copy on the left stay clear while the pint and the farm play out on the right" />
+                </div>
             </div>
         </header>
 
@@ -216,7 +220,6 @@ const prose = (heading: string) => parts.get(heading);
         padding-bottom: var(--section);
     }
 
-    /* the text on the left, the film on the right, both on the first screen */
     .fp-head {
         padding-top: clamp(24px, 3vw, 48px);
         padding-bottom: clamp(20px, 2.5vw, 36px);
@@ -226,7 +229,12 @@ const prose = (heading: string) => parts.get(heading);
         margin: 24px 0 0;
     }
 
-    .fp-title {
+    .fp-first {
+        margin-top: 18px;
+    }
+
+    .fp-first .fp-title {
+        margin-top: 0;
         font-size: clamp(2.5rem, 1rem + 3.6vw, 5rem);
     }
 
@@ -238,23 +246,36 @@ const prose = (heading: string) => parts.get(heading);
         margin-top: clamp(20px, 2.5vw, 32px);
     }
 
-    .fp-head__video {
+    .fp-first__video {
         margin-top: 24px;
     }
 
+    /* the title's top meets the video's top, and the text ends level with its bottom
+       (the 36px is the buttons under the video; the text scales with the window so
+       that it stays about as tall as the video) */
     @media (min-width: 900px) {
-        .fp-head {
+        .fp-first {
+            --video-align: end;
             display: grid;
             grid-template-columns: repeat(12, minmax(0, 1fr));
             column-gap: var(--gutter);
-            align-items: start;
         }
 
-        .fp-head__text {
+        .fp-first__text {
             grid-column: 1 / span 5;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 20px;
+            padding-bottom: 36px;
         }
 
-        .fp-head__video {
+        .fp-lead {
+            margin-top: 0;
+            font-size: clamp(1.1rem, 2.05vw, 2.75rem);
+        }
+
+        .fp-first__video {
             grid-column: 6 / -1;
             margin-top: 0;
         }
@@ -344,16 +365,30 @@ const prose = (heading: string) => parts.get(heading);
         display: grid;
         gap: 10px;
         margin: 0;
-        text-align: center;
     }
 
+    /* the label level with the video's top, the text with its bottom
+       (the 62px is the buttons and the caption under the video) */
     @media (min-width: 900px) {
+        .fp-side {
+            --video-align: end;
+        }
+
         .fp-side__text {
             grid-column: 1 / span 5;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding-bottom: 62px;
+        }
+
+        .fp-side__text h2 {
+            margin: 0;
         }
 
         .fp-side__media {
             grid-column: 6 / -1;
+            justify-items: end;
         }
     }
 

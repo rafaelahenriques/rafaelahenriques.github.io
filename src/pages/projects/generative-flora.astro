@@ -94,16 +94,16 @@ const pipeline = [
     <article class="ge">
         <!-- INTRO -->
         <header class="page-head wrap ge-head">
-            <div class="ge-head__text">
-                <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
-                <p class="ge-kicker mono muted" data-reveal>{pad(order ?? 4)} — {category}</p>
-                <h1 class="display ge-title" data-split>{title}<span class="stop" aria-hidden="true"></span></h1>
-                <p class="lead ge-lead" data-split>{description}</p>
-            </div>
-
-            <!-- THE REEL: on the first screen, beside the title -->
-            <div class="ge-head__video" data-reveal>
-                <LoopVideo src="/media/generative-flora/reel.mp4" poster={reelPoster} label="A short reel: a hand on camera grows a peony and a cactus and moves the colour window over an orchid, the climate sliders change the plant, five real places show five plants, and the title closes on a sunflower" />
+            <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
+            <p class="ge-kicker mono muted" data-reveal>{pad(order ?? 4)} — {category}</p>
+            <div class="ge-first">
+                <div class="ge-first__text">
+                    <h1 class="display ge-title" data-split>{title}<span class="stop" aria-hidden="true"></span></h1>
+                    <p class="lead ge-lead" data-split>{description}</p>
+                </div>
+                <div class="ge-first__video" data-reveal>
+                    <LoopVideo src="/media/generative-flora/reel.mp4" poster={reelPoster} label="A short reel: a hand on camera grows a peony and a cactus and moves the colour window over an orchid, the climate sliders change the plant, five real places show five plants, and the title closes on a sunflower" />
+                </div>
             </div>
         </header>
 
@@ -272,7 +272,12 @@ const pipeline = [
         margin: 24px 0 0;
     }
 
-    .ge-title {
+    .ge-first {
+        margin-top: 18px;
+    }
+
+    .ge-first .ge-title {
+        margin-top: 0;
         font-size: clamp(3rem, 1rem + 5vw, 6.5rem);
     }
 
@@ -280,21 +285,38 @@ const pipeline = [
         margin-top: clamp(20px, 2.5vw, 32px);
     }
 
-    /* the text on the left, the reel on the right, both on the first screen */
+    .ge-first__video {
+        margin-top: 24px;
+    }
+
+    /* the title's top meets the video's top, and the text ends level with its bottom
+       (the 36px is the button under the video; the text scales with the window so
+       that it stays about as tall as the video) */
     @media (min-width: 900px) {
-        .ge-head {
+        .ge-first {
+            --video-align: end;
             display: grid;
             grid-template-columns: repeat(12, minmax(0, 1fr));
             column-gap: var(--gutter);
-            align-items: start;
         }
 
-        .ge-head__text {
+        .ge-first__text {
             grid-column: 1 / span 5;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 20px;
+            padding-bottom: 36px;
         }
 
-        .ge-head__video {
+        .ge-lead {
+            margin-top: 0;
+            font-size: clamp(1.1rem, 2.05vw, 2.75rem);
+        }
+
+        .ge-first__video {
             grid-column: 6 / -1;
+            margin-top: 0;
         }
     }
 
@@ -307,10 +329,6 @@ const pipeline = [
 
     .ge-facts dd {
         margin: 2px 0 0;
-    }
-
-    .ge-lead {
-        max-width: 34ch;
     }
 
     /* links: what each one is, spelled out */
@@ -386,6 +404,7 @@ const pipeline = [
     }
 
     .ge-figure {
+        --video-align: start;
         display: grid;
         gap: 12px;
         margin: 0;
