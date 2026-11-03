@@ -42,20 +42,6 @@ const covers = [
             })
             .join(""),
     },
-    {
-        slug: "ml5-pose-classifier",
-        kicker: "Experiment — Machine learning",
-        title: ["ML5.js", "Pose Classifier"],
-        stack: "ml5.js · JavaScript · Canvas",
-        // a stick figure in guard: the keypoints the model reads
-        art: (() => {
-            const pts = { head: [600, 330], neck: [600, 420], lsh: [520, 440], rsh: [680, 440], lel: [470, 540], rel: [730, 540], lwr: [540, 470], rwr: [660, 470], hip: [600, 640], lkn: [530, 790], rkn: [670, 790], lft: [500, 930], rft: [700, 930] };
-            const bones = [["neck", "lsh"], ["neck", "rsh"], ["lsh", "lel"], ["lel", "lwr"], ["rsh", "rel"], ["rel", "rwr"], ["neck", "hip"], ["hip", "lkn"], ["lkn", "lft"], ["hip", "rkn"], ["rkn", "rft"]];
-            const lines = bones.map(([a, b]) => `<line x1="${pts[a][0]}" y1="${pts[a][1]}" x2="${pts[b][0]}" y2="${pts[b][1]}" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>`).join("");
-            const dots = Object.entries(pts).map(([k, [x, y]]) => `<circle cx="${x}" cy="${y}" r="${k === "head" ? 34 : 10}" fill="${k === "head" ? "none" : PAPER}" stroke="${INK}" stroke-width="4"/>`).join("");
-            return lines + dots;
-        })(),
-    },
 ];
 
 for (const c of covers) {
