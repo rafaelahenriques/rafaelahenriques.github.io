@@ -10,6 +10,8 @@ export default defineConfig({
     markdown: { shikiConfig: { theme: 'css-variables' } },
     // dev server: 4321 unless a port is handed in (e.g. a second preview copy)
     server: { port: Number(process.env.PORT) || 4321 },
+    // the project's earlier address
+    redirects: { '/projects/generative-ecosystem': '/projects/generative-flora/' },
     // start loading a page as soon as a link to it is hovered or tapped
     prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
     // three.js for the home page Game Boy is one ~630 kB chunk (160 kB gzipped),
