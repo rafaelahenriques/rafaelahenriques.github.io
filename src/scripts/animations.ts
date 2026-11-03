@@ -5,6 +5,8 @@ import { SplitText } from "gsap/SplitText";
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
 const MOTION = "(prefers-reduced-motion: no-preference)";
+const DISPLAY_FONT = '800 1em "Inter Tight"';
+const FONT_WAIT = 300; // ms
 
 /** Fade in the header items on load. */
 function introHeader() {
@@ -183,9 +185,14 @@ function start() {
         imageReveals();
         decodeReveals();
         codeReveals();
-        // Split after webfonts load so line breaks are measured correctly;
+        // Give the display font a moment so titles usually rise in their own
+        // shape, but never hold them back for it: on a slow connection they show
+        // in the fallback font, and autoSplit re-measures the lines when it lands.
         // ctx.add keeps it inside this matchMedia context for cleanup.
-        document.fonts.ready.then(() => ctx.add(splitReveals));
+        const moment = new Promise((resolve) => setTimeout(resolve, FONT_WAIT));
+        Promise.race([document.fonts.load(DISPLAY_FONT), moment])
+            .catch(() => {})
+            .then(() => ctx.add(splitReveals));
     });
 
     // the page may have reflowed under the loader; re-measure every trigger
