@@ -4,7 +4,7 @@
  * chapters, each ## section of index.md beside what it explains. The videos
  * are recordings of the real app driven by its own controls (growth, climate,
  * the scan window); the plates are its eight species at full bloom. The
- * ranges, places and roadmap come from the project's README and tests.
+ * ranges and places come from the project's README and tests.
  */
 import Base from "../../layouts/BaseLayout.astro";
 import { getEntry } from "astro:content";
@@ -54,7 +54,7 @@ const parts = new Map(
     }),
 );
 const t = (heading: string) => parts.get(heading);
-const placed = ["Climate decides the plant", "Eight real species", "Pinch to grow", "Scan window", "Architecture", "Loading", "Roadmap", "Credits"];
+const placed = ["Climate decides the plant", "Eight real species", "Pinch to grow", "Scan window", "Architecture", "Loading", "Credits"];
 // a new ## section added to index.md later still shows up, after the others
 const extra = [...parts.keys()].filter((heading) => !placed.includes(heading));
 
@@ -88,16 +88,6 @@ const pipeline = [
     { step: "Plant, shaders", detail: "Read the store and draw" },
 ];
 
-const roadmap = [
-    { phase: "Three.js environment with one static 3D plant", status: "Done" },
-    { phase: "Procedural plant generation", status: "Started" },
-    { phase: "Animated plant growth", status: "Done" },
-    { phase: "ml5.js hand tracking", status: "Done" },
-    { phase: "Gesture recognition and interaction", status: "Started" },
-    { phase: "Environmental simulation", status: "Started" },
-    { phase: "Multiple plants and ecosystem behaviour", status: "Planned" },
-    { phase: "Custom shaders, lighting and visual polish", status: "Started" },
-];
 ---
 
 <Base title={title} description={description} {...projectSeo(project)}>
@@ -117,11 +107,6 @@ const roadmap = [
         </section>
 
         <div class="wrap ge-about">
-            <p class="ge-wip" data-reveal>
-                <span class="wip">In progress</span>
-                <span class="muted">Still being built. This page will be updated as the project develops.</span>
-            </p>
-
             <div class="row ge-intro">
                 <dl class="row__label ge-facts mono" data-reveal>
                     <div><dt class="muted">Year</dt><dd>{year}</dd></div>
@@ -256,22 +241,8 @@ const roadmap = [
             </div>
         </Chapter>
 
-        <Chapter id="ge-roadmap" num={7} title="Roadmap" html={t("Roadmap")} side="left" fold={false}>
-            <ol class="ge-roadmap" slot="media">
-                {
-                    roadmap.map((r, i) => (
-                        <li>
-                            <span class="mono muted">{i + 1}</span>
-                            <span>{r.phase}</span>
-                            <span class:list={["mono", { muted: r.status !== "Done" }]}>{r.status}</span>
-                        </li>
-                    ))
-                }
-            </ol>
-        </Chapter>
-
-        <Chapter id="ge-credits" num={8} title="Credits" html={t("Credits")} fold={false} />
-        {extra.map((heading, i) => <Chapter id={`ge-extra-${i}`} num={9 + i} title={heading} html={t(heading)} />)}
+        <Chapter id="ge-credits" num={7} title="Credits" html={t("Credits")} fold={false} />
+        {extra.map((heading, i) => <Chapter id={`ge-extra-${i}`} num={8 + i} title={heading} html={t(heading)} />)}
 
         <!-- OPEN IT -->
         {
@@ -305,19 +276,6 @@ const roadmap = [
 
     .ge-title {
         font-size: clamp(3rem, 1rem + 8vw, 9.5rem);
-    }
-
-    .ge-wip {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 8px 14px;
-        margin: clamp(20px, 3vw, 32px) 0 0;
-        font-size: var(--fs-small);
-    }
-
-    .ge-intro {
-        margin-top: clamp(32px, 5vw, 64px);
     }
 
     .ge-facts {
@@ -511,10 +469,9 @@ const roadmap = [
         }
     }
 
-    /* --- from the webcam to the screen; the roadmap --- */
+    /* --- from the webcam to the screen --- */
 
-    .ge-pipeline,
-    .ge-roadmap {
+    .ge-pipeline {
         display: grid;
         margin: 0;
         padding: 0;
@@ -522,17 +479,13 @@ const roadmap = [
         border-top: 1px solid var(--text);
     }
 
-    .ge-pipeline li,
-    .ge-roadmap li {
+    .ge-pipeline li {
         display: grid;
+        grid-template-columns: 2.5rem minmax(0, 11rem) minmax(0, 1fr);
         align-items: baseline;
         gap: 4px 12px;
         padding-block: 12px;
         border-bottom: 1px solid var(--line);
-    }
-
-    .ge-pipeline li {
-        grid-template-columns: 2.5rem minmax(0, 11rem) minmax(0, 1fr);
     }
 
     .ge-pipeline strong {
@@ -541,10 +494,6 @@ const roadmap = [
 
     .ge-pipeline span:last-child {
         font-size: var(--fs-small);
-    }
-
-    .ge-roadmap li {
-        grid-template-columns: 1.5rem minmax(0, 1fr) auto;
     }
 
     @media (max-width: 599px) {

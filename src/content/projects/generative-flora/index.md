@@ -2,7 +2,6 @@
 title: "Generative Flora"
 section: featured
 order: 4
-status: in-progress
 category: "Real-time 3D"
 types: ["web", "interactive"]
 year: "2026"
@@ -37,7 +36,7 @@ Every plant is built in code to its published description, in real centimetres, 
 
 Unit tests check these counts and sizes. They also check that each species has one real place, from Tucson to Svalbard, and that the place gets the species it is known for.
 
-Plants of the same species all look the same for now. Variation between individuals comes with the procedural generator, a later phase.
+Plants of the same species all look the same.
 
 ## Pinch to grow
 
@@ -61,15 +60,13 @@ Gestures never touch rendering directly. Tracking only reports what the hands ar
 
 The camera is only used on your device. Video frames go to the hand model in your browser and are never sent anywhere. The hand tracking library and model download only when you first press Start hand tracking, about 9 MB, and the model comes from Google’s TensorFlow Hub, so Google sees that request as it would any download.
 
+Each push to main is checked and deployed through GitHub Actions and GitHub Pages.
+
 ## Loading
 
 The loading screen reports real work as it happens: your graphics hardware, the triangles built for each species, the shaders compiled and whether a camera is present. The numbers on it are measured, and each line stays up long enough to read. The camera stays off throughout.
 
 A stippled flower sharpens from coarse blocks to fine dots as loading progresses, then a scan line sweeps down to uncover the live page and the plant grows in from a seedling. With reduced motion turned on, the sweep and the growing in are skipped.
-
-## Roadmap
-
-This is an early version, built in phases. The climate already decides which species grows, you pinch to move it through its stages, and you move your palm to scan it in colour. Each push to main is checked and deployed through GitHub Actions and GitHub Pages.
 
 ## Credits
 
