@@ -1,7 +1,7 @@
 ---
 title: "Belfry Projection Mapping"
 section: other
-order: 2
+order: 3
 category: "Projection mapping"
 types: ["motion"]
 year: "2026"
