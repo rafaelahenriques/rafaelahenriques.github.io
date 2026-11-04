@@ -53,7 +53,7 @@ const parts = new Map(
     }),
 );
 // the text-only sections that open the case study, in order
-const thinking = ["The concept", "Why now", "Why 3D, not stop motion", "The brief"];
+const thinking = ["The concept", "Why now", "The brief"];
 const placed = [...thinking, "Starting point", "Appetite", "Editing the farm", "The cows", "On the page", "Note"];
 // a new ## section added to index.md later still shows up, before the note
 const extra = [...parts.keys()].filter((heading) => !placed.includes(heading));

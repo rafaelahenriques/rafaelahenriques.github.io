@@ -34,12 +34,6 @@ This concept makes no attempt at realism. It is deliberately fantastical, using 
 
 Most of these spectacles live in social feeds. I wanted to explore how the format could work somewhere more purposeful: a product page, where attention can lead directly to a purchase.
 
-## Why 3D, not stop motion
-
-Ben & Jerry’s already uses stop motion and paper craft. Their handmade character is part of the brand’s appeal, so 3D needed to bring something more than a different production technique.
-
-The challenge was avoiding a finish that felt too polished for the brand. I kept the miniature, handmade character through simplified low-poly cows, a diorama-like composition and ice cream with an irregular, scraped surface.
-
 ## The brief
 
 Designed for the flavours page, the film had three constraints:
