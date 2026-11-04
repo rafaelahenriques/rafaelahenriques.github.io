@@ -9,6 +9,7 @@ tech: ["Maya", "Blender", "Python"]
 role: "Concept, art direction, farm modelling and layout"
 context: "Personal project, not commissioned by Ben & Jerry’s"
 description: "This is a 28.5-second looping 3D animation designed for the Ben & Jerry’s website. The pint sits on the right, leaving the left side open for a headline and copy. Cream pours into an empty pint and swells into ice cream, a small farm grows on top, and then it’s all scooped, melted down and sealed back up."
+seoDescription: "A looping 3D animation for a Ben & Jerry’s concept: cream pours into a pint, a small farm grows on top, then it’s scooped and sealed. A personal project."
 media:
   screenshot: "./media/cover.jpg"
   thumbnail: "./media/thumb.jpg"

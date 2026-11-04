@@ -68,11 +68,13 @@ export function breadcrumbSchema(items: { name: string; path: string }[]): Schem
     };
 }
 
-/** Share image and structured data for a project page. */
-export function projectSeo(project: ProjectEntry): { image?: ImageMetadata; type: "article"; schema: Schema[] } {
-    const { title, description, year, tech, media } = project.data;
+/** Search text, share image and structured data for a project page. */
+export function projectSeo(project: ProjectEntry): { description?: string; image?: ImageMetadata; type: "article"; schema: Schema[] } {
+    const { title, description, seoDescription, year, tech, media } = project.data;
     const path = `/projects/${slugOf(project)}/`;
+    const searchText = seoDescription ?? description;
     return {
+        description: searchText,
         image: media?.screenshot,
         type: "article",
         schema: [
@@ -80,7 +82,7 @@ export function projectSeo(project: ProjectEntry): { image?: ImageMetadata; type
                 "@context": "https://schema.org",
                 "@type": "CreativeWork",
                 name: title,
-                description,
+                description: searchText,
                 url: absolute(path),
                 dateCreated: year,
                 keywords: tech?.join(", "),

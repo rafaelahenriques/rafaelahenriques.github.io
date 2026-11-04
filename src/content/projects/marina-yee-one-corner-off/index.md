@@ -9,6 +9,7 @@ tech: ["Vite", "JavaScript", "GSAP", "CSS"]
 role: "Research, visual design, interaction design and front-end development"
 context: "Devine (Howest) — Integration 3, for MoMu Antwerp"
 description: "An interactive longread about fashion designer Marina Yee, developed for MoMu, the Fashion Museum Antwerp."
+seoDescription: "An interactive longread about fashion designer Marina Yee, made for MoMu, the Fashion Museum Antwerp: research, visual design and front-end development."
 media:
   live: "https://momu-marina-yee.netlify.app"
   screenshot: "./media/card.jpg"

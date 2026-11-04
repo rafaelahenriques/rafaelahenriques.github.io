@@ -9,6 +9,7 @@ tech: ["Expo", "React Native", "TypeScript", "Supabase", "PostgreSQL", "TanStack
 role: "Design & development"
 context: "Devine (Howest) — Creative Development, React challenge"
 description: "A cross-platform application for discovering Mongmo's pop-up events, completing location-based challenges, earning rewards and ordering ahead. Built with React Native and a Supabase backend."
+seoDescription: "A React Native app for Mongmo’s pop-up events: discover them, complete location-based challenges, earn rewards and order ahead, with a Supabase backend."
 scope:
   - Cross-platform mobile and web application
   - Geofenced event discovery and QR/GPS check-in

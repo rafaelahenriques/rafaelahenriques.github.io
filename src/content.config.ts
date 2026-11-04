@@ -21,6 +21,8 @@ const projects = defineCollection({
       scope: z.array(z.string()).optional(),
       outcome: z.string().optional(),
       description: z.string().optional(),
+      // the search result text; the build fails if it's too long to show in full
+      seoDescription: z.string().max(160).optional(),
       media: z
         .object({
           repo: z.string().url().optional(),

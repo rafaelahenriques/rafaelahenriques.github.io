@@ -9,6 +9,7 @@ tech: ["Blender 5", "Three.js r186", "WebGPU", "WGSL", "Rapier", "Vite", "TypeSc
 role: "Solo development, 3D modelling, shader porting, front-end development"
 context: "Devine (Howest) — Creative Development"
 description: "An interactive isometric study room that responds to local time and weather. Rain runs across the window, following your hand as you drag across the glass. The room combines a custom 3D environment, real-time shaders, physics, and interactive objects."
+seoDescription: "An interactive isometric study room that responds to local time and weather, with rain you can drag across the window. Built with Three.js, WebGPU and WGSL."
 media:
   live: "https://studywebgl.netlify.app"
   repo: "https://github.com/rafaelahenriques/study-room"

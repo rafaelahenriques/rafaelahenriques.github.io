@@ -46,7 +46,8 @@ const shareImage = image
     ? new URL((await getImage({ src: image, width: 1200, height: 630, fit: "cover", format: "jpg", quality: 80 })).src, Astro.site).href
     : new URL("/og.png", Astro.site).href;
 const personImage = new URL((await getImage({ src: portrait, width: 800, format: "jpg", quality: 80 })).src, Astro.site).href;
-const jsonLd = [personSchema(personImage), ...schema];
+// a project's record carries the same picture as its share preview
+const jsonLd = [personSchema(personImage), ...schema.map((s) => (s["@type"] === "CreativeWork" ? { ...s, image: shareImage } : s))];
 ---
 
 <html lang="en">
