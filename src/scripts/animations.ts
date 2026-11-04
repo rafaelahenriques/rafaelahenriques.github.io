@@ -177,10 +177,33 @@ export function initAnimations() {
     }
 }
 
+/**
+ * On a slow connection global.css shows the text before this script arrives.
+ * Whatever is already on screen stays as it is, rather than vanishing to animate
+ * in; everything further down still animates as it's scrolled to.
+ */
+function keepShownText() {
+    const onScreen = (el: Element) => el.getBoundingClientRect().top < window.innerHeight;
+    document.querySelectorAll<HTMLElement>("[data-reveal], [data-split]").forEach((el) => {
+        if (getComputedStyle(el).visibility !== "visible" || !onScreen(el)) return;
+        el.style.visibility = "visible";
+        el.removeAttribute("data-reveal");
+        el.removeAttribute("data-split");
+    });
+    document.querySelectorAll<HTMLElement>("[data-rise]").forEach((el) => {
+        const line = el.querySelector("[data-rise-line]");
+        if (!line || getComputedStyle(line).transform !== "none" || !onScreen(el)) return;
+        el.classList.add("is-risen");
+        el.removeAttribute("data-rise");
+    });
+    document.documentElement.classList.add("motion-ready");
+}
+
 function start() {
     const mm = gsap.matchMedia();
 
     mm.add(MOTION, (ctx) => {
+        keepShownText();
         introHeader();
         riseReveals();
         fadeReveals();
