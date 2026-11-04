@@ -14,6 +14,7 @@ import { projectSeo } from "../../lib/seo";
 import { fullSize as full } from "../../lib/images";
 import Lightbox from "../../components/Lightbox.astro";
 import NextProject from "../../components/NextProject.astro";
+import VimeoEmbed from "../../components/VimeoEmbed.astro";
 
 import hero from "../../content/projects/miles-and-meals/main.jpg";
 import bbVision from "../../content/projects/miles-and-meals/brandboard-1.png";
@@ -279,7 +280,7 @@ const values = [
                             <li class="mm-panel">
                                 <figure>
                                     <button type="button" class="zoom-btn" data-zoom={panel.full} data-caption={`${panel.title} — ${panel.text}`} aria-label={`View larger: ${panel.title}`}>
-                                        <Image quality={90} src={panel.img} alt={panel.title} widths={[1000, 1600, 2400]} sizes="(min-width: 900px) 80vw, 88vw" />
+                                        <Image quality={90} src={panel.img} alt={`Brand board page: ${panel.title}`} widths={[1000, 1600, 2400]} sizes="(min-width: 900px) 80vw, 88vw" />
                                     </button>
                                     <figcaption>
                                         <span class="mono">{pad(i + 1)} / {pad(identity.length)}</span>
@@ -355,12 +356,7 @@ const values = [
                         </div>
                     </div>
                     <div class="mm-video" data-reveal>
-                        <iframe
-                            src="https://player.vimeo.com/video/1232722059?badge=0&autopause=0&dnt=1"
-                            title="Miles & Meals — app walkthrough"
-                            loading="lazy"
-                            allow="autoplay; fullscreen; picture-in-picture"
-                            referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                        <VimeoEmbed id="1232722059" title="Miles & Meals — app walkthrough" poster={hero} />
                     </div>
                 </div>
             </div>
@@ -660,6 +656,11 @@ const values = [
         justify-items: start;
     }
 
+    /* each link at least 24px tall, easy to hit */
+    .mm-links a {
+        padding-block: 3px;
+    }
+
     /* --- HERO --- */
 
     .mm-hero {
@@ -740,8 +741,14 @@ const values = [
     }
 
     .mm-band--red {
+        /* a darker ink, so small text stays readable on the red */
+        --mm-ink: #120e0c;
         background: var(--mm-red);
         color: var(--mm-ink);
+    }
+
+    .mm-band--red .mm-band__label {
+        opacity: 1;
     }
 
     .mm-band--ink {
@@ -1042,10 +1049,6 @@ const values = [
         border-top-color: color-mix(in oklab, var(--mm-ink) 30%, transparent);
     }
 
-    .mm-app__head .row__label {
-        opacity: 0.75;
-    }
-
     .mm-phones {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1082,7 +1085,6 @@ const values = [
 
     .mm-walkthrough__label {
         margin: 0;
-        opacity: 0.75;
     }
 
     .mm-walkthrough__text {
@@ -1108,14 +1110,6 @@ const values = [
         aspect-ratio: 1 / 0.6495;
         justify-self: end;
         background: var(--mm-ink);
-    }
-
-    .mm-video iframe {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        border: 0;
     }
 
     @media (min-width: 900px) {

@@ -375,6 +375,8 @@ const platforms = [
 <style>
     .mg {
         --mg-red: #e2401f;
+        /* small red text: darker on paper so it stays readable */
+        --mg-red-text: #b83214;
         --mg-blue: #b9dcfb;
         /* code keywords: Mongmo blue on the dark panel, red on the light one */
         --code-accent: var(--mg-blue);
@@ -383,7 +385,8 @@ const platforms = [
     }
 
     :global(html.dark) .mg {
-        --code-accent: #c9381a;
+        --mg-red-text: #e2401f;
+        --code-accent: #b83214;
     }
 
     /* --- INTRO --- */
@@ -418,6 +421,8 @@ const platforms = [
     /* --- STAGE: white, like the recordings' own background --- */
 
     .mg-stage {
+        /* white in both themes, so its small text stays dark */
+        --muted: #64625d;
         display: flex;
         justify-content: center;
         align-items: flex-start;
@@ -568,7 +573,7 @@ const platforms = [
     }
 
     .mg-table__row--locked > :last-child {
-        color: var(--mg-red);
+        color: var(--mg-red-text);
     }
 
     .mg-table--platforms .mg-table__row {
@@ -615,7 +620,7 @@ const platforms = [
     }
 
     .mg-minus {
-        color: var(--mg-red);
+        color: var(--mg-red-text);
     }
 
     .mg-ledger__total {

@@ -108,7 +108,7 @@ const isCurrent = (href: string) => path.startsWith(href);
     .site-header__link:hover,
     .site-header__link:focus-visible {
         background: var(--blue);
-        color: #e9e7e2;
+        color: var(--on-blue);
         outline: none;
     }
 
@@ -124,7 +124,7 @@ const isCurrent = (href: string) => path.startsWith(href);
     }
 
     .site-header__link[aria-current="page"]:hover .site-header__num {
-        background-image: linear-gradient(#e9e7e2, #e9e7e2);
+        background-image: linear-gradient(var(--on-blue), var(--on-blue));
     }
 
     .site-header__clock {
