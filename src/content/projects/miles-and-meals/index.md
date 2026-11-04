@@ -8,6 +8,7 @@ year: "2026"
 tech: ["Brand identity", "Art direction", "App design"]
 role: "Brand identity & app design"
 description: "Brand identity and app for a street-food box: signature dishes from local cooks around the world, recreated at home. Designed to feel like an independent food and travel magazine — not another meal kit."
+seoDescription: "Brand identity and app design for a street-food box: signature dishes from local cooks around the world, recreated at home. Not another meal kit."
 media:
   screenshot: "./main.jpg"
 tags: ["UX", "Branding", "Design"]

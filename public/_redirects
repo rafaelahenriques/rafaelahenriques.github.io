@@ -1,0 +1,3 @@
+# Cloudflare: permanent redirects. A project's earlier address goes to its new one.
+/projects/generative-ecosystem /projects/generative-flora/ 301
+/projects/generative-ecosystem/ /projects/generative-flora/ 301

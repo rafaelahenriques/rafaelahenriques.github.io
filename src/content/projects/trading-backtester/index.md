@@ -8,6 +8,7 @@ types: ["data"]
 year: "2026"
 tech: ["Python", "PostgreSQL", "APIs", "Docker", "Testing"]
 description: "An engine that replays historical market data through a trading strategy, simulates the orders it would place and measures how that strategy would have performed."
+seoDescription: "An engine that replays historical market data through a trading strategy, simulates its orders and measures how it would have performed. Python, PostgreSQL."
 architecture:
   - label: "Historical data"
     detail: "Price history from market-data APIs"

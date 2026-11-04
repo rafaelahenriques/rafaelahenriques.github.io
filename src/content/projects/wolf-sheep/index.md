@@ -9,6 +9,7 @@ tech: ["Python", "FastAPI", "PostgreSQL", "SQLAlchemy", "Alembic", "React", "Typ
 role: "Full-stack developer"
 context: "Independent rebuild of a university group project"
 description: "From university project to full-stack app: a Pygame group project rebuilt on my own around a pure Python game engine shared by the desktop game, a FastAPI backend and the tests — with a minimax AI, a React web client and game history in PostgreSQL."
+seoDescription: "A university Pygame project rebuilt as a full-stack game: a pure Python engine, minimax AI, FastAPI backend, React web client and PostgreSQL game history."
 scope:
   - Pure Python game engine, shared by every client
   - Server-authoritative game state
