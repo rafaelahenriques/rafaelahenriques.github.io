@@ -2,9 +2,10 @@
 /**
  * Ben & Jerry's: A Farm in the Pint (customPage in the content entry). The
  * film on the web page it was designed for opens the page, beside the title.
- * Then the story in seven frames, and the ## sections of index.md, each with
- * what it describes: the diorama it began as, the ice cream, the three versions
- * of the farm, the cows, and the film on its own.
+ * Then the ## sections of index.md: the thinking behind it, the storyboard in
+ * seven frames, then the process, each section with what it describes: the
+ * diorama it began as, the ice cream, the three versions of the farm, the cows,
+ * and the film on its own.
  */
 import Base from "../../layouts/BaseLayout.astro";
 import { getEntry } from "astro:content";
@@ -40,7 +41,7 @@ const facts = [
     { label: "Year", value: year },
     { label: "Role", value: role },
     { label: "Tools", value: "Maya and Blender (EEVEE). The scene and animation were built with Python scripts written with Claude Code." },
-    { label: "Specs", value: "1920×1080, 24 fps, 685 frames, seamless loop" },
+    { label: "Specs", value: "28.5 seconds (685 frames), 1920×1080, 24 fps, seamless loop" },
     { label: "Context", value: context },
 ];
 
@@ -51,19 +52,21 @@ const parts = new Map(
         return heading ? [[heading[1].trim(), chunk.slice(heading[0].length)] as [string, string]] : [];
     }),
 );
-const placed = ["The idea", "How it was made", "Making it read as ice cream", "Simplifying the farm", "Believable animals", "Designed for the page", "Note"];
+// the text-only sections that open the case study, in order
+const thinking = ["The concept", "Why now", "Why 3D, not stop motion", "The brief"];
+const placed = [...thinking, "Starting point", "Appetite", "Editing the farm", "The cows", "On the page", "Note"];
 // a new ## section added to index.md later still shows up, before the note
 const extra = [...parts.keys()].filter((heading) => !placed.includes(heading));
 
-// the story, a frame at a time, from the film
+// the storyboard, a frame at a time, from the film
 const story = [
-    { img: story1, text: "A closed pint rises into frame and its lid twists off.", alt: "The pint in its blue and white cloud packaging, its lid lifting off" },
-    { img: story2, text: "A giant milk can pours in cream, then chocolate and cookie dough drop in.", alt: "A large white milk can tilted over the open pint, pouring in a stream of cream" },
-    { img: story3, text: "The cream freezes and swells into a mound of ice cream.", alt: "A mound of pale ice cream rising above the rim of the pint, a dark line of chocolate running down it" },
-    { img: story4, text: "A farm pops up piece by piece: a barn, trees, a tractor, hay, sunflowers and a fenced pen with cows.", alt: "A small barn, two trees and a red tractor on top of the ice cream, a fence starting to appear" },
-    { img: story5, text: "The camera moves in as the tractor drives and the cows graze.", alt: "A closer view of the finished farm: the barn, trees, tractor, sunflowers and cows in a fenced pen" },
-    { img: story6, text: "The camera pulls back as a large scoop carves out a round ball.", alt: "A large metal scoop holding a round ball of ice cream beside the farm, a channel carved out of the mound" },
-    { img: story7, text: "The farm folds away, the ice cream melts flat, the lid closes and the pint sinks out of frame, ready to loop.", alt: "The pint full of flat, melted cream, its lid coming back down from above" },
+    { img: story1, alt: "The pint in its blue and white cloud packaging, its lid lifting off" },
+    { img: story2, alt: "A large white milk can tilted over the open pint, pouring in a stream of cream" },
+    { img: story3, alt: "A mound of pale ice cream rising above the rim of the pint, a dark line of chocolate running down it" },
+    { img: story4, alt: "A small barn, two trees and a red tractor on top of the ice cream, a fence starting to appear" },
+    { img: story5, alt: "A closer view of the finished farm: the barn, trees, tractor, sunflowers and cows in a fenced pen" },
+    { img: story6, alt: "A large metal scoop holding a round ball of ice cream beside the farm, a channel carved out of the mound" },
+    { img: story7, alt: "The pint full of flat, melted cream, its lid coming back down from above" },
 ];
 
 const prose = (heading: string) => parts.get(heading);
@@ -103,40 +106,40 @@ const prose = (heading: string) => parts.get(heading);
             </dl>
         </div>
 
-        <!-- THE IDEA -->
-        <section class="section wrap">
-            <div class="row">
-                <h2 class="row__label mono muted">The idea</h2>
-                <div class="row__body prose" data-reveal set:html={prose("The idea")} />
-            </div>
-        </section>
+        <!-- THE THINKING BEHIND IT -->
+        {
+            thinking.map((heading) => (
+                <section class="section wrap">
+                    <div class="row">
+                        <h2 class="row__label mono muted">{heading}</h2>
+                        <div class="row__body prose" data-reveal set:html={prose(heading)} />
+                    </div>
+                </section>
+            ))
+        }
 
-        <!-- THE STORY -->
+        <!-- THE STORYBOARD -->
         <section class="section wrap">
             <div class="row">
-                <h2 class="row__label mono muted">The story</h2>
+                <h2 class="row__label mono muted">Storyboard</h2>
             </div>
             <ol class="fp-story">
                 {
-                    story.map((s, i) => (
+                    story.map((s) => (
                         <li>
                             <Shot img={s.img} alt={s.alt} sizes="(min-width: 900px) 24vw, (min-width: 600px) 48vw, 100vw" />
-                            <p>
-                                <span class="mono muted">{i + 1}</span>
-                                <span>{s.text}</span>
-                            </p>
                         </li>
                     ))
                 }
             </ol>
         </section>
 
-        <!-- HOW IT WAS MADE: the diorama it began as -->
+        <!-- STARTING POINT: the diorama it began as -->
         <section class="section wrap">
             <div class="row fp-side">
-                <div class="fp-side__text">
-                    <h2 class="mono muted">How it was made</h2>
-                    <div class="prose" data-reveal set:html={prose("How it was made")} />
+                <div class="fp-side__text" style="--below: 80px">
+                    <h2 class="mono muted">Starting point</h2>
+                    <div class="prose" data-reveal set:html={prose("Starting point")} />
                 </div>
                 <figure class="fp-side__media" data-reveal>
                     <LoopVideo src="/media/a-farm-in-the-pint/diorama.mp4" poster={dioramaPoster} sound label="The original farm diorama, seen whole and then up close: a windmill, a table on the porch, a tree stump, chickens and vegetables" />
@@ -149,11 +152,11 @@ const prose = (heading: string) => parts.get(heading);
             </div>
         </section>
 
-        <!-- MAKING IT READ AS ICE CREAM -->
+        <!-- APPETITE -->
         <section class="section wrap">
             <div class="row">
-                <h2 class="row__label mono muted">Making it read as ice cream</h2>
-                <div class="row__body prose" data-reveal set:html={prose("Making it read as ice cream")} />
+                <h2 class="row__label mono muted">Appetite</h2>
+                <div class="row__body prose" data-reveal set:html={prose("Appetite")} />
             </div>
             <div class="fp-three">
                 <Shot img={icecream1} alt="The pint filled with glossy liquid cream, flecked with chocolate at the edge" caption="Glossy liquid" sizes="(min-width: 700px) 32vw, 100vw" />
@@ -162,11 +165,11 @@ const prose = (heading: string) => parts.get(heading);
             </div>
         </section>
 
-        <!-- SIMPLIFYING THE FARM -->
+        <!-- EDITING THE FARM -->
         <section class="section wrap">
             <div class="row">
-                <h2 class="row__label mono muted">Simplifying the farm</h2>
-                <div class="row__body prose" data-reveal set:html={prose("Simplifying the farm")} />
+                <h2 class="row__label mono muted">Editing the farm</h2>
+                <div class="row__body prose" data-reveal set:html={prose("Editing the farm")} />
             </div>
             <div class="fp-three">
                 <Shot img={version1} alt="An early version on the web page: a barn, a tall windmill, cows, a pig, chickens and a tractor scattered over the ice cream" caption="Version 1" sizes="(min-width: 700px) 32vw, 100vw" />
@@ -175,11 +178,11 @@ const prose = (heading: string) => parts.get(heading);
             </div>
         </section>
 
-        <!-- BELIEVABLE ANIMALS -->
+        <!-- THE COWS -->
         <section class="section wrap">
             <div class="row">
-                <h2 class="row__label mono muted">Believable animals</h2>
-                <div class="row__body prose" data-reveal set:html={prose("Believable animals")} />
+                <h2 class="row__label mono muted">The cows</h2>
+                <div class="row__body prose" data-reveal set:html={prose("The cows")} />
             </div>
             <div class="fp-two">
                 <Shot img={cows1} alt="Two low-poly cows in a wooden pen on the ice cream, both with their heads lowered to graze just above the surface" caption="Heads down" sizes="(min-width: 700px) 48vw, 100vw" />
@@ -187,12 +190,12 @@ const prose = (heading: string) => parts.get(heading);
             </div>
         </section>
 
-        <!-- DESIGNED FOR THE PAGE: the film on its own -->
+        <!-- ON THE PAGE: the film on its own -->
         <section class="section wrap">
             <div class="row fp-side">
                 <div class="fp-side__text">
-                    <h2 class="mono muted">Designed for the page</h2>
-                    <div class="prose" data-reveal set:html={prose("Designed for the page")} />
+                    <h2 class="mono muted">On the page</h2>
+                    <div class="prose" data-reveal set:html={prose("On the page")} />
                 </div>
                 <figure class="fp-side__media" data-reveal>
                     <LoopVideo src="/media/a-farm-in-the-pint/film.mp4" poster={filmPoster} label="The film on its own: a closed pint rises and opens, cream pours in and swells into ice cream, a small farm grows on top, then a scoop carves out a ball, the ice cream melts flat, and the pint closes and sinks out of frame" />
@@ -201,7 +204,7 @@ const prose = (heading: string) => parts.get(heading);
             </div>
         </section>
 
-        <!-- ANY SECTION ADDED LATER, THEN THE NOTE -->
+        <!-- WHERE IT COULD GO, ANY SECTION ADDED LATER, THEN THE NOTE -->
         {
             [...extra, "Note"].map((heading) => (
                 <section class="section wrap">
@@ -314,7 +317,7 @@ const prose = (heading: string) => parts.get(heading);
         }
     }
 
-    /* --- the story, a frame at a time --- */
+    /* --- the storyboard, a frame at a time --- */
 
     .fp-story {
         display: grid;
@@ -323,14 +326,6 @@ const prose = (heading: string) => parts.get(heading);
         margin: clamp(20px, 3vw, 32px) 0 0;
         padding: 0;
         list-style: none;
-    }
-
-    .fp-story p {
-        display: grid;
-        grid-template-columns: 1.5rem minmax(0, 1fr);
-        align-items: baseline;
-        margin: 12px 0 0;
-        font-size: var(--fs-small);
     }
 
     @media (min-width: 600px) {
@@ -354,15 +349,18 @@ const prose = (heading: string) => parts.get(heading);
 
     .fp-side__text h2 {
         margin: 0 0 clamp(16px, 2vw, 24px);
-        font-size: inherit;
         font-weight: 400;
     }
 
     .fp-side__text .prose :global(p) {
         margin: 0;
-        font-size: clamp(1.25rem, 1rem + 0.9vw, 1.75rem);
-        line-height: 1.25;
-        letter-spacing: -0.02em;
+        font-size: clamp(1.05rem, 0.9rem + 0.45vw, 1.35rem);
+        line-height: 1.3;
+        letter-spacing: -0.015em;
+    }
+
+    .fp-side__text .prose :global(p + p) {
+        margin-top: 0.8em;
     }
 
     .fp-side__media {
@@ -372,7 +370,7 @@ const prose = (heading: string) => parts.get(heading);
     }
 
     /* the label level with the video's top, the text with its bottom
-       (the 62px is the buttons and the caption under the video) */
+       (--below is the buttons and the caption under the video) */
     @media (min-width: 900px) {
         .fp-side {
             --video-align: end;
@@ -383,7 +381,7 @@ const prose = (heading: string) => parts.get(heading);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding-bottom: 62px;
+            padding-bottom: var(--below, 62px);
         }
 
         .fp-side__text h2 {
