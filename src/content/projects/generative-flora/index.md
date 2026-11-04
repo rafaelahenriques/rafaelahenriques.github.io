@@ -70,4 +70,4 @@ A stippled flower sharpens from coarse blocks to fine dots as loading progresses
 
 ## Credits
 
-The music is “Vestige” by Lennon Hutton, licensed from Epidemic Sound. It stays off until you press the button, and nothing downloads until then. The code is MIT licensed.
+Music: Lennon Hutton / Vestige / courtesy of [Epidemic Sound](https://www.epidemicsound.com). It stays off until you press the button, and nothing downloads until then. The code is MIT licensed.
