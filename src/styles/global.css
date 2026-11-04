@@ -11,7 +11,7 @@
 
     --bg: #e9e7e2;
     --text: #0e0e0e;
-    --muted: #7a7873;
+    --muted: #64625d;
     --line: rgba(14, 14, 14, 0.16);
     /* the graph paper behind everything */
     --grid: rgba(14, 14, 14, 0.055);
@@ -23,8 +23,9 @@
     --grid-inverse: rgba(233, 231, 226, 0.05);
     /* always dark, whatever the theme: the arcade */
     --night-bg: #0e0e0e;
-    /* the one colour */
+    /* the one colour, and the text that sits on it */
     --blue: #2f3dff;
+    --on-blue: #e9e7e2;
     /* screens (the arcade, the Game Boy, GitHub): ink glass, paper pixels */
     --screen-bg: #0e0e0e;
     --screen-text: #e9e7e2;
@@ -65,10 +66,11 @@ html.dark {
     --grid: rgba(233, 231, 226, 0.05);
     --bg-inverse: #e9e7e2;
     --text-inverse: #0e0e0e;
-    --muted-inverse: #7a7873;
+    --muted-inverse: #64625d;
     --line-inverse: rgba(14, 14, 14, 0.16);
     --grid-inverse: rgba(14, 14, 14, 0.055);
     --blue: #5b69ff;
+    --on-blue: #0e0e0e;
     /* the arcade's block stays dark: darker than the page */
     --night-bg: #000;
 }
@@ -154,7 +156,7 @@ a {
 
 ::selection {
     background: var(--blue);
-    color: #e9e7e2;
+    color: var(--on-blue);
 }
 
 :focus-visible {
@@ -180,7 +182,7 @@ a {
     z-index: 2000;
     padding: 10px 14px;
     background: var(--blue);
-    color: #e9e7e2;
+    color: var(--on-blue);
     transform: translateY(-150%);
     transition: transform 0.3s var(--ease);
 }
@@ -303,7 +305,7 @@ a {
 .link[aria-current="page"],
 .link[aria-pressed="true"] {
     background-size: 100% 100%;
-    color: #e9e7e2;
+    color: var(--on-blue);
     outline: none;
 }
 
@@ -332,7 +334,7 @@ a {
 .btn:focus-visible {
     background: var(--blue);
     border-color: var(--blue);
-    color: #e9e7e2;
+    color: var(--on-blue);
     outline: none;
 }
 
@@ -695,7 +697,7 @@ body:has([data-joins-footer]) .footer-edge {
  */
 .prose pre {
     --code-fg: var(--bg);
-    --code-dim: color-mix(in oklab, var(--bg) 50%, var(--text));
+    --code-dim: color-mix(in oklab, var(--bg) 58%, var(--text));
     --code-soft: color-mix(in oklab, var(--bg) 78%, var(--text));
     --astro-code-foreground: var(--code-fg);
     --astro-code-background: var(--text);

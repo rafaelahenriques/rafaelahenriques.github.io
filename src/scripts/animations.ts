@@ -30,6 +30,8 @@ function splitReveals() {
             mask: "lines",
             linesClass: "split-line",
             autoSplit: true,
+            // the lines stay plain text: screen readers read them as they are
+            aria: "none",
             onSplit(self) {
                 gsap.set(el, { visibility: "visible" });
                 return gsap.from(self.lines, {

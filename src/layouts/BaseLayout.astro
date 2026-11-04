@@ -1,7 +1,18 @@
 ---
 import "../styles/reset.css";
+// the typefaces, served from this site so a visit sends nothing to a font host
+import "@fontsource/inter/latin-400.css";
+import "@fontsource/inter/latin-500.css";
+import "@fontsource/inter/latin-700.css";
+import "@fontsource/inter-tight/latin-800.css";
+import "@fontsource/jetbrains-mono/latin-400.css";
+import "@fontsource/jetbrains-mono/latin-500.css";
+import "@fontsource/silkscreen/latin-400.css";
+import "@fontsource/silkscreen/latin-700.css";
 import "../styles/global.css";
 
+import displayFont from "@fontsource/inter-tight/files/inter-tight-latin-800-normal.woff2?url";
+import bodyFont from "@fontsource/inter/files/inter-latin-400-normal.woff2?url";
 import type { ImageMetadata } from "astro";
 import { getImage } from "astro:assets";
 import Header from "../components/header.astro";
@@ -75,13 +86,10 @@ const jsonLd = [personSchema(personImage), ...schema];
         <!-- structured data: who this is, and what this page is -->
         <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@800&family=Inter:wght@400;500;700&family=JetBrains+Mono:wght@400;500&family=Silkscreen:wght@400;700&display=swap"
-        />
-        <!-- page-specific extras, e.g. a case study's own fonts -->
+        <!-- the two fonts every page needs first, so titles don't wait for them -->
+        <link rel="preload" href={displayFont} as="font" type="font/woff2" crossorigin />
+        <link rel="preload" href={bodyFont} as="font" type="font/woff2" crossorigin />
+        <!-- page-specific extras -->
         <slot name="head" />
 
         <!-- Apply theme + JS flag before first paint so nothing flashes -->

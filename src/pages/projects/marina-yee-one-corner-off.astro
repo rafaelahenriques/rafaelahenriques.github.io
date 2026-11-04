@@ -7,10 +7,14 @@
  * looping clip of each interaction (cut from the walkthrough) and the bundle
  * sizes. The full walkthrough closes the page, before the link to the site.
  */
+// the site's own typefaces, for the typography specimen
+import "@fontsource-variable/archivo/wdth.css";
+import "@fontsource/reenie-beanie/latin-400.css";
 import Base from "../../layouts/BaseLayout.astro";
 import { Image, getImage } from "astro:assets";
 import { getEntry } from "astro:content";
 import { projectSeo } from "../../lib/seo";
+import { site } from "../../lib/site";
 import Chapter from "../../components/Chapter.astro";
 import ChapterNav from "../../components/ChapterNav.astro";
 import LoopVideo from "../../components/LoopVideo.astro";
@@ -102,14 +106,6 @@ const sizes = [
 ---
 
 <Base title={title} description={description} {...projectSeo(project)}>
-    <Fragment slot="head">
-        <!-- the site's own typefaces, for the typography specimen -->
-        <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Reenie+Beanie&display=swap"
-        />
-    </Fragment>
-
     <article class="my">
         <!-- INTRO -->
         <header class="page-head wrap">
@@ -156,7 +152,7 @@ const sizes = [
                     {
                         stillsThatWorked.map((s) => (
                             <li>
-                                <Image src={s.img} alt={s.label} widths={[400, 800]} sizes="(min-width: 900px) 25vw, 45vw" class="my-screen" />
+                                <Image src={s.img} alt="" widths={[400, 800]} sizes="(min-width: 900px) 25vw, 45vw" class="my-screen" />
                                 <span class="mono">{s.label}</span>
                             </li>
                         ))
@@ -318,6 +314,14 @@ const sizes = [
                     </a>
                 )
             }
+
+            <p class="my-credits mono muted">
+                A university project for Devine (Howest). Image credits, as listed by
+                <a href="https://www.momu.be/en/collection-stories/marina-yee" class="link" target="_blank" rel="noopener">MoMu ↗</a>:
+                MoMu Collection, Archives of Ann Demeulemeester; photos by Stany Dederen, Johan Mangelschots, Patrick Robyn and Victor Robyn.
+                M.Y. Project and M.Y. Studio images: Marina Yee. I couldn't trace the author of every image. If one is yours,
+                <a href={`mailto:${site.email}`} class="link">email me</a> and I'll credit or remove it.
+            </p>
         </section>
     </article>
 
@@ -463,7 +467,7 @@ const sizes = [
     .my-visit:focus-visible {
         border-color: var(--blue);
         background: var(--blue);
-        color: #e9e7e2;
+        color: var(--on-blue);
         outline: none;
     }
 
@@ -554,7 +558,7 @@ const sizes = [
 
     .my-spec__word {
         display: block;
-        font-family: "Archivo", var(--sans);
+        font-family: "Archivo Variable", var(--sans);
         line-height: 0.92;
         letter-spacing: -0.01em;
         text-transform: uppercase;
@@ -683,6 +687,12 @@ const sizes = [
 
     .my-end > .my-part {
         margin-bottom: calc(-1 * clamp(24px, 5vw, 64px));
+    }
+
+    .my-credits {
+        max-width: 72ch;
+        margin: 0;
+        text-transform: none;
     }
 
     .my-end__link {

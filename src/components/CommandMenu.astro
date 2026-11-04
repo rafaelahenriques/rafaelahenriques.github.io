@@ -39,6 +39,7 @@ const items: Item[] = [
     { group: "Pages", label: "Home", href: "/" },
     { group: "Pages", label: "All projects", hint: "List or grid, filter by type", href: "/projects/" },
     { group: "Pages", label: "About", hint: "Bio, skills, availability", href: "/about/" },
+    { group: "Pages", label: "Privacy", hint: "What this site does with your data", href: "/privacy/" },
     ...(resume ? [{ group: "Contact", label: "Open résumé", hint: "PDF", keywords: "cv resume download", href: resume.href, external: true }] : []),
     { group: "Contact", label: "Copy email address", hint: site.email, keywords: "mail contact", action: "copy-email" as const },
     { group: "Contact", label: "Send an email", hint: site.email, keywords: "mail contact", href: `mailto:${site.email}` },
@@ -338,7 +339,7 @@ const groups = [...new Set(items.map((i) => i.group))];
 
     .cmdk__option[aria-selected="true"] {
         background: var(--blue);
-        color: #e9e7e2;
+        color: var(--on-blue);
     }
 
     .cmdk__label,

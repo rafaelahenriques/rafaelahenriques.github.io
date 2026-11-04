@@ -47,3 +47,5 @@ Animation: Rafaela Henriques, Idris Belabed and Maria Josu.
 Illustration: Maria Josu, Gabriela Diaconu and Nabilah Zulkifly.
 
 Technical support by Urban Mapping, for WONDER in Kortrijk.
+
+Music: Bonnie Grace / Merry on the Moor / courtesy of [Epidemic Sound](https://www.epidemicsound.com).

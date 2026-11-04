@@ -45,7 +45,7 @@ const first = games[0];
         <div class="gb-info">
             {
                 games.map((g, i) => (
-                    <article class="gb-panel" id={`gb-panel-${i}`} role="tabpanel" aria-labelledby={`gb-tab-${i}`} hidden={i !== 0} data-gb-panel>
+                    <div class="gb-panel" id={`gb-panel-${i}`} role="tabpanel" aria-labelledby={`gb-tab-${i}`} hidden={i !== 0} data-gb-panel>
                         <p class="gb-panel__kicker mono muted">
                             {g.num} — {g.category}
                             {g.inProgress && <span class="wip">In progress</span>}
@@ -63,7 +63,7 @@ const first = games[0];
                         </dl>
                         <p class="gb-panel__brief">{g.brief}</p>
                         <a href={g.href} class="mono link">View project →</a>
-                    </article>
+                    </div>
                 ))
             }
         </div>
@@ -104,7 +104,7 @@ const first = games[0];
             <p class="gb-hint mono muted" data-gb-hint hidden>Try its buttons: A next · B back · Start opens</p>
             <p class="gb-credit mono muted">
                 Game Boy: <a href="https://sketchfab.com/3d-models/game-boy-in-voxel-0a99ab3b9cac4bdeacc90118df63a8c9" target="_blank" rel="noopener">“GAME BOY in voxel” by Dani</a>,
-                <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>
+                <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>, adapted
             </p>
         </div>
     </div>
@@ -409,7 +409,7 @@ const first = games[0];
     .gb-tab[aria-selected="true"] {
         background: var(--blue);
         border-color: var(--blue);
-        color: #e9e7e2;
+        color: var(--on-blue);
     }
 
     .gb-hint[hidden] {

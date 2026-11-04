@@ -7,7 +7,7 @@ title: "UI Game Assets"
 year: "2024"
 tech: ["Photoshop", "Graphic Tablet"]
 role: "UI Artist & Designer"
-context: "Standalone Asset Kit"
+context: "University assignment"
 scope:
   - Style analysis
   - Start menu, settings and components

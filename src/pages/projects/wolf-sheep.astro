@@ -16,6 +16,7 @@ import Shot from "../../components/Shot.astro";
 import Lightbox from "../../components/Lightbox.astro";
 import NextProject from "../../components/NextProject.astro";
 import ChapterNav from "../../components/ChapterNav.astro";
+import VimeoEmbed from "../../components/VimeoEmbed.astro";
 
 import mainGame from "../../content/projects/wolf-sheep/maingame.png";
 import startScreen from "../../content/projects/wolf-sheep/startscreen.png";
@@ -168,12 +169,7 @@ const pieces = [
 
         <Chapter id="ws-walkthrough" num={3} title="Walkthrough" wide>
             <div class="ws-video" data-ws-video>
-                <iframe
-                    src="https://player.vimeo.com/video/1233170503?badge=0&autopause=0&dnt=1"
-                    title="Wolf & Sheep — walkthrough"
-                    loading="lazy"
-                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-                    referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                <VimeoEmbed id="1233170503" title="Wolf & Sheep — walkthrough" poster={mainGame} />
             </div>
         </Chapter>
 
@@ -806,14 +802,6 @@ const pieces = [
         position: relative;
         aspect-ratio: 1 / 0.5642;
         background: var(--ws-dark);
-    }
-
-    .ws-video iframe {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        border: 0;
     }
 
     /* --- DIAGRAMS (04 stack, 06 server) --- */

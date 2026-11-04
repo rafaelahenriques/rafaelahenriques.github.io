@@ -112,4 +112,4 @@ No measurable resource growth was observed after 30 paper-ball throws and four o
 
 ## Credits
 
-Rain: [Heartfelt](https://www.shadertoy.com/view/ltffzl) by Martijn Steinrucken (BigWings). Snow: Shadertoy [Mdt3Df](https://www.shadertoy.com/view/Mdt3Df). Coffee ripples: [Simple Water Ripple Effect](https://www.shadertoy.com/view/wdtyDH) by Polygon. All three shaders are licensed under [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/). Weather by [Open-Meteo](https://open-meteo.com), music by [Audius](https://audius.co), physics by [Rapier](https://rapier.rs).
+Rain: [Heartfelt](https://www.shadertoy.com/view/ltffzl) by Martijn Steinrucken (BigWings). Snow: [Snow (as shown in sweden)](https://www.shadertoy.com/view/Mdt3Df) by Emil. Coffee ripples: [Simple Water Ripple Effect](https://www.shadertoy.com/view/wdtyDH) by Polygon. All three shaders are licensed under [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/). Weather by [Open-Meteo](https://open-meteo.com), music by [Audius](https://audius.co), physics by [Rapier](https://rapier.rs).
