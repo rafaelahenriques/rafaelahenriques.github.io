@@ -778,6 +778,20 @@ body:has([data-joins-footer]) .footer-edge {
     html.js [data-rise]:not(.is-risen) [data-rise-line] {
         transform: translateY(110%);
     }
+
+    /* never hold text back for a slow script: after a moment it shows by itself,
+       and animations.ts leaves it alone when it arrives. Not behind the loader
+       or a page change, which cover the page and start the animations themselves */
+    html.js:not(.motion-ready, .is-loading, .is-wiping) :is([data-reveal], [data-split], [data-rise-line]) {
+        animation: show-text 0s linear 1s forwards;
+    }
+}
+
+@keyframes show-text {
+    to {
+        visibility: visible;
+        transform: none;
+    }
 }
 
 /* a picture breaking in out of pixels (animations.ts): squares in the page
@@ -798,6 +812,12 @@ body:has([data-joins-footer]) .footer-edge {
 .split-line-mask {
     padding-bottom: 0.22em;
     margin-bottom: -0.22em;
+}
+
+/* if a font lands after the split, a line stays one line until it's re-measured,
+   instead of wrapping for a moment and pushing the page down */
+.split-line {
+    white-space: nowrap;
 }
 
 @media (prefers-reduced-motion: reduce) {
