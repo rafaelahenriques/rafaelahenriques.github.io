@@ -1,12 +1,14 @@
 ---
 /**
  * The end screen: inverted, with "let's talk" big, the pet in pixels in the
- * middle (drag it sideways; it sleeps in dark mode), and the contact links.
+ * middle (a palanca negra: hover it for a fact, drag it sideways; it sleeps in
+ * dark mode), and the contact links.
  */
 import ContactLinks from "./ContactLinks.astro";
 import { site } from "../lib/site";
 
 const year = new Date().getFullYear();
+const petFact = "I’m from Angola. This is the palanca negra gigante, our national symbol. It lives nowhere else.";
 ---
 
 <footer class="site-footer inverse">
@@ -18,8 +20,9 @@ const year = new Date().getFullYear();
         </a>
 
         <!-- the pet (scripts/creature.js), drawn in pixels; drag it sideways -->
-        <div class="footer-pet" data-pet data-cursor-link aria-hidden="true">
-            <canvas width="20" height="22"></canvas>
+        <div class="footer-pet" data-pet data-cursor-link role="img" aria-label={`A pixel palanca negra. ${petFact}`} tabindex="0">
+            <canvas width="34" height="28"></canvas>
+            <p class="footer-pet__fact mono" aria-hidden="true">{petFact}</p>
         </div>
 
         <div class="site-footer__buttons">
@@ -79,7 +82,8 @@ const year = new Date().getFullYear();
     }
 
     .footer-pet {
-        width: clamp(160px, 16vw, 240px);
+        position: relative;
+        width: clamp(204px, 20vw, 306px);
         cursor: grab;
         touch-action: pan-y;
     }
@@ -89,6 +93,64 @@ const year = new Date().getFullYear();
         width: 100%;
         height: auto;
         image-rendering: pixelated;
+    }
+
+    /* its speech bubble, like a game's dialogue box; it travels with the pet */
+    .footer-pet__fact {
+        position: absolute;
+        bottom: calc(100% + 12px);
+        left: 50%;
+        width: min(280px, 72vw);
+        margin: 0;
+        padding: 12px 14px;
+        background: var(--text);
+        color: var(--bg);
+        text-align: left;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateX(-50%);
+        transition: opacity 0.15s var(--step);
+    }
+
+    /* the bubble's tail: one square pixel */
+    .footer-pet__fact::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        width: 12px;
+        height: 12px;
+        background: var(--text);
+    }
+
+    .footer-pet:hover .footer-pet__fact,
+    .footer-pet:focus-visible .footer-pet__fact,
+    .footer-pet.is-telling .footer-pet__fact {
+        opacity: 1;
+    }
+
+    /* with room to spare it sits beside the pet, clear of "let's talk" */
+    @media (min-width: 900px) {
+        .footer-pet__fact {
+            top: 34%;
+            bottom: auto;
+            left: calc(100% + 20px);
+            transform: none;
+        }
+
+        .footer-pet__fact::after {
+            top: 16px;
+            left: -12px;
+        }
+
+        .footer-pet.tells-left .footer-pet__fact {
+            right: calc(100% + 20px);
+            left: auto;
+        }
+
+        .footer-pet.tells-left .footer-pet__fact::after {
+            left: 100%;
+        }
     }
 
     .site-footer__buttons {
