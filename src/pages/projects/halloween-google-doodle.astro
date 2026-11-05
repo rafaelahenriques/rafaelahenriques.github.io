@@ -1,0 +1,417 @@
+---
+/**
+ * Halloween Google Doodle (customPage in the content entry). The film opens the
+ * page, beside the title. Then the ## sections of index.md, each with what it
+ * describes: the 2024 version, the moodboard, the logo with and without its
+ * background, the animation on white, the film with its sound. Last, before the
+ * credits, the clickable web version: a copy of the Doodle's own page, cut down
+ * to its picture and starting on the finished logo.
+ */
+import Base from "../../layouts/BaseLayout.astro";
+import { Image } from "astro:assets";
+import { getEntry } from "astro:content";
+import { projectSeo } from "../../lib/seo";
+import LoopVideo from "../../components/LoopVideo.astro";
+import Shot from "../../components/Shot.astro";
+import Lightbox from "../../components/Lightbox.astro";
+import NextProject from "../../components/NextProject.astro";
+
+import poster from "../../content/projects/halloween-google-doodle/media/poster.jpg";
+import firstPoster from "../../content/projects/halloween-google-doodle/media/first-poster.jpg";
+import logo from "../../content/projects/halloween-google-doodle/media/logo.jpg";
+import moodboard from "../../content/projects/halloween-google-doodle/media/moodboard.jpg";
+
+const project = (await getEntry("projects", "halloween-google-doodle"))!;
+const { title, description, category } = project.data;
+
+// index.md split at its ## headings; each part is one section's text
+const parts = new Map(
+    (project.rendered?.html ?? "").split(/(?=<h2[\s>])/).flatMap((chunk) => {
+        const heading = chunk.match(/^<h2[^>]*>([\s\S]*?)<\/h2>/);
+        return heading ? [[heading[1].trim(), chunk.slice(heading[0].length)] as [string, string]] : [];
+    }),
+);
+const prose = (heading: string) => parts.get(heading);
+---
+
+<Base title={title} description={description} {...projectSeo(project)}>
+    <article class="dd">
+        <!-- TITLE, AND THE FILM -->
+        <header class="page-head wrap dd-head">
+            <a href="/projects/" class="mono muted link" data-reveal>← All projects</a>
+            <p class="dd-kicker mono muted" data-reveal>Other work — {category}</p>
+            <div class="dd-first">
+                <div class="dd-first__text">
+                    <div>
+                        <h1 class="display dd-title" data-split>{title}<span class="stop" aria-hidden="true"></span></h1>
+                        <p class="dd-sub mono muted" data-reveal>Unofficial concept, not affiliated with Google</p>
+                    </div>
+                    <p class="lead dd-lead" data-split>Class assignment, 2024. Reworked in 2026.</p>
+                </div>
+                <figure class="dd-first__video" data-reveal>
+                    <LoopVideo src="/media/halloween-google-doodle/film.mp4" {poster} sound label="The Doodle: a crow flies in and bounces along the word while a vine, three pumpkins, a gravestone and red leaves form the Google logo at night" />
+                    <figcaption class="mono muted">
+                        Music: Mike Franklyn / Waltz of the Dead / courtesy of
+                        <a href="https://www.epidemicsound.com" class="link" target="_blank" rel="noopener">Epidemic Sound ↗</a>
+                    </figcaption>
+                </figure>
+            </div>
+        </header>
+
+        <!-- WHAT A DOODLE IS -->
+        <section class="section wrap">
+            <div class="row">
+                <h2 class="row__label mono muted">What is a Google Doodle</h2>
+                <div class="row__body prose" data-reveal set:html={prose("What is a Google Doodle")} />
+            </div>
+        </section>
+
+        <!-- WHY I MADE THIS: the 2024 version -->
+        <section class="section wrap">
+            <div class="row dd-side">
+                <div class="dd-side__text">
+                    <h2 class="mono muted">Why I made this</h2>
+                    <div class="prose" data-reveal set:html={prose("Why I made this")} />
+                </div>
+                <figure class="dd-side__media" data-reveal>
+                    <LoopVideo src="/media/halloween-google-doodle/first.mp4" poster={firstPoster} label="The first version from 2024, in an olive-brown palette: three pumpkins under a full moon, a crow landing on them, gravestones appearing, and a dark Google logo that only comes in at the top of the frame in the last seconds" />
+                    <figcaption class="mono muted">First version, 2024</figcaption>
+                </figure>
+            </div>
+        </section>
+
+        <!-- WHAT INSPIRED ME -->
+        <section class="section wrap">
+            <div class="row">
+                <h2 class="row__label mono muted">What inspired me</h2>
+                <div class="row__body prose" data-reveal set:html={prose("What inspired me")} />
+                <div class="row__body dd-board">
+                    <Shot
+                        img={moodboard}
+                        alt="A moodboard of night scenes: the spiral hill and moon from The Nightmare Before Christmas, the tunnel from Coraline, Jack Skellington in the snow, illustrated graveyards and crows, a blue forest with eyes in the dark, the Limbo poster and a green-lit UFO over a farm, with eight colour swatches along the bottom"
+                        sizes="(min-width: 900px) 75vw, 100vw"
+                    />
+                </div>
+            </div>
+        </section>
+
+        <!-- THE ART: the logo without and with its background -->
+        <section class="section wrap">
+            <div class="row">
+                <h2 class="row__label mono muted">The art</h2>
+                <div class="row__body prose" data-reveal set:html={prose("The art")} />
+            </div>
+            <div class="dd-two">
+                <Shot
+                    img={logo}
+                    alt="The logo alone on white: a blue vine G, a red and a yellow pumpkin, a blue pumpkin with a vine for the g, a green gravestone with a black crow on top for the l, and an e made of red leaves"
+                    sizes="(min-width: 700px) 48vw, 100vw"
+                />
+                <Shot
+                    img={poster}
+                    alt="The same logo at night, with a full moon in a violet sky, teal ground, gravestones on either side and dark branches framing it"
+                    sizes="(min-width: 700px) 48vw, 100vw"
+                />
+            </div>
+        </section>
+
+        <!-- THE MOTION: the animation on its own -->
+        <section class="section wrap">
+            <div class="row dd-side">
+                <div class="dd-side__text" style="--below: 36px">
+                    <h2 class="mono muted">The motion</h2>
+                    <div class="prose" data-reveal set:html={prose("The motion")} />
+                </div>
+                <div class="dd-side__media" data-reveal>
+                    <LoopVideo src="/media/halloween-google-doodle/white.mp4" poster={logo} label="The animation without its background, on white: the crow bounces along the word as each letter forms" />
+                </div>
+            </div>
+        </section>
+
+        <!-- THE SOUND: the film, with its sound -->
+        <section class="section wrap">
+            <div class="row dd-side">
+                <div class="dd-side__text">
+                    <h2 class="mono muted">The sound</h2>
+                    <div class="prose" data-reveal set:html={prose("The sound")} />
+                </div>
+                <figure class="dd-side__media" data-reveal>
+                    <LoopVideo src="/media/halloween-google-doodle/tracing.mp4" {poster} sound label="The Doodle with its sound, with a dashed Google logo marking where each letter forms" />
+                    <figcaption class="mono muted">
+                        Music: Mike Franklyn / Waltz of the Dead / courtesy of
+                        <a href="https://www.epidemicsound.com" class="link" target="_blank" rel="noopener">Epidemic Sound ↗</a>
+                    </figcaption>
+                </figure>
+            </div>
+        </section>
+
+        <!-- THE WEB VERSION -->
+        <section class="section wrap dd-try">
+            <div class="row dd-side">
+                <div class="dd-side__text" style="--below: 36px">
+                    <h2 class="mono muted">Web version</h2>
+                    <div class="prose" data-reveal>
+                        <p>Try clicking the crow, the pumpkins, the gravestone, the leaves and the vine.</p>
+                    </div>
+                </div>
+                <div class="dd-side__media dd-web" data-reveal data-doodle>
+                    <div class="dd-web__stage" data-doodle-stage>
+                        <Image src={poster} alt="" widths={[800, 1400, 2000]} sizes="(min-width: 900px) 60vw, 100vw" />
+                    </div>
+                    <button type="button" class="dd-web__replay mono" data-doodle-replay>Replay</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- CREDITS -->
+        <section class="section wrap">
+            <div class="row">
+                <h2 class="row__label mono muted">Credits</h2>
+                <div class="row__body prose" data-reveal set:html={prose("Credits")} />
+            </div>
+        </section>
+    </article>
+
+    <NextProject current="halloween-google-doodle" />
+    <Lightbox />
+</Base>
+
+<script>
+    // the web version is a 4 MB page that draws every frame: like the videos it
+    // loads as it gets close, and it stops drawing while it's off screen
+    document.querySelectorAll<HTMLElement>("[data-doodle]").forEach((box) => {
+        const stage = box.querySelector<HTMLElement>("[data-doodle-stage]")!;
+        let frame: HTMLIFrameElement | undefined;
+
+        // the still stays in front until the Doodle has drawn: both show the finished logo
+        const showWhenDrawn = () => {
+            const win = frame?.contentWindow;
+            if (win && "doodle" in win) requestAnimationFrame(() => requestAnimationFrame(() => frame?.classList.add("is-ready")));
+            else setTimeout(showWhenDrawn, 100);
+        };
+
+        new IntersectionObserver(
+            ([near], observer) => {
+                if (!near.isIntersecting) return;
+                observer.disconnect();
+                const doodle = document.createElement("iframe");
+                doodle.src = "/media/halloween-google-doodle/web/";
+                doodle.title = "The Halloween Doodle: click the crow, the pumpkins, the gravestone, the leaves and the vine";
+                frame = doodle;
+                stage.append(doodle);
+                showWhenDrawn();
+                new IntersectionObserver(([seen]) => {
+                    doodle.style.display = seen.isIntersecting ? "" : "none";
+                }).observe(stage);
+            },
+            { rootMargin: "50% 0px" },
+        ).observe(stage);
+
+        // the page's own Replay button, hidden with the rest of its controls
+        box.querySelector("[data-doodle-replay]")?.addEventListener("click", () => {
+            frame?.contentDocument?.getElementById("replay")?.click();
+        });
+    });
+</script>
+
+<style>
+    /* room before the next project's pixels start */
+    .dd {
+        padding-bottom: var(--section);
+    }
+
+    .dd-head {
+        padding-top: clamp(24px, 3vw, 48px);
+        padding-bottom: clamp(20px, 2.5vw, 36px);
+    }
+
+    .dd-kicker {
+        margin: 24px 0 0;
+    }
+
+    .dd-first {
+        margin-top: 18px;
+    }
+
+    .dd-first .dd-title {
+        margin-top: 0;
+        font-size: clamp(2.5rem, 1rem + 3.6vw, 5rem);
+    }
+
+    .dd-sub {
+        margin: clamp(12px, 1.5vw, 20px) 0 0;
+    }
+
+    .dd-lead {
+        margin-top: clamp(20px, 2.5vw, 32px);
+    }
+
+    .dd-first__video {
+        display: grid;
+        gap: 10px;
+        margin: 24px 0 0;
+    }
+
+    /* the title's top meets the video's top, and the text ends level with its
+       bottom (the 62px is the buttons and the caption under the video) */
+    @media (min-width: 900px) {
+        .dd-first {
+            --video-align: end;
+            display: grid;
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+            column-gap: var(--gutter);
+        }
+
+        .dd-first__text {
+            grid-column: 1 / span 5;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 20px;
+            padding-bottom: 62px;
+        }
+
+        .dd-lead {
+            margin-top: 0;
+            font-size: clamp(1.1rem, 2.05vw, 2.75rem);
+        }
+
+        .dd-first__video {
+            grid-column: 6 / -1;
+            justify-items: end;
+            margin-top: 0;
+        }
+    }
+
+    .dd-board {
+        margin-top: clamp(8px, 1.5vw, 20px);
+    }
+
+    .dd-two {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px 12px;
+        margin-top: clamp(20px, 3vw, 32px);
+    }
+
+    @media (min-width: 700px) {
+        .dd-two {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    /* text on the left, set larger so it holds its side; a video on the right */
+    .dd-side {
+        gap: 20px var(--gutter);
+    }
+
+    .dd-side__text h2 {
+        margin: 0 0 clamp(16px, 2vw, 24px);
+        font-weight: 400;
+    }
+
+    .dd-side__text .prose :global(p) {
+        margin: 0;
+        font-size: clamp(1.05rem, 0.9rem + 0.45vw, 1.35rem);
+        line-height: 1.3;
+        letter-spacing: -0.015em;
+    }
+
+    .dd-side__media {
+        display: grid;
+        gap: 10px;
+        margin: 0;
+    }
+
+    /* the label level with the video's top, the text with its bottom
+       (--below is the buttons and the caption under the video) */
+    @media (min-width: 900px) {
+        .dd-side {
+            --video-align: end;
+        }
+
+        .dd-side__text {
+            grid-column: 1 / span 5;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding-bottom: var(--below, 62px);
+        }
+
+        .dd-side__text h2 {
+            margin: 0;
+        }
+
+        .dd-side__media {
+            grid-column: 6 / -1;
+            justify-items: end;
+        }
+    }
+
+    /* --- the web version, sized and laid out like the videos above it --- */
+
+    .dd-web {
+        gap: 8px;
+        justify-items: var(--video-align, center);
+    }
+
+    .dd-web__stage {
+        position: relative;
+        width: min(100%, calc((100svh - var(--header-h) - 96px) * 16 / 9));
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+
+    .dd-web__stage :global(img) {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .dd-web__stage :global(iframe) {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        opacity: 0;
+    }
+
+    .dd-web__stage :global(iframe.is-ready) {
+        opacity: 1;
+    }
+
+    /* the same button as under the videos (LoopVideo) */
+    .dd-web__replay {
+        padding: 4px 10px;
+        border: 1px solid var(--line);
+        background: none;
+        color: var(--muted);
+        cursor: pointer;
+        transition:
+            color 0.15s var(--step),
+            border-color 0.15s var(--step),
+            background-color 0.15s var(--step);
+    }
+
+    .dd-web__replay:hover,
+    .dd-web__replay:focus-visible {
+        border-color: var(--blue);
+        background: var(--blue);
+        color: var(--on-blue);
+        outline: none;
+    }
+
+    /* no JavaScript: only the picture, nothing to press */
+    :global(html:not(.js)) .dd-web__replay {
+        display: none;
+    }
+
+    /* with reduced motion the web version is a still with nothing to click */
+    @media (prefers-reduced-motion: reduce) {
+        .dd-try {
+            display: none;
+        }
+    }
+</style>

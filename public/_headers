@@ -17,3 +17,7 @@
 
 /models/*
   Cache-Control: public, max-age=2592000
+
+# the Doodle's web version only shows inside its project page, so it stays out of search
+/media/halloween-google-doodle/web/
+  X-Robots-Tag: noindex
