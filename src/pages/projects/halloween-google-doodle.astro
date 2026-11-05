@@ -48,9 +48,13 @@ const prose = (heading: string) => parts.get(heading);
                     </div>
                     <p class="lead dd-lead" data-split>Class assignment, 2024. Reworked in 2026.</p>
                 </div>
-                <div class="dd-first__video" data-reveal>
-                    <LoopVideo src="/media/halloween-google-doodle/film.mp4" {poster} label="The Doodle: a crow flies in and bounces along the word while a vine, three pumpkins, a gravestone and red leaves form the Google logo at night" />
-                </div>
+                <figure class="dd-first__video" data-reveal>
+                    <LoopVideo src="/media/halloween-google-doodle/film.mp4" {poster} sound label="The Doodle: a crow flies in and bounces along the word while a vine, three pumpkins, a gravestone and red leaves form the Google logo at night" />
+                    <figcaption class="mono muted">
+                        Music: Mike Franklyn / Waltz of the Dead / courtesy of
+                        <a href="https://www.epidemicsound.com" class="link" target="_blank" rel="noopener">Epidemic Sound ↗</a>
+                    </figcaption>
+                </figure>
             </div>
         </header>
 
@@ -243,11 +247,13 @@ const prose = (heading: string) => parts.get(heading);
     }
 
     .dd-first__video {
-        margin-top: 24px;
+        display: grid;
+        gap: 10px;
+        margin: 24px 0 0;
     }
 
     /* the title's top meets the video's top, and the text ends level with its
-       bottom (the 36px is the buttons under the video) */
+       bottom (the 62px is the buttons and the caption under the video) */
     @media (min-width: 900px) {
         .dd-first {
             --video-align: end;
@@ -262,7 +268,7 @@ const prose = (heading: string) => parts.get(heading);
             flex-direction: column;
             justify-content: space-between;
             gap: 20px;
-            padding-bottom: 36px;
+            padding-bottom: 62px;
         }
 
         .dd-lead {
@@ -272,6 +278,7 @@ const prose = (heading: string) => parts.get(heading);
 
         .dd-first__video {
             grid-column: 6 / -1;
+            justify-items: end;
             margin-top: 0;
         }
     }
