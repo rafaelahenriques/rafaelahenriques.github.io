@@ -63,12 +63,10 @@ const jsonLd = [personSchema(personImage), ...schema.map((s) => (s["@type"] === 
         <meta name="theme-color" content="#e9e7e2" media="(prefers-color-scheme: light)" />
         <meta name="theme-color" content="#0e0e0e" media="(prefers-color-scheme: dark)" />
 
-        <!-- icons: Google uses favicon.ico / the 96 px PNG (multiples of 48 px) -->
-        <link rel="icon" href="/favicon.ico" sizes="48x48" />
+        <!-- icons: Google uses the 96 px PNG (a multiple of 48 px) -->
+        <link rel="icon" href="/favicon.ico" sizes="32x32 96x96" />
         <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
-        <!-- drawn separately for 16 px, so ordinary screens get clean pixels too -->
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/site.webmanifest" />
         <link rel="sitemap" href="/sitemap-index.xml" />
