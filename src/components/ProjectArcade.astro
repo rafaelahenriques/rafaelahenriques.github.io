@@ -1,11 +1,12 @@
 ---
 /**
  * The projects page: an arcade. By default a close-up of a black cabinet
- * whose screen flips through the projects (src/scripts/arcade.ts),
- * with the project on screen, back / next and a link beside it (under it on
- * smaller screens). The cabinet's own controls work too: left stick and
- * buttons go back, right ones forward, the screen opens the project. Until the
- * visitor touches anything it flips on its own (not with reduced motion).
+ * whose screen plays each project's clip (src/scripts/arcade.ts), with the
+ * project's name and what it is, back / next and a link beside it (under it
+ * on smaller screens). The cabinet's own controls work too: the sticks browse,
+ * the left buttons pick a kind of project, the right ones work the screen,
+ * 1P and the screen open the project. Until the visitor touches anything it
+ * moves on whenever a clip ends (not with reduced motion).
  *
  * "View as list" moves in on the screen until it fills the middle of the page
  * and shows every project on it, like a game's select screen: back to the
@@ -15,6 +16,8 @@
  * the URL (?view=list), the filter as a hash (/projects/#web, which on its own
  * opens the list). Without JS or WebGL it's the list.
  */
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { getImage } from "astro:assets";
 import { pad, slugOf, PROJECT_TYPES, type ProjectEntry } from "../lib/content";
 import PixelEdge from "./PixelEdge.astro";
@@ -32,9 +35,13 @@ const briefOf = (p: ProjectEntry) => {
     return d.length > 120 ? `${d.split(/[:—]/)[0].trim()}.` : d;
 };
 
+// the screen's clip and its first frame (public/media/arcade/<slug>.mp4 and .jpg), where there is one
+const clipOf = (slug: string) => (existsSync(join(process.cwd(), "public", "media", "arcade", `${slug}.mp4`)) ? `/media/arcade/${slug}` : null);
+
 const games = await Promise.all(
     projects.map(async (p, i) => {
         const image = p.data.media?.thumbnail ?? p.data.media?.screenshot;
+        const clip = clipOf(slugOf(p));
         return {
             num: pad(i + 1),
             title: p.data.title,
@@ -44,6 +51,8 @@ const games = await Promise.all(
             href: `/projects/${slugOf(p)}/`,
             types: p.data.types as string[],
             inProgress: p.data.status === "in-progress",
+            video: clip ? `${clip}.mp4` : undefined,
+            poster: clip ? `${clip}.jpg` : undefined,
             // small: the screen dithers it into big pixels anyway
             image: image && (await getImage({ src: image, width: 480, format: "webp", quality: 75 })).src,
             // the list's thumbnail: tiny on purpose, shown in big pixels
@@ -81,6 +90,8 @@ const filterKeys = filters.map((f) => f.key);
         <div class="arcade__stage">
             <canvas class="arcade__canvas" data-arcade-canvas aria-hidden="true"></canvas>
             <p class="arcade__loading mono" data-arcade-loading>Insert coin…</p>
+            <!-- what the control under the pointer does -->
+            <p class="arcade__tip mono" data-arcade-tip aria-hidden="true" hidden></p>
         </div>
 
         <div class="arcade__bar arcade__for-arcade wrap">
@@ -95,7 +106,7 @@ const filterKeys = filters.map((f) => f.key);
                 <button type="button" class="arcade__btn" data-arcade-next aria-label="Next project">→</button>
                 <a href={first.href} class="arcade__open mono" data-arcade-open>Open project <span aria-hidden="true">→</span></a>
             </div>
-            <p class="arcade__hint mono" data-arcade-hint hidden>Try the sticks and buttons · the screen opens a project</p>
+            <p class="arcade__hint mono" data-arcade-hint hidden>Stick: browse · Left buttons: kinds of project · Right buttons: the screen · 1P: open</p>
         </div>
 
         <!-- THE LIST: back to the arcade on the left, the screen, the filters on the right -->
@@ -198,18 +209,14 @@ const filterKeys = filters.map((f) => f.key);
 
         /* --- the arcade: flipping through the projects --- */
 
-        // attract mode: it flips by itself until the visitor takes over
-        const ATTRACT_MS = 4200;
+        // attract mode: on to the next project whenever a clip ends, until the
+        // visitor takes over (or while the pointer is on the cabinet)
         let attract = !reduceMotion;
-        let timer = 0;
         let hovering = false;
-        const schedule = () => {
-            clearTimeout(timer);
-            if (!attract) return;
-            timer = window.setTimeout(() => {
-                if (arcade?.visible && !hovering && view === "arcade") step(1, false);
-                schedule();
-            }, ATTRACT_MS);
+        const clipEnded = () => {
+            if (!attract || hovering || view !== "arcade") return false;
+            step(1, false);
+            return true;
         };
 
         const select = (i: number) => {
@@ -227,11 +234,15 @@ const filterKeys = filters.map((f) => f.key);
             if (byVisitor) attract = false;
             const n = games.length;
             select((((current + dir) % n) + n) % n);
-            schedule();
+        };
+        // the page's arrows and keys push the cabinet's stick too
+        const push = (dir: -1 | 1) => {
+            arcade?.nudge(dir);
+            step(dir, true);
         };
 
-        root.querySelector("[data-arcade-prev]")!.addEventListener("click", () => step(-1, true));
-        root.querySelector("[data-arcade-next]")!.addEventListener("click", () => step(1, true));
+        root.querySelector("[data-arcade-prev]")!.addEventListener("click", () => push(-1));
+        root.querySelector("[data-arcade-next]")!.addEventListener("click", () => push(1));
         canvas.addEventListener("pointerenter", () => (hovering = true));
         canvas.addEventListener("pointerleave", () => (hovering = false));
 
@@ -280,7 +291,6 @@ const filterKeys = filters.map((f) => f.key);
             // the camera move only where the list sits over the cabinet's screen
             const move = !!arcade && wide.matches && animate && !reduceMotion;
             if (next === "list") {
-                clearTimeout(timer);
                 if (move) {
                     await gsap.to(arcadeParts, { autoAlpha: 0, duration: 0.25, ease: "power2.in" });
                     gsap.set(listParts, { autoAlpha: 0 });
@@ -311,7 +321,6 @@ const filterKeys = filters.map((f) => f.key);
                     arcade?.setMode("arcade", false);
                 }
                 gsap.set(listParts, { clearProps: "opacity,visibility,transform" });
-                schedule();
             }
             busy = false;
         };
@@ -323,8 +332,8 @@ const filterKeys = filters.map((f) => f.key);
             if (e.target instanceof HTMLInputElement || e.metaKey || e.ctrlKey || e.altKey) return;
             if (view === "arcade") {
                 if (!root.contains(document.activeElement) && document.activeElement !== document.body) return;
-                if (e.key === "ArrowLeft") step(-1, true);
-                else if (e.key === "ArrowRight") step(1, true);
+                if (e.key === "ArrowLeft") push(-1);
+                else if (e.key === "ArrowRight") push(1);
                 return;
             }
             if (e.key === "Escape" && arcade && !root.classList.contains("is-flat")) setView("arcade");
@@ -355,7 +364,13 @@ const filterKeys = filters.map((f) => f.key);
                     reduceMotion,
                     onPrev: () => step(-1, true),
                     onNext: () => step(1, true),
+                    onPick: (i) => {
+                        attract = false;
+                        select(i);
+                    },
                     onOpen: () => go(games[current].href),
+                    onEnded: clipEnded,
+                    tip: root.querySelector<HTMLElement>("[data-arcade-tip]")!,
                     screenBox: () => (wide.matches ? screenEl.getBoundingClientRect() : null),
                 });
                 await arcade.setList(shown(), labelFor(filter));
@@ -363,7 +378,6 @@ const filterKeys = filters.map((f) => f.key);
                 arcade.show(current);
                 root.classList.add("is-live");
                 hint.hidden = false;
-                schedule();
             } catch (err) {
                 // no WebGL: the list, on its own
                 console.warn("Arcade: no WebGL, showing the list instead", err);
@@ -484,8 +498,25 @@ const filterKeys = filters.map((f) => f.key);
     }
 
     .arcade__loading[hidden],
-    .arcade__hint[hidden] {
+    .arcade__hint[hidden],
+    .arcade__tip[hidden] {
         display: none;
+    }
+
+    /* what a control does: a blue tag beside the pointer, like the cursor's labels */
+    .arcade__tip {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 2;
+        margin: 0;
+        padding: 6px 9px;
+        background: var(--blue);
+        color: var(--on-blue);
+        font-size: 11px;
+        line-height: 1;
+        white-space: nowrap;
+        pointer-events: none;
     }
 
     /* --- the arcade's project on screen, and its controls --- */
