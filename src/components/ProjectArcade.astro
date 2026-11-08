@@ -5,7 +5,7 @@
  * project's name and what it is, back / next and a link beside it (under it
  * on smaller screens). The cabinet's own controls work too: the sticks browse,
  * the left buttons pick a kind of project, the right ones work the screen,
- * 1P and the screen open the project. Until the visitor touches anything it
+ * the screen opens the project. Until the visitor touches anything it
  * moves on whenever a clip ends (not with reduced motion).
  *
  * "View as list" moves in on the screen until it fills the middle of the page
@@ -106,7 +106,7 @@ const filterKeys = filters.map((f) => f.key);
                 <button type="button" class="arcade__btn" data-arcade-next aria-label="Next project">→</button>
                 <a href={first.href} class="arcade__open mono" data-arcade-open>Open project <span aria-hidden="true">→</span></a>
             </div>
-            <p class="arcade__hint mono" data-arcade-hint hidden>Stick: browse · Left buttons: kinds of project · Right buttons: the screen · 1P: open</p>
+            <p class="arcade__hint mono" data-arcade-hint hidden>Stick: browse · Left buttons: kinds of project · Right buttons: the screen · Screen: open project</p>
         </div>
 
         <!-- THE LIST: back to the arcade on the left, the screen, the filters on the right -->
