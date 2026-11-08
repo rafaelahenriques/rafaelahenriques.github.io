@@ -12,7 +12,7 @@ export const site = {
     cv: "/Rafaela_Henriques_Resume.pdf", // the file lives in public/
     location: "Kortrijk, BE",
     timeZone: "Europe/Brussels",
-    availability: "Open to software & web development roles",
+    availability: "Open to software, web & creative tech roles",
 };
 
 // Only link the CV once the file actually exists, so the build never ships a 404.
