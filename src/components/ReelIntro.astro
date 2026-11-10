@@ -112,7 +112,8 @@ const { src, srcSmall } = Astro.props;
         animation: reel-failsafe 0s linear 8s forwards;
     }
 
-    .reel-intro.is-running {
+    /* (as specific as the rule above, so it wins: otherwise the intro would vanish at 8 s mid-reel) */
+    :global(html.is-reel) .reel-intro.is-running {
         animation: none;
     }
 
