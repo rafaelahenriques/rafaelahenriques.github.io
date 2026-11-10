@@ -6,6 +6,7 @@
     "dev": "astro dev",
     "prebuild": "node scripts/github-stats.mjs",
     "build": "astro build",
+    "postbuild": "node scripts/media-sizes.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check"
