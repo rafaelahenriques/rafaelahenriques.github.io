@@ -2,8 +2,10 @@
 import Base from "../layouts/BaseLayout.astro";
 import ProjectGameBoy from "../components/ProjectGameBoy.astro";
 import PixelEdge from "../components/PixelEdge.astro";
+import LoopVideo from "../components/LoopVideo.astro";
 import { Image } from "astro:assets";
 import babyPhoto from "../assets/me/rafaela-2006.jpg";
+import reelPoster from "../assets/showreel/poster.jpg";
 import { getFeatured } from "../lib/content";
 import { websiteSchema } from "../lib/seo";
 
@@ -46,6 +48,26 @@ const featured = await getFeatured();
             <p>with a background in <b>game development and design</b>.</p>
             <a href="/about/" class="mono link">More about me →</a>
         </div>
+    </section>
+
+    <!-- SHOWREEL: the projects in 46 seconds, cut to music (it starts muted) -->
+    <section class="reel wrap" aria-labelledby="reel">
+        <div class="reel__head">
+            <h2 id="reel" class="mono muted">Showreel 2026</h2>
+            <p class="mono muted">0:46</p>
+        </div>
+        <figure class="reel__video" data-reveal>
+            <LoopVideo
+                src="/media/showreel/showreel-2026.mp4"
+                poster={reelPoster}
+                sound
+                label="Showreel 2026: my name types out, then Study Room, Generative Flora, the Halloween Google Doodle, Marina Yee, Mongmo, Ben & Jerry’s: A Farm in the Pint and Miles & Meals, cut to music"
+            />
+            <figcaption class="mono muted">
+                Music: Bankston / What You Running From / courtesy of
+                <a href="https://www.epidemicsound.com" class="link" target="_blank" rel="noopener">Epidemic Sound ↗</a>
+            </figcaption>
+        </figure>
     </section>
 
     <!-- SELECTED PROJECTS: on a Game Boy, in an inverted block the page dissolves
@@ -159,6 +181,35 @@ const featured = await getFeatured();
 
     .hero__note--right.dash::before {
         margin-left: auto;
+    }
+
+    /* the showreel: a rule and its name, like the Selected projects head, the film under it */
+    .reel {
+        padding-top: clamp(32px, 5vw, 64px);
+    }
+
+    .reel__head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: var(--gutter);
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+    }
+
+    .reel__head h2,
+    .reel__head p {
+        margin: 0;
+    }
+
+    .reel__video {
+        display: grid;
+        gap: 10px;
+        margin: clamp(24px, 4vw, 48px) 0 0;
+    }
+
+    .reel__video figcaption {
+        text-align: center;
     }
 
     .selected-edge {
