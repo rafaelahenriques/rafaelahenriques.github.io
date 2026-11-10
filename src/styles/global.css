@@ -780,9 +780,10 @@ body:has([data-joins-footer]) .footer-edge {
     }
 
     /* never hold text back for a slow script: after a moment it shows by itself,
-       and animations.ts leaves it alone when it arrives. Not behind the loader
-       or a page change, which cover the page and start the animations themselves */
-    html.js:not(.motion-ready, .is-loading, .is-wiping) :is([data-reveal], [data-split], [data-rise-line]) {
+       and animations.ts leaves it alone when it arrives. Not behind the loader,
+       the homepage's showreel intro or a page change, which cover the page and
+       start the animations themselves */
+    html.js:not(.motion-ready, .is-loading, .is-reel, .is-wiping) :is([data-reveal], [data-split], [data-rise-line]) {
         animation: show-text 0s linear 1s forwards;
     }
 }

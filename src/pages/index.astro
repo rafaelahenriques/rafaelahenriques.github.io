@@ -2,14 +2,17 @@
 import Base from "../layouts/BaseLayout.astro";
 import ProjectGameBoy from "../components/ProjectGameBoy.astro";
 import PixelEdge from "../components/PixelEdge.astro";
-import LoopVideo from "../components/LoopVideo.astro";
-import { Image } from "astro:assets";
+import ReelIntro from "../components/ReelIntro.astro";
+import { Image, getImage } from "astro:assets";
 import babyPhoto from "../assets/me/rafaela-2006.jpg";
 import reelPoster from "../assets/showreel/poster.jpg";
 import { getFeatured } from "../lib/content";
 import { websiteSchema } from "../lib/seo";
 
 const featured = await getFeatured();
+const REEL = "/media/showreel/showreel-2026.mp4";
+const REEL_SMALL = "/media/showreel/showreel-2026-small.mp4";
+const posterSrc = (await getImage({ src: reelPoster, width: 1600, format: "webp", quality: 78 })).src;
 ---
 
 <Base
@@ -17,6 +20,26 @@ const featured = await getFeatured();
     description="Rafaela Henriques is a web developer in Kortrijk, Belgium: full-stack, mobile and interactive projects, and a Digital Design & Development student at Howest."
     schema={[websiteSchema()]}
 >
+    <!-- the first visit of a session opens on the showreel (ReelIntro), in place
+         of the loading screen; never with reduced motion. Runs before the
+         layout's own script, which then sees the loader as done -->
+    <script is:inline slot="head">
+        (() => {
+            try {
+                if (sessionStorage.getItem("loader-seen") === "1" || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+                const root = document.documentElement;
+                root.classList.add("is-reel");
+                sessionStorage.setItem("loader-seen", "1");
+                // in case its script never runs: the page after 9 s
+                window.__reelFailsafe = setTimeout(() => {
+                    root.classList.remove("is-reel");
+                    dispatchEvent(new Event("reel:done"));
+                }, 9000);
+            } catch {}
+        })();
+    </script>
+    <ReelIntro src={REEL} srcSmall={REEL_SMALL} />
+
     <!-- HELLO: a poster. My name huge, me in 2006 over it -->
     <section class="hero wrap" aria-labelledby="intro">
 
@@ -50,24 +73,54 @@ const featured = await getFeatured();
         </div>
     </section>
 
-    <!-- SHOWREEL: the projects in 46 seconds, cut to music (it starts muted) -->
-    <section class="reel wrap" aria-labelledby="reel">
-        <div class="reel__head">
-            <h2 id="reel" class="mono muted">Showreel 2026</h2>
-            <p class="mono muted">0:46</p>
+    <!-- SHOWREEL: the projects in 46 seconds, cut to music. Scrolling, it grows
+         until it fills the screen, then shrinks back; it plays, with sound,
+         when it's asked to -->
+    <section class="reel" aria-labelledby="reel" data-reel>
+        <div class="wrap">
+            <div class="reel__head">
+                <h2 id="reel" class="mono muted">Showreel 2026</h2>
+                <p class="mono muted">0:46</p>
+            </div>
         </div>
-        <figure class="reel__video" data-reveal>
-            <LoopVideo
-                src="/media/showreel/showreel-2026.mp4"
-                poster={reelPoster}
-                sound
-                label="Showreel 2026: my name types out, then Study Room, Generative Flora, the Halloween Google Doodle, Marina Yee, Mongmo, Ben & Jerry’s: A Farm in the Pint and Miles & Meals, cut to music"
-            />
-            <figcaption class="mono muted">
-                Music: Bankston / What You Running From / courtesy of
-                <a href="https://www.epidemicsound.com" class="link" target="_blank" rel="noopener">Epidemic Sound ↗</a>
-            </figcaption>
-        </figure>
+        <div class="reel__track" data-reel-track>
+            <div class="reel__stage">
+                <div class="reel__frame" data-reel-frame>
+                    <video
+                        class="reel__video"
+                        playsinline
+                        preload="none"
+                        poster={posterSrc}
+                        width="1600"
+                        height="900"
+                        aria-label="Showreel 2026: my name types out, then Study Room, Generative Flora, the Halloween Google Doodle, Marina Yee, Mongmo, Ben & Jerry’s: A Farm in the Pint and Miles & Meals, cut to music"
+                        data-reel-video
+                    >
+                        <source src={REEL_SMALL} type="video/mp4" media="(max-width: 700px)" />
+                        <source src={REEL} type="video/mp4" />
+                    </video>
+                    <button type="button" class="reel__play" data-reel-play>
+                        <svg viewBox="0 0 7 7" width="28" height="28" aria-hidden="true" shape-rendering="crispEdges">
+                            <path d="M0 0h2v7H0zM2 1h2v5H2zM4 2h2v3H4zM6 3h1v1H6z" fill="currentColor" />
+                        </svg>
+                        <span class="reel__play-text">
+                            <span class="reel__play-title" data-reel-play-title>Play showreel</span>
+                            <span class="reel__play-meta mono">With sound · 0:46</span>
+                        </span>
+                    </button>
+                    <div class="reel__bar mono">
+                        <span class="reel__buttons">
+                            <button type="button" class="reel__btn" data-reel-pause>Pause</button>
+                            <button type="button" class="reel__btn" aria-pressed="true" data-reel-sound>Sound on</button>
+                        </span>
+                        <span class="reel__credit">
+                            Music: Bankston / What You Running From / courtesy of
+                            <a href="https://www.epidemicsound.com" class="link" target="_blank" rel="noopener">Epidemic Sound ↗</a>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
     <!-- SELECTED PROJECTS: on a Game Boy, in an inverted block the page dissolves
@@ -77,6 +130,105 @@ const featured = await getFeatured();
         <ProjectGameBoy projects={featured} />
     </div>
 </Base>
+
+<script>
+    import { gsap } from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    const reel = document.querySelector<HTMLElement>("[data-reel]");
+    if (reel) {
+        const track = reel.querySelector<HTMLElement>("[data-reel-track]")!;
+        const frame = reel.querySelector<HTMLElement>("[data-reel-frame]")!;
+        const video = reel.querySelector<HTMLVideoElement>("[data-reel-video]")!;
+        const play = reel.querySelector<HTMLButtonElement>("[data-reel-play]")!;
+        const playTitle = reel.querySelector<HTMLElement>("[data-reel-play-title]")!;
+        const pause = reel.querySelector<HTMLButtonElement>("[data-reel-pause]")!;
+        const sound = reel.querySelector<HTMLButtonElement>("[data-reel-sound]")!;
+        const still = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+        /* --- the size: small in the page, the whole window halfway through the scroll --- */
+
+        const small = { w: 0, h: 0 };
+        const measure = () => {
+            const room = reel.querySelector<HTMLElement>(".reel__head")!.clientWidth;
+            small.w = Math.min(room, (window.innerHeight - 220) * (16 / 9));
+            small.w = Math.max(small.w, Math.min(room, 320));
+            small.h = small.w * (9 / 16);
+        };
+        // grows over the first 40 % of the scroll, holds, shrinks over the last 40 %
+        const ease = (t: number) => t * t * (3 - 2 * t);
+        const amount = (p: number) => (p < 0.4 ? ease(p / 0.4) : p > 0.6 ? ease((1 - p) / 0.4) : 1);
+        let progress = 0;
+        const size = () => {
+            const f = still.matches ? 0 : amount(progress);
+            const W = document.documentElement.clientWidth;
+            // a tall screen (a phone upright) gains nothing from the full height: edge to edge is enough
+            const H = W < frame.parentElement!.clientHeight ? W * (9 / 16) : frame.parentElement!.clientHeight;
+            frame.style.width = `${small.w + (W - small.w) * f}px`;
+            frame.style.height = `${small.h + (H - small.h) * f}px`;
+            frame.classList.toggle("is-full", f > 0.98);
+        };
+        ScrollTrigger.create({
+            trigger: track,
+            start: "top top",
+            end: "bottom bottom",
+            onUpdate: (self) => {
+                progress = self.progress;
+                size();
+            },
+            onRefresh: (self) => {
+                progress = self.progress;
+                measure();
+                size();
+            },
+        });
+        measure();
+        size();
+        still.addEventListener("change", () => ScrollTrigger.refresh());
+
+        /* --- playing: only when asked, with sound --- */
+
+        const sync = () => {
+            const playing = !video.paused && !video.ended;
+            frame.classList.toggle("is-playing", playing);
+            pause.textContent = playing ? "Pause" : "Play";
+        };
+        const start = () => {
+            frame.classList.add("is-started");
+            video.muted = false;
+            sound.textContent = "Sound on";
+            sound.setAttribute("aria-pressed", "true");
+            video.play().catch(() => {});
+            pause.focus({ preventScroll: true });
+        };
+        play.addEventListener("click", start);
+        pause.addEventListener("click", () => (video.paused ? video.play().catch(() => {}) : video.pause()));
+        video.addEventListener("click", () => {
+            if (!frame.classList.contains("is-started")) start();
+            else if (video.paused) video.play().catch(() => {});
+            else video.pause();
+        });
+        sound.addEventListener("click", () => {
+            video.muted = !video.muted;
+            sound.textContent = video.muted ? "Sound off" : "Sound on";
+            sound.setAttribute("aria-pressed", String(!video.muted));
+        });
+        video.addEventListener("play", sync);
+        video.addEventListener("pause", sync);
+        video.addEventListener("ended", () => {
+            frame.classList.remove("is-started");
+            playTitle.textContent = "Play again";
+            sync();
+            play.focus({ preventScroll: true });
+        });
+        // it stops when it's scrolled away
+        new IntersectionObserver(([entry]) => {
+            if (!entry.isIntersecting && !video.paused) video.pause();
+        }).observe(frame);
+    }
+</script>
 
 <style>
     /* first thing on the page: most of the screen under the header, with
@@ -183,7 +335,8 @@ const featured = await getFeatured();
         margin-left: auto;
     }
 
-    /* the showreel: a rule and its name, like the Selected projects head, the film under it */
+    /* the showreel: a rule and its name, like the Selected projects head, then
+       a tall track: the film sticks to the window while it grows and shrinks */
     .reel {
         padding-top: clamp(32px, 5vw, 64px);
     }
@@ -202,14 +355,162 @@ const featured = await getFeatured();
         margin: 0;
     }
 
-    .reel__video {
-        display: grid;
-        gap: 10px;
-        margin: clamp(24px, 4vw, 48px) 0 0;
+    .reel__track {
+        position: relative;
+        height: 260vh;
+        height: 260svh;
     }
 
-    .reel__video figcaption {
-        text-align: center;
+    .reel__stage {
+        position: sticky;
+        top: 0;
+        display: grid;
+        place-items: center;
+        height: 100vh;
+        height: 100svh;
+        overflow: hidden;
+    }
+
+    /* the cinema: ink round the picture, never cropped */
+    .reel__frame {
+        position: relative;
+        width: min(100% - 2 * var(--gutter), (100svh - 220px) * 16 / 9);
+        aspect-ratio: 16 / 9;
+        background: #0e0e0e;
+        color: #e9e7e2;
+    }
+
+    .reel__video {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        cursor: pointer;
+    }
+
+    /* the big button: blue, a pixel triangle, what it is under it */
+    .reel__play {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        width: max-content;
+        height: max-content;
+        margin: auto;
+        padding: 18px 26px 18px 22px;
+        border: 0;
+        background: var(--blue);
+        color: #fff;
+        text-align: left;
+        cursor: pointer;
+        transition: transform 0.2s var(--step);
+    }
+
+    .reel__play:hover,
+    .reel__play:focus-visible {
+        transform: scale(1.04);
+        outline: 2px solid #e9e7e2;
+        outline-offset: 3px;
+    }
+
+    .reel__play-text {
+        display: grid;
+        gap: 4px;
+    }
+
+    .reel__play-title {
+        font-family: var(--display);
+        font-size: clamp(1.4rem, 1rem + 1.6vw, 2.4rem);
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -0.04em;
+    }
+
+    .reel__play-meta {
+        opacity: 0.8;
+    }
+
+    .is-started .reel__play {
+        display: none;
+    }
+
+    /* under way: Pause and Sound bottom left, the music credit bottom right */
+    .reel__bar {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 8px 16px;
+        padding: 12px;
+        pointer-events: none;
+    }
+
+    .reel__bar > * {
+        pointer-events: auto;
+    }
+
+    .reel__buttons {
+        display: flex;
+        gap: 8px;
+        visibility: hidden;
+    }
+
+    .is-started .reel__buttons {
+        visibility: visible;
+    }
+
+    .reel__btn {
+        padding: 6px 10px;
+        border: 1px solid rgba(233, 231, 226, 0.4);
+        background: rgba(14, 14, 14, 0.7);
+        color: #e9e7e2;
+        font: inherit;
+        letter-spacing: inherit;
+        text-transform: inherit;
+        cursor: pointer;
+    }
+
+    .reel__btn:hover,
+    .reel__btn:focus-visible {
+        border-color: var(--blue);
+        background: var(--blue);
+        color: #fff;
+        outline: none;
+    }
+
+    .reel__credit {
+        padding: 6px 10px;
+        background: rgba(14, 14, 14, 0.7);
+        color: #bdbbb6;
+        text-align: right;
+    }
+
+    .reel__credit .link {
+        color: #e9e7e2;
+    }
+
+    /* without motion: the film where it is, no growing */
+    @media (prefers-reduced-motion: reduce) {
+        .reel__track,
+        .reel__stage {
+            height: auto;
+        }
+
+        .reel__stage {
+            position: static;
+            padding-block: clamp(24px, 4vw, 48px);
+        }
+    }
+
+    @media (max-width: 599px) {
+        .reel__credit {
+            font-size: 10px;
+        }
     }
 
     .selected-edge {
