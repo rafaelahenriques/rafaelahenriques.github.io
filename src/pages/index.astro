@@ -164,10 +164,15 @@ const posterSrc = (await getImage({ src: reelPoster, width: 1600, format: "webp"
         const size = () => {
             const f = still.matches ? 0 : amount(progress);
             const W = document.documentElement.clientWidth;
+            // "full screen" is the window below the fixed header, so the header never covers the top of the reel
+            const top = document.querySelector<HTMLElement>("[data-header]")?.offsetHeight ?? 0;
+            const room = frame.parentElement!.clientHeight - top;
             // a tall screen (a phone upright) gains nothing from the full height: edge to edge is enough
-            const H = W < frame.parentElement!.clientHeight ? W * (9 / 16) : frame.parentElement!.clientHeight;
+            const H = W < room ? W * (9 / 16) : room;
             frame.style.width = `${small.w + (W - small.w) * f}px`;
             frame.style.height = `${small.h + (H - small.h) * f}px`;
+            // centred in that space: down by half the header as it grows
+            frame.style.transform = `translateY(${(top / 2) * f}px)`;
             frame.classList.toggle("is-full", f > 0.98);
         };
         ScrollTrigger.create({
