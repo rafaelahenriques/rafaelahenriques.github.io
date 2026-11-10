@@ -6,13 +6,17 @@ import ReelIntro from "../components/ReelIntro.astro";
 import { Image, getImage } from "astro:assets";
 import babyPhoto from "../assets/me/rafaela-2006.jpg";
 import reelPoster from "../assets/showreel/poster.jpg";
+import reelPosterVertical from "../assets/showreel/poster-vertical.jpg";
 import { getFeatured } from "../lib/content";
 import { websiteSchema } from "../lib/seo";
 
 const featured = await getFeatured();
 const REEL = "/media/showreel/showreel-2026.mp4";
 const REEL_SMALL = "/media/showreel/showreel-2026-small.mp4";
+// the vertical cut, for a phone held upright
+const REEL_VERTICAL = "/media/showreel/showreel-2026-vertical.mp4";
 const posterSrc = (await getImage({ src: reelPoster, width: 1600, format: "webp", quality: 78 })).src;
+const posterVerticalSrc = (await getImage({ src: reelPosterVertical, width: 1080, format: "webp", quality: 80 })).src;
 ---
 
 <Base
@@ -38,7 +42,7 @@ const posterSrc = (await getImage({ src: reelPoster, width: 1600, format: "webp"
             } catch {}
         })();
     </script>
-    <ReelIntro src={REEL} srcSmall={REEL_SMALL} />
+    <ReelIntro src={REEL} srcSmall={REEL_SMALL} srcVertical={REEL_VERTICAL} />
 
     <!-- HELLO: a poster. My name huge, me in 2006 over it -->
     <section class="hero wrap" aria-labelledby="intro">
@@ -92,11 +96,13 @@ const posterSrc = (await getImage({ src: reelPoster, width: 1600, format: "webp"
                         playsinline
                         preload="none"
                         poster={posterSrc}
+                        data-poster-vertical={posterVerticalSrc}
                         width="1920"
                         height="1080"
                         aria-label="Showreel 2026: my name types out, then Study Room, Generative Flora, the Halloween Google Doodle, Marina Yee, Mongmo, Ben & Jerry’s: A Farm in the Pint and Miles & Meals, cut to music"
                         data-reel-video
                     >
+                        <source src={REEL_VERTICAL} type="video/mp4" media="(max-width: 700px) and (orientation: portrait)" />
                         <source src={REEL_SMALL} type="video/mp4" media="(max-width: 700px)" />
                         <source src={REEL} type="video/mp4" />
                     </video>
@@ -182,15 +188,19 @@ const posterSrc = (await getImage({ src: reelPoster, width: 1600, format: "webp"
         const pause = reel.querySelector<HTMLButtonElement>("[data-reel-pause]")!;
         const sound = reel.querySelector<HTMLButtonElement>("[data-reel-sound]")!;
         const still = window.matchMedia("(prefers-reduced-motion: reduce)");
+        // an upright phone gets the vertical cut (the <source> media above): its poster, its shape
+        const upright = window.matchMedia("(max-width: 700px) and (orientation: portrait)");
+        if (upright.matches) video.poster = video.dataset.posterVertical ?? video.poster;
+        const ratio = () => (upright.matches ? 9 / 16 : 16 / 9);
 
         /* --- the size: small in the page, the whole window halfway through the scroll --- */
 
         const small = { w: 0, h: 0 };
         const measure = () => {
             const room = reel.querySelector<HTMLElement>(".reel__head")!.clientWidth;
-            small.w = Math.min(room, (window.innerHeight - 220) * (16 / 9));
-            small.w = Math.max(small.w, Math.min(room, 320));
-            small.h = small.w * (9 / 16);
+            small.w = Math.min(room, (window.innerHeight - 220) * ratio());
+            small.w = Math.max(small.w, Math.min(room, upright.matches ? 240 : 320));
+            small.h = small.w / ratio();
         };
         // grows over the first 40 % of the scroll, holds, shrinks over the last 40 %
         const ease = (t: number) => t * t * (3 - 2 * t);
@@ -202,8 +212,8 @@ const posterSrc = (await getImage({ src: reelPoster, width: 1600, format: "webp"
             // "full screen" is the window below the fixed header, so the header never covers the top of the reel
             const top = document.querySelector<HTMLElement>("[data-header]")?.offsetHeight ?? 0;
             const room = frame.parentElement!.clientHeight - top;
-            // a tall screen (a phone upright) gains nothing from the full height: edge to edge is enough
-            const H = W < room ? W * (9 / 16) : room;
+            // the wide cut on a tall screen gains nothing from the full height: edge to edge is enough
+            const H = !upright.matches && W < room ? W * (9 / 16) : room;
             frame.style.width = `${small.w + (W - small.w) * f}px`;
             frame.style.height = `${small.h + (H - small.h) * f}px`;
             // centred in that space: down by half the header as it grows
@@ -433,6 +443,14 @@ const posterSrc = (await getImage({ src: reelPoster, width: 1600, format: "webp"
         aspect-ratio: 16 / 9;
         background: #0e0e0e;
         color: #e9e7e2;
+    }
+
+    /* an upright phone plays the vertical cut */
+    @media (max-width: 700px) and (orientation: portrait) {
+        .reel__frame {
+            width: min(100% - 2 * var(--gutter), (100svh - 220px) * 9 / 16);
+            aspect-ratio: 9 / 16;
+        }
     }
 
     .reel__video {
