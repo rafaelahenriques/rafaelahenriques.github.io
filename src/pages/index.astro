@@ -43,7 +43,8 @@ const posterSrc = (await getImage({ src: reelPoster, width: 1600, format: "webp"
     <!-- HELLO: a poster. My name huge, me in 2006 over it -->
     <section class="hero wrap" aria-labelledby="intro">
 
-        <figure class="hero__photo photo" data-cursor="2006">
+        <!-- it can be picked up and thrown about inside the hero (the script at the bottom) -->
+        <figure class="hero__photo photo" data-cursor="2006 · Drag" data-hero-photo>
             <div class="hero__frame" data-reveal-img>
                 <Image
                     src={babyPhoto}
@@ -134,8 +135,42 @@ const posterSrc = (await getImage({ src: reelPoster, width: 1600, format: "webp"
 <script>
     import { gsap } from "gsap";
     import { ScrollTrigger } from "gsap/ScrollTrigger";
+    import { Draggable } from "gsap/Draggable";
+    import { InertiaPlugin } from "gsap/InertiaPlugin";
 
-    gsap.registerPlugin(ScrollTrigger);
+    gsap.registerPlugin(ScrollTrigger, Draggable, InertiaPlugin);
+
+    /* the photo of me: drag it (or throw it) anywhere inside the hero; it tilts
+       the way it's moving and lands flat */
+    const photo = document.querySelector<HTMLElement>("[data-hero-photo]");
+    const hero = photo?.closest<HTMLElement>(".hero");
+    if (photo && hero) {
+        const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const tilt = gsap.quickTo(photo, "rotation", { duration: 0.25, ease: "power2.out" });
+        const settle = () => gsap.to(photo, { rotation: 0, duration: 0.5, ease: "back.out(3)", overwrite: "auto" });
+        Draggable.create(photo, {
+            type: "x,y",
+            bounds: hero,
+            edgeResistance: 0.85,
+            inertia: !calm,
+            zIndexBoost: false,
+            onPress() {
+                photo.classList.add("is-held");
+            },
+            onDrag() {
+                if (!calm) tilt(gsap.utils.clamp(-9, 9, this.deltaX * 0.8));
+            },
+            onRelease() {
+                photo.classList.remove("is-held");
+                if (!calm && !this.tween) settle();
+            },
+            onThrowUpdate() {
+                tilt(gsap.utils.clamp(-9, 9, (InertiaPlugin.getVelocity(photo, "x") as number) / 120));
+            },
+            onThrowComplete: settle,
+        });
+        window.addEventListener("resize", () => Draggable.get(photo)?.applyBounds(hero));
+    }
 
     const reel = document.querySelector<HTMLElement>("[data-reel]");
     if (reel) {
@@ -274,14 +309,29 @@ const posterSrc = (await getImage({ src: reelPoster, width: 1600, format: "webp"
         padding-left: 6vw;
     }
 
-    /* the photo sits over the name, like a poster */
+    /* the photo sits over the name, like a poster; it can be picked up */
     .hero__photo {
+        cursor: grab;
+        touch-action: none;
         grid-column: 8 / span 2;
         grid-row: 1;
         align-self: end;
         position: relative;
         z-index: 2;
         margin: 0 0 4vw;
+    }
+
+    /* picked up: it lifts off the page onto a hard blue shadow */
+    .hero__photo.is-held {
+        cursor: grabbing;
+    }
+
+    .hero__photo .hero__frame {
+        transition: box-shadow 0.15s var(--step);
+    }
+
+    .hero__photo.is-held .hero__frame {
+        box-shadow: 12px 12px 0 var(--blue);
     }
 
     .hero__frame {
