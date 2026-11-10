@@ -1,0 +1,205 @@
+---
+/**
+ * The homepage's first visit of a session: the showreel plays full screen
+ * before the page, instead of the loading screen. Browsers only allow it to
+ * start muted, so there's a Sound button, and Skip (or Esc) goes straight to
+ * the page. When it ends or is skipped it clears in pixels (scripts/wipe.ts)
+ * and fires "reel:done", which starts the page's own animations.
+ *
+ * index.astro's <head> script adds html.is-reel (never with reduced motion,
+ * and it also marks the loader as seen); without it this renders nothing and
+ * downloads nothing.
+ */
+interface Props {
+    /** the reel, and a lighter copy for phones */
+    src: string;
+    srcSmall: string;
+}
+
+const { src, srcSmall } = Astro.props;
+---
+
+<div class="reel-intro" data-reel-intro role="dialog" aria-modal="true" aria-label="Showreel 2026">
+    <video class="reel-intro__video" muted playsinline preload="none" data-reel-intro-video>
+        <source data-src={srcSmall} type="video/mp4" media="(max-width: 700px)" />
+        <source data-src={src} type="video/mp4" />
+    </video>
+    <div class="reel-intro__bar mono">
+        <span class="reel-intro__name">Showreel 2026</span>
+        <span class="reel-intro__buttons">
+            <button type="button" class="reel-intro__btn" aria-pressed="false" data-reel-intro-sound>Sound off</button>
+            <button type="button" class="reel-intro__btn reel-intro__btn--skip" data-reel-intro-skip>Skip intro <span aria-hidden="true">→</span></button>
+        </span>
+    </div>
+    <div class="reel-intro__progress" aria-hidden="true"><span data-reel-intro-progress></span></div>
+</div>
+
+<script>
+    import { uncover } from "../scripts/wipe";
+
+    const root = document.documentElement;
+    const intro = document.querySelector<HTMLElement>("[data-reel-intro]");
+
+    if (intro && root.classList.contains("is-reel")) {
+        // the head script's safety net isn't needed once this runs
+        window.clearTimeout((window as unknown as { __reelFailsafe?: number }).__reelFailsafe);
+        intro.classList.add("is-running");
+        const video = intro.querySelector<HTMLVideoElement>("[data-reel-intro-video]")!;
+        const sound = intro.querySelector<HTMLButtonElement>("[data-reel-intro-sound]")!;
+        const skip = intro.querySelector<HTMLButtonElement>("[data-reel-intro-skip]")!;
+        const bar = intro.querySelector<HTMLElement>("[data-reel-intro-progress]")!;
+
+        let done = false;
+        const finish = () => {
+            if (done) return;
+            done = true;
+            video.pause();
+            document.removeEventListener("keydown", onKey);
+            intro.style.display = "none";
+            root.classList.remove("is-reel");
+            uncover(480);
+            window.dispatchEvent(new Event("reel:done"));
+            intro.remove();
+        };
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") finish();
+        };
+
+        // only now does it download anything
+        video.querySelectorAll<HTMLSourceElement>("source").forEach((s) => (s.src = s.dataset.src!));
+        video.preload = "auto";
+        video.load();
+        video.addEventListener("ended", finish);
+        video.addEventListener("error", finish);
+        video.addEventListener("timeupdate", () => {
+            if (video.duration) bar.style.transform = `scaleX(${video.currentTime / video.duration})`;
+        });
+        // if the browser won't play it at all, the page shouldn't wait
+        video.play().catch(finish);
+
+        sound.addEventListener("click", () => {
+            video.muted = !video.muted;
+            sound.textContent = video.muted ? "Sound off" : "Sound on";
+            sound.setAttribute("aria-pressed", String(!video.muted));
+        });
+        skip.addEventListener("click", finish);
+        document.addEventListener("keydown", onKey);
+        skip.focus({ preventScroll: true });
+    } else {
+        intro?.remove();
+    }
+</script>
+
+<style>
+    .reel-intro {
+        display: none;
+    }
+
+    :global(html.is-reel) {
+        overflow: hidden;
+    }
+
+    :global(html.is-reel) .reel-intro {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: block;
+        height: 100vh;
+        height: 100dvh;
+        background: #0e0e0e;
+        color: #e9e7e2;
+        /* if the script never runs, get out of the way */
+        animation: reel-failsafe 0s linear 8s forwards;
+    }
+
+    .reel-intro.is-running {
+        animation: none;
+    }
+
+    @keyframes reel-failsafe {
+        to {
+            visibility: hidden;
+        }
+    }
+
+    /* the whole reel, never cropped */
+    .reel-intro__video {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .reel-intro__bar {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 16px var(--gutter);
+        padding-bottom: max(16px, env(safe-area-inset-bottom));
+    }
+
+    .reel-intro__buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .reel-intro__btn {
+        padding: 8px 12px;
+        border: 1px solid rgba(233, 231, 226, 0.4);
+        background: rgba(14, 14, 14, 0.6);
+        color: #e9e7e2;
+        font: inherit;
+        letter-spacing: inherit;
+        text-transform: inherit;
+        cursor: pointer;
+        transition:
+            background-color 0.15s var(--step),
+            border-color 0.15s var(--step);
+    }
+
+    .reel-intro__btn:hover,
+    .reel-intro__btn:focus-visible,
+    .reel-intro__btn--skip {
+        border-color: var(--blue);
+        background: var(--blue);
+        color: #fff;
+        outline: none;
+    }
+
+    .reel-intro__btn--skip:focus-visible {
+        outline: 2px solid #e9e7e2;
+        outline-offset: 2px;
+    }
+
+    /* how far through it is: a blue line along the bottom */
+    .reel-intro__progress {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 4px;
+    }
+
+    .reel-intro__progress span {
+        display: block;
+        height: 100%;
+        background: var(--blue);
+        transform: scaleX(0);
+        transform-origin: left;
+    }
+
+    @media (max-width: 599px) {
+        .reel-intro__name {
+            display: none;
+        }
+
+        .reel-intro__bar {
+            justify-content: flex-end;
+        }
+    }
+</style>

@@ -169,6 +169,9 @@ export function initAnimations() {
     if (root.classList.contains("is-loading")) {
         window.addEventListener("loader:done", go, { once: true });
         setTimeout(go, 5500); // in case the loader never reports back
+    } else if (root.classList.contains("is-reel")) {
+        // the homepage's showreel intro (ReelIntro.astro): when it ends or is skipped
+        window.addEventListener("reel:done", go, { once: true });
     } else if (root.classList.contains("is-wiping")) {
         window.addEventListener("wipe:done", go, { once: true });
         setTimeout(go, 3000);
